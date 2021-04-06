@@ -3,7 +3,7 @@ import Web3 from 'web3';
 //import Identicon from 'identicon.js';
 import './App.css';
 import DSM from '../abis/DSM.json'
-//import Navbar from './Navbar'
+import Navbar from './Navbar'
 //import Main from './Main'
 
 const ipfsClient = require('ipfs-http-client')
@@ -138,6 +138,7 @@ class App extends Component {
   render() {
     return (
        <div>
+         <Navbar />
        <p>words and things
        </p>
       </div>
