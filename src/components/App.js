@@ -4,6 +4,7 @@ import Web3 from 'web3';
 import './App.css';
 import DSM from '../abis/DSM.json'
 import Navbar from './Navbar'
+import Main from './Main';
 //import Main from './Main'
 
 const ipfsClient = require('ipfs-http-client')
@@ -138,9 +139,13 @@ class App extends Component {
   render() {
     return (
        <div>
-         <Navbar />
-       <p>words and things
-       </p>
+         <Navbar account={this.state.account}/>
+         <Main
+              images={this.state.images}
+              captureFile={this.captureFile}
+              uploadImage={this.uploadImage}
+              tipImage={this.tipImage}
+            />
       </div>
     );
   }
