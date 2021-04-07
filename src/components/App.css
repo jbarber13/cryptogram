@@ -9,6 +9,10 @@
 html {
   scroll-behavior:smooth;
 }
+.customNav{
+  padding:5rem;
+  color: black;
+}
 
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {
