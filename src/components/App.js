@@ -5,6 +5,7 @@ import './App.css';
 import DSM from '../abis/DSM.json'
 import Navbar from './Navbar'
 import Main from './Main';
+import Loading from './Loading'
 //import Main from './Main'
 
 const ipfsClient = require('ipfs-http-client')
@@ -136,22 +137,26 @@ class App extends Component {
     this.captureFile = this.captureFile.bind(this)
   }
 
+  /**
+   * 
+   *  
+   */
+  
+
   render() {
     return (
-       <div id="header" className="bg-dark">
-        <Navbar account={this.state.account} />
-        { this.state.loading
-          ? <div id="loader" style={{height: "55.5rem"}}>
-              <h2 className="text-center mt-5 text-light">Loading...</h2>
-            </div>
-          : <Main
-              images={this.state.images}
-              captureFile={this.captureFile}
-              uploadImage={this.uploadImage}
-              tipImage={this.tipImage}
-            />
-        }
-      </div>
+      <div id="header" className="bg-dark">
+      <Navbar account={this.state.account} />
+      { this.state.loading
+        ? <Loading />
+        : <Main
+            images={this.state.images}
+            captureFile={this.captureFile}
+            uploadImage={this.uploadImage}
+            tipImage={this.tipImage}
+          />
+      }
+    </div> 
     );
   }
 }

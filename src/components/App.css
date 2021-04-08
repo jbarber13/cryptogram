@@ -6,8 +6,9 @@
   height: 40vmin;
   pointer-events: none;
 }
-html {
+html, body {
   scroll-behavior:smooth;
+  height: 100%;
 }
 .customNav{
   padding:5rem;
@@ -42,4 +43,29 @@ html {
   to {
     transform: rotate(360deg);
   }
+}
+.main-info {
+  display: flex;
+  /*Put in absolute center of page*/
+  position: absolute;
+  top:0;
+  left:0;
+  right:0;
+  bottom:0;  
+
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.component {
+  background-color: #343a40;
+  color: #f8f9fa;
+  height: 100vh;
+  position: relative;    
+}
+
+.typed-text{
+  font-size: 5rem;
 }

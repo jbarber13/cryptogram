@@ -6,7 +6,7 @@ class Navbar extends Component {
 
   render() {
     return (
-      <nav className="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">  
+      <nav className="container-fluid navbar navbar-expand-lg navbar-dark bg-primary fixed-top">  
           
             <ul className="navbar-nav m-auto">
               <li className="nav-item">
