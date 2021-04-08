@@ -1,22 +1,22 @@
 const { assert } = require('chai');
 const { default: Web3 } = require('web3');
 
-const DSM = artifacts.require("DSM");
+const CryptoGram = artifacts.require("CryptoGram");
 
 require('chai')
   .use(require('chai-as-promised'))
   .should()
 
-contract('DSM', ([deployer, author, tipper]) => {
-  let dsm
+contract('CryptoGram', ([deployer, author, tipper, otherUser]) => {
+  let cryptogram
 
   before(async () => {
-    dsm = await DSM.deployed()
+    cryptogram = await CryptoGram.deployed()
   })
 
   describe('deployment', async () => {
     it('is deployed', async () => {
-      const address = await dsm.address
+      const address = await cryptogram.address
       assert.notEqual(address, 0x0)
       assert.notEqual(address, '')
       assert.notEqual(address, null)
@@ -24,8 +24,8 @@ contract('DSM', ([deployer, author, tipper]) => {
     })
 
     it('has the correct name', async () => {
-      const name = await dsm.name()
-      assert.equal(name, 'Decentralized Social Media')
+      const name = await cryptogram.name()
+      assert.equal(name, 'CryptoGram - decentralized image sharing social media platform')
     })
   })
 
@@ -34,8 +34,8 @@ contract('DSM', ([deployer, author, tipper]) => {
     let desc = 'description'
     let hash = 'A991A5B251866474D04E8A1EC783BF28'
     before(async () => {
-      result = await dsm.uploadImage(hash, desc, { from: author })
-      imageCount = await dsm.imageCount()
+      result = await cryptogram.uploadImage(hash, desc, { from: author })
+      imageCount = await cryptogram.imageCount()
     })
     describe('uploading image hashes', async () => {
       describe('Success', async () => {
@@ -50,7 +50,7 @@ contract('DSM', ([deployer, author, tipper]) => {
           event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
         })
         it('lists image hashes', async () => {
-          const image = await dsm.images(imageCount)
+          const image = await cryptogram.images(imageCount)
           assert.equal(image.id.toNumber(), imageCount.toNumber(), 'ID is correct')
           assert.equal(image.hash, hash, 'Hash is correct')
           assert.equal(image.description, desc, 'description is correct')
@@ -60,10 +60,10 @@ contract('DSM', ([deployer, author, tipper]) => {
       })
       describe('Failure', async () => {
         it('prevents a blank hash from being uploaded', async () => {
-          await dsm.uploadImage('', desc, { from: author }).should.be.rejected
+          await cryptogram.uploadImage('', desc, { from: author }).should.be.rejected
         })
         it('prevents upload without a description', async () => {
-          await dsm.uploadImage(hash, '', { from: author }).should.be.rejected
+          await cryptogram.uploadImage(hash, '', { from: author }).should.be.rejected
         })
       })
     })   
@@ -74,7 +74,7 @@ contract('DSM', ([deployer, author, tipper]) => {
       before(async () => {
         oldAuthorBalance = await web3.eth.getBalance(author)
         oldAuthorBalance = new web3.utils.BN(oldAuthorBalance)
-        result = await dsm.tipImageOwner(imageCount, { from: tipper, value: web3.utils.toWei('1', 'Ether') })
+        result = await cryptogram.tipImageOwner(imageCount, { from: tipper, value: web3.utils.toWei('1', 'Ether') })
       })
       describe('Success', async () => {
         it('tips author', async () => {
@@ -101,10 +101,47 @@ contract('DSM', ([deployer, author, tipper]) => {
       })
       describe('Failure', async () => {
         it('prevents an invalid image ID from being tipped', async () => {
-          await dsm.tipImageOwner(99999, { from: tipper, value: web3.utils.toWei('1', 'Ether') }).should.be.rejected
+          await cryptogram.tipImageOwner(99999, { from: tipper, value: web3.utils.toWei('1', 'Ether') }).should.be.rejected
         })
       })
-    })
+    })//tipping Images
+
+    describe('deleting images', async () => {
+      let hash1 = "imageHash1"
+      let hash2 = "imageHash2"
+      let hash3 = "imageHash3"
+      let oldImages, newImages
+      let id
+      deletedImageDesc = "image to be deleted"
+      before(async () => {
+        await cryptogram.uploadImage(hash1, desc, { from: author })
+        await cryptogram.uploadImage(hash2, desc, { from: author })
+        await cryptogram.uploadImage(hash3, deletedImageDesc, { from: author })
+
+        oldImages = cryptogram.images
+
+        id = imageCount
+
+        result = await cryptogram.deleteImage(id, { from: author})
+
+        newImages = cryptogram.images
+
+      })
+      describe('Success', async () => {
+        it('deletes an image', async () => {
+          
+        })
+        
+      })
+      describe('Failure', async () => {
+        it('images can only be deleted by the account that uploaded them', async () => {
+          await cryptogram.deleteImage(id, {from: otherUser}).should.be.rejected
+        })
+        it('prevents an invalid image ID from being deleted', async () => {
+          await cryptogram.deleteImage(99999, { from: author}).should.be.rejected
+        })
+      })
+    })//tipping Images
   })
 
   

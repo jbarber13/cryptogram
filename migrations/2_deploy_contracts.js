@@ -1,5 +1,5 @@
-const DSM = artifacts.require("DSM");
+const CryptoGram = artifacts.require("CryptoGram");
 
 module.exports = async function(deployer) {
-  await deployer.deploy(DSM);
+  await deployer.deploy(CryptoGram);
 };
