@@ -54,7 +54,7 @@ class Main extends Component {
                     </div>
                     <ul id="imageList" className="list-group list-group-flush ">
                       <li className="list-group-item bg-secondary">
-                        <p className="text-center"><img src={`https://ipfs.infura.io/ipfs/${image.hash}`} alt="#" style={{maxHeight: '50rem'}}/></p>
+                      <p class="text-center"><img className="uploadedImage" src={`https://ipfs.infura.io/ipfs/${image.hash}`} alt=""/></p>
                         <p className="text-light border-info card-body">{image.description}</p>
                       </li>
                       <li key={key} className="list-group-item py-2">

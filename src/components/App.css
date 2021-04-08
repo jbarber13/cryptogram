@@ -69,3 +69,7 @@ html, body {
 .typed-text{
   font-size: 5rem;
 }
+.uploadedImage{
+  max-width: 85%;
+  max-height: 35rem;
+}
