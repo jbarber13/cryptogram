@@ -110,32 +110,36 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser]) => {
       let hash1 = "imageHash1"
       let hash2 = "imageHash2"
       let hash3 = "imageHash3"
-      let oldImages, newImages
-      let id
-      deletedImageDesc = "image to be deleted"
+      let lastImage
+      let imageCount
       before(async () => {
-        await cryptogram.uploadImage(hash1, desc, { from: author })
-        await cryptogram.uploadImage(hash2, desc, { from: author })
-        await cryptogram.uploadImage(hash3, deletedImageDesc, { from: author })
-
-        oldImages = cryptogram.images
-
-        id = imageCount
-
-        result = await cryptogram.deleteImage(id, { from: author})
-
-        newImages = cryptogram.images
+        result = await cryptogram.uploadImage(hash1, desc, { from: author })
+        result = await cryptogram.uploadImage(hash2, desc, { from: author })
+        result = await cryptogram.uploadImage(hash3, desc, { from: author })
+        imageCount = await cryptogram.imageCount() 
+        
 
       })
       describe('Success', async () => {
-        it('deletes an image', async () => {
+        it('deletes an image - sets all values of that struct to 0 or null', async () => {
+          lastImage = await cryptogram.images(imageCount)
+          assert.equal(lastImage.hash, hash3, 'Hash is correct before the delete')          
+
+          //DELETE and reset lastImage data - count stays the same, so last image points to deleted image, values should be set to 0 or null
+          await cryptogram.deleteImage(imageCount, {from: author})
+          lastImage = await cryptogram.images(imageCount)
           
+          assert.equal(lastImage.id.toNumber(), 0, 'ID is correct')
+          assert.equal(lastImage.hash, '', 'Hash is correct')
+          assert.equal(lastImage.description, '', 'description is correct')
+          assert.equal(lastImage.tipAmount.toString(), '0', 'tip amount is correct')
+          assert.equal(lastImage.author, (0x0), 'author is correct')          
         })
         
       })
       describe('Failure', async () => {
         it('images can only be deleted by the account that uploaded them', async () => {
-          await cryptogram.deleteImage(id, {from: otherUser}).should.be.rejected
+          await cryptogram.deleteImage(imageCount, {from: otherUser}).should.be.rejected
         })
         it('prevents an invalid image ID from being deleted', async () => {
           await cryptogram.deleteImage(99999, { from: author}).should.be.rejected
