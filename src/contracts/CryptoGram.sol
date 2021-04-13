@@ -29,7 +29,7 @@ contract CryptoGram {
     string phone;
     string email;
     string occupation;
-    uint256 timeCreated;
+    uint256 timeStamp;
   }
 
   event UserAdded ( 
@@ -40,7 +40,7 @@ contract CryptoGram {
     string phone,
     string email, 
     string occupation,
-    uint256 timeCreated
+    uint256 timeStamp
   );
   event UserDeleted (
     address userAccount,
@@ -75,7 +75,8 @@ contract CryptoGram {
     string hash, 
     string description, 
     uint tipAmount, 
-    address payable author
+    address payable author,
+    uint256 timeStamp
   );
 
   //Fallback: reverts if Ether is sent to this contract unintentionally 
@@ -102,7 +103,7 @@ contract CryptoGram {
     images[_id] = _image;
 
     //emit event
-    emit ImageTipped(_id, _image.hash, _image.description, _image.tipAmount, _author);
+    emit ImageTipped(_id, _image.hash, _image.description, _image.tipAmount, _author, now);
   }
 
   //add new image hash
@@ -161,6 +162,9 @@ contract CryptoGram {
   function deleteUser() public {
     //require user address to exist
     require(msg.sender != address(0x0));
+
+    //decrement user count - keep a total of active users on the contract
+    userCount--;
 
     //delete from mapping
     delete(users[msg.sender]);

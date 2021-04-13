@@ -7,14 +7,14 @@ require('chai')
   .use(require('chai-as-promised'))
   .should()
 
-contract('CryptoGram', ([deployer, author, tipper, otherUser]) => {
+contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser]) => {
   let cryptogram
 
   before(async () => {
     cryptogram = await CryptoGram.deployed()
   })
 
-  describe('deployment', async () => {
+  describe('Deployment', async () => {
     it('is deployed', async () => {
       const address = await cryptogram.address
       assert.notEqual(address, 0x0)
@@ -30,14 +30,14 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser]) => {
   })
 
   describe('Contract Functions', async () => {
-    let result, imageCount
+    let result, imageCount, userCount
     let desc = 'description'
     let hash = 'A991A5B251866474D04E8A1EC783BF28'
     before(async () => {
       result = await cryptogram.uploadImage(hash, desc, { from: author })
       imageCount = await cryptogram.imageCount()
     })
-    describe('uploading image hashes', async () => {
+    describe('Uploading Image Hashes', async () => {
       describe('Success', async () => {
         it('adds image hashes to the contract correctly', async () => {
           assert.equal(imageCount, 1)
@@ -57,6 +57,17 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser]) => {
           assert.equal(image.tipAmount, '0', 'tip amount is correct')
           assert.equal(image.author, author, 'author is correct')
         })
+        it('emits an ImageCreated event', async () => {
+          const log = result.logs[0]
+          log.event.should.eq('ImageCreated')
+          const event = log.args
+          event.id.toNumber().should.equal(imageCount.toNumber(), 'ID is correct')
+          event.hash.toString().should.equal(hash, 'hash is correct')
+          event.description.toString().should.equal(desc, 'description address is correct')
+          event.tipAmount.toString().should.equal('0', 'tipAmount is correct')
+          assert.equal(event.author, author, 'author is correct')
+          event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
+        })
       })
       describe('Failure', async () => {
         it('prevents a blank hash from being uploaded', async () => {
@@ -66,11 +77,11 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser]) => {
           await cryptogram.uploadImage(hash, '', { from: author }).should.be.rejected
         })
       })
-    })   
+    })
 
-    describe('tipping images', async () => {
+    describe('Tipping Images', async () => {
       let oldAuthorBalance
-      
+
       before(async () => {
         oldAuthorBalance = await web3.eth.getBalance(author)
         oldAuthorBalance = new web3.utils.BN(oldAuthorBalance)
@@ -88,15 +99,28 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser]) => {
         it('updates author balance', async () => {
           let newAuthorBalance = await web3.eth.getBalance(author)
           newAuthorBalance = new web3.utils.BN(newAuthorBalance)
-          
+
           let tipAmount
           tipAmount = web3.utils.toWei('1', 'Ether')
           tipAmount = new web3.utils.BN(tipAmount)
-          
+
           const expectedBalance = oldAuthorBalance.add(tipAmount)
-          
+
           assert.equal(newAuthorBalance.toString(), expectedBalance.toString())
           assert.notEqual(newAuthorBalance, oldAuthorBalance)
+        })
+        it('emits an ImageTipped event', async () => {
+          let tipAmount
+          tipAmount = web3.utils.toWei('1', 'Ether')
+          const log = result.logs[0]
+          log.event.should.eq('ImageTipped')
+          const event = log.args
+          event.id.toNumber().should.equal(imageCount.toNumber(), 'ID is correct')
+          event.hash.toString().should.equal(hash, 'hash is correct')
+          event.description.toString().should.equal(desc, 'description address is correct')
+          event.tipAmount.toString().should.equal(tipAmount.toString(), 'tipAmount is correct')
+          assert.equal(event.author, author, 'author is correct')
+          event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
         })
       })
       describe('Failure', async () => {
@@ -106,7 +130,7 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser]) => {
       })
     })//tipping Images
 
-    describe('deleting images', async () => {
+    describe('Deleting Images', async () => {
       let hash1 = "imageHash1"
       let hash2 = "imageHash2"
       let hash3 = "imageHash3"
@@ -116,39 +140,94 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser]) => {
         result = await cryptogram.uploadImage(hash1, desc, { from: author })
         result = await cryptogram.uploadImage(hash2, desc, { from: author })
         result = await cryptogram.uploadImage(hash3, desc, { from: author })
-        imageCount = await cryptogram.imageCount() 
-        
+        imageCount = await cryptogram.imageCount()
+
 
       })
       describe('Success', async () => {
         it('deletes an image - sets all values of that struct to 0 or null', async () => {
           lastImage = await cryptogram.images(imageCount)
-          assert.equal(lastImage.hash, hash3, 'Hash is correct before the delete')          
+          assert.equal(lastImage.hash, hash3, 'Hash is correct before the delete')
 
           //DELETE and reset lastImage data - count stays the same, so last image points to deleted image, values should be set to 0 or null
-          await cryptogram.deleteImage(imageCount, {from: author})
+          result = await cryptogram.deleteImage(imageCount, { from: author })
           lastImage = await cryptogram.images(imageCount)
-          
+
           assert.equal(lastImage.id.toNumber(), 0, 'ID is correct')
           assert.equal(lastImage.hash, '', 'Hash is correct')
           assert.equal(lastImage.description, '', 'description is correct')
           assert.equal(lastImage.tipAmount.toString(), '0', 'tip amount is correct')
-          assert.equal(lastImage.author, (0x0), 'author is correct')          
+          assert.equal(lastImage.author, (0x0), 'author is correct')
         })
-        
+
+        it('emits an ImageDeleted event', async () => {
+          const log = result.logs[0]
+          log.event.should.eq('ImageDeleted')
+          const event = log.args
+          event.id.toNumber().should.equal(imageCount.toNumber(), 'ID is correct')
+          assert.equal(event.author, author, 'author is correct')
+          event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
+        })
+
       })
       describe('Failure', async () => {
         it('images can only be deleted by the account that uploaded them', async () => {
-          await cryptogram.deleteImage(imageCount, {from: otherUser}).should.be.rejected
+          await cryptogram.deleteImage(imageCount, { from: otherUser }).should.be.rejected
         })
         it('prevents an invalid image ID from being deleted', async () => {
-          await cryptogram.deleteImage(99999, { from: author}).should.be.rejected
+          await cryptogram.deleteImage(99999, { from: author }).should.be.rejected
         })
       })
-    })//tipping Images
+    })//deleting Images
+
+    describe('Adding Users', async () => {
+      //addUser(string memory _userName, string memory _status, string memory _location, string memory _phone, string memory _email, string memory _occupation)
+      let userName, status, location, phone, email, occupation
+      userName = "otherUser"
+      status = "first user added"
+      location = "Earth"
+      phone = "5555555555"
+      email = "realEmail@email.email"
+      occupation = "lucrative posistion at GNB"
+      before(async () => {
+        result = await cryptogram.addUser(userName, status, location, phone, email, occupation, { from: otherUser })
+        userCount = await cryptogram.userCount()
+      })
+      describe('Success', async () => {
+        it('adds user account name to mapping', async () => {
+          assert.equal(userCount, 1)
+          const event = result.logs[0].args
+          assert.equal(event.userAccount.toString(), otherUser.toString(), 'User Account is correct')
+          assert.equal(event.userName, userName, 'userName is correct')
+          assert.equal(event.status, status, 'status is correct')
+          assert.equal(event.location, location, 'location is correct')
+          assert.equal(event.phone, phone, 'phone is correct')
+          assert.equal(event.email, email, 'email is correct')
+          assert.equal(event.occupation, occupation, 'occupation is correct')
+          event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
+        })
+        it('emits a UserAdded event', async () => {
+          const log = result.logs[0]
+          log.event.should.eq('UserAdded')
+          const event = log.args
+          assert.equal(event.userAccount.toString(), otherUser.toString(), 'User Account is correct')
+          assert.equal(event.userName, userName, 'userName is correct')
+          assert.equal(event.status, status, 'status is correct')
+          assert.equal(event.location, location, 'location is correct')
+          assert.equal(event.phone, phone, 'phone is correct')
+          assert.equal(event.email, email, 'email is correct')
+          assert.equal(event.occupation, occupation, 'occupation is correct')
+          event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
+        })
+
+      })
+      describe('Failure', async () => {
+
+      })
+    })//Add User
   })
 
-  
+
 
 
 
