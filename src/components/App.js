@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Web3 from 'web3';
 //import Identicon from 'identicon.js';
 import './App.css';
-import DSM from '../abis/DSM.json'
+import CryptoGram from '../abis/CryptoGram.json'
 import Navbar from './Navbar'
 import Main from './Main';
 import Loading from './Loading'
@@ -34,7 +34,7 @@ class App extends Component {
       this.setState({web3Loaded: true})
     }
     else {
-      window.alert('Please install MetaMask in order to access to DSM')
+      window.alert('Please install MetaMask in order to access to CryptoGram')
       window.location.href = "https://metamask.io/"
     }
   }
@@ -46,19 +46,19 @@ class App extends Component {
 
     //Load contract
     const networkID = await web3.eth.net.getId()//get networkID from MetaMask
-    const dsmData = DSM.networks[networkID]
+    const cryptogramData = CryptoGram.networks[networkID]
     //check for null contract data
-    if (dsmData) {
-      const dsm = new web3.eth.Contract(DSM.abi, dsmData.address)
-      this.setState({ dsm })
+    if (cryptogramData) {
+      const cryptogram = new web3.eth.Contract(CryptoGram.abi, cryptogramData.address)
+      this.setState({ cryptogram })
 
       //load images
-      const imageCount = await dsm.methods.imageCount().call()
+      const imageCount = await cryptogram.methods.imageCount().call()
       this.setState({ imageCount })
 
       //load images
       for (var i = 1; i <= imageCount; i++) {
-        const image = await dsm.methods.images(i).call()
+        const image = await cryptogram.methods.images(i).call()
         this.setState({
           images: [...this.state.images, image]
         })
@@ -71,7 +71,7 @@ class App extends Component {
 
       this.setState({ loading: false })
     } else {
-      window.alert('DSM contract not deployed to the detected network, please switch your network in MetaMask to Rinkeby and refresh the page')
+      window.alert('CryptoGram contract not deployed to the detected network, please switch your network in MetaMask to Rinkeby and refresh the page')
     }
 
 
@@ -106,7 +106,7 @@ class App extends Component {
       }
 
       this.setState({ loading: true })
-      this.state.dsm.methods.uploadImage(result[0].hash, description).send({ from: this.state.account })
+      this.state.cryptogram.methods.uploadImage(result[0].hash, description).send({ from: this.state.account })
         .on('transactionHash', (hash) => {
           this.setState({ loading: false })
           console.log("Upload transaction hash: ", hash)
@@ -117,7 +117,7 @@ class App extends Component {
 
   tipImage(id, tipAmount) {
     
-    this.state.dsm.methods.tipImageOwner(id).send({ from: this.state.account, value: tipAmount }).on('transactionHash', (hash) => {
+    this.state.cryptogram.methods.tipImageOwner(id).send({ from: this.state.account, value: tipAmount }).on('transactionHash', (hash) => {
       console.log("tipImageOwner completed", hash)
     })
   }
@@ -128,7 +128,7 @@ class App extends Component {
     this.state = {
       web3Loaded: false,
       account: '',
-      dsm: null,
+      cryptogram: null,
       images: [],
       loading: true
     }
