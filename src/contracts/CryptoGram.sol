@@ -84,7 +84,7 @@ contract CryptoGram {
 		revert();
 	}
 
-  //tip posts
+  
   function tipImageOwner(uint _id) public payable{
     //require valid ID
     require(_id > 0 && _id <= imageCount);
@@ -106,7 +106,7 @@ contract CryptoGram {
     emit ImageTipped(_id, _image.hash, _image.description, _image.tipAmount, _author, now);
   }
 
-  //add new image hash
+  
   function uploadImage(string memory _hash, string memory _desc) public{    
     //require a hash to be included    
     require(bytes(_hash).length > 0);
