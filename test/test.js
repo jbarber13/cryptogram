@@ -222,9 +222,96 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser]) => {
 
       })
       describe('Failure', async () => {
-
+        it('prevents an invalid address from being added to the mapping', async () => {
+          await cryptogram.addUser(userName, status, location, phone, email, occupation, { from: 0x0 }).should.be.rejected
+        })
       })
     })//Add User
+
+    describe('Deleting Users', async () => {
+      //addUser(string memory _userName, string memory _status, string memory _location, string memory _phone, string memory _email, string memory _occupation)
+      userName = "user to delete"
+      status = "status to delete"
+      location = "location to delete"
+      phone = "phone to delete"
+      email = "email to delete"
+      occupation = "occupation to delete"
+      before(async () => {
+        result = await cryptogram.addUser(userName, status, location, phone, email, occupation, { from: deletedUser })
+        userCount = await cryptogram.userCount()
+      })
+      describe('Success', async () => {
+        it('deletes user account name from mapping and decrements user count', async () => {
+          assert.equal(userCount, 2)
+
+          result = await cryptogram.deleteUser({ from: deletedUser })
+          userCount = await cryptogram.userCount()
+          assert.equal(userCount, 1)
+
+          const DL = await cryptogram.users(deletedUser)
+
+          assert.equal(DL.userAccount.toString(), (0x0), 'User Account is correct')
+          assert.equal(DL.userName, '', 'userName is correct')
+          assert.equal(DL.status, '', 'status is correct')
+          assert.equal(DL.location, '', 'location is correct')
+          assert.equal(DL.phone, '', 'phone is correct')
+          assert.equal(DL.email, '', 'email is correct')
+          assert.equal(DL.occupation, '', 'occupation is correct')
+          DL.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
+
+        })
+        it('emits a UserDeleted event', async () => {
+          const log = result.logs[0]
+          log.event.should.eq('UserDeleted')
+          const event = log.args
+          assert.equal(event.userAccount.toString(), deletedUser.toString(), 'User Account is correct')
+          event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
+        })
+
+      })
+      describe('Failure', async () => {
+        it('prevents an invalid address from being deleted from to the mapping', async () => {
+          await cryptogram.deleteUser({ from: 0x0 }).should.be.rejected
+        })
+      })
+    })//Delete User
+    describe('Setter Functions', async () => {
+      let user, newValue
+      before(async () => {
+        user = await cryptogram.users(otherUser)
+      })
+      describe('setUserName', async () => {
+        before(async () => {
+          newValue = "updated userName"
+          user = await cryptogram.setUserName(newValue, {from: otherUser})
+        })
+        describe('Success', async () => {
+          it('updates the userName value', async () => { 
+            const updatedUser = await cryptogram.users(otherUser)   
+            assert.equal(updatedUser.userName, newValue, 'userName is correct')    
+          })
+          it('emits a UserUpdated event', async () => {
+            const log = user.logs[0]
+            log.event.should.eq('UserUpdated')
+            const event = log.args
+            assert.equal(event.userAccount.toString(), otherUser.toString(), 'User Account is correct')
+            assert.equal(event.valueChanged.toString(), "userName", 'Value Changed is correct')
+            assert.equal(event.newValue.toString(), newValue, 'New Value is correct')
+            event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
+          })
+
+        })
+        describe('Failure', async () => {
+          it('prevents an invalid address from being deleted from to the mapping', async () => {
+            it('prevents an invalid address from executing the function', async () => {
+              await cryptogram.setUserName(newValue, { from: 0x0 }).should.be.rejected
+            })
+          })
+        })
+      })//setUserName
+      /*********************/
+    })//SETTERS BLOCK
+
   })
 
 
