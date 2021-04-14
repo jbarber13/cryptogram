@@ -181,6 +181,7 @@ contract CryptoGram {
     emit UserDeleted(msg.sender, now);
   }
 
+/***************Setter Functions********************/
   function setUserName(string memory _userName) public{
     //require user address to exist
     require(msg.sender != address(0x0));
