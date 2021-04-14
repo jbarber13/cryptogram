@@ -149,6 +149,14 @@ contract CryptoGram {
     //require user address to exist
     require(msg.sender != address(0x0));
 
+    //require all fields to be populated
+    require(bytes(_userName).length > 0);    
+    require(bytes(_status).length > 0);
+    require(bytes(_location).length > 0);
+    require(bytes(_email).length > 0);
+    require(bytes(_occupation).length > 0);
+   
+
     //increment count of users
     userCount++;
 
@@ -226,7 +234,7 @@ contract CryptoGram {
     User memory _user = users[msg.sender];
 
     //update value and put back into mapping
-    _user.phone = _email;
+    _user.email = _email;
     users[msg.sender] = _user;
 
     //emit event
@@ -246,7 +254,6 @@ contract CryptoGram {
 
     //emit event
     emit UserUpdated(msg.sender, "occupation", _occupation, now);
-
   }
   
 
