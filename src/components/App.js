@@ -150,20 +150,15 @@ class App extends Component {
     return (
       <div id="header" className="bg-dark">
         <Navbar account={this.state.account} sharePost={this.state.sharePost}/>
-        <Switch> {/* The Switch decides which component to show based on the current URL.*/}
-          
-          {this.state.loading
-            ? <Route exact path='/' component={Loading}></Route>
-            : this.state.sharePost 
-            ? <SharePost />
-            : <Main
-              images={this.state.images}
-              captureFile={this.captureFile}
-              uploadImage={this.uploadImage}
-              tipImage={this.tipImage}
-            />
-          }
-        </Switch>
+        { this.state.loading
+        ? <Loading />
+        : <Main
+            images={this.state.images}
+            captureFile={this.captureFile}
+            uploadImage={this.uploadImage}
+            tipImage={this.tipImage}
+          />
+      }
       </div>
     );
   }
