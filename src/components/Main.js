@@ -2,6 +2,9 @@ import React, { Component } from 'react';
 import Identicon from 'identicon.js';
 import moment from 'moment'
 
+import { Switch, Route } from 'react-router-dom';
+
+
 class Main extends Component {
 
 

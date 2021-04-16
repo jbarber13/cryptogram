@@ -3,10 +3,12 @@ import Web3 from 'web3';
 //import Identicon from 'identicon.js';
 import './App.css';
 import CryptoGram from '../abis/CryptoGram.json'
+import { Switch, Route, Link } from 'react-router-dom';
+
 import Navbar from './Navbar'
 import Main from './Main';
 import Loading from './Loading'
-//import Main from './Main'
+import SharePost from './SharePost'
 
 const ipfsClient = require('ipfs-http-client')
 const ipfs = ipfsClient({ host: 'ipfs.infura.io', port: 5001, protocol: 'https' })
@@ -16,22 +18,22 @@ class App extends Component {
   //run before render function
   async componentWillMount() {
     await this.loadWeb3()
-    if(this.state.web3Loaded){
+    if (this.state.web3Loaded) {
       await this.loadBlockchainData()
-    }else{
+    } else {
       //this.setState({loading: false})
     }
-    
+
   }
   async loadWeb3() {
     if (window.ethereum) {
       window.web3 = new Web3(window.ethereum)
       await window.ethereum.enable()
-      this.setState({web3Loaded: true})
+      this.setState({ web3Loaded: true })
     }
     else if (window.web3) {
       window.web3 = new Web3(window.web3.currentProvider)
-      this.setState({web3Loaded: true})
+      this.setState({ web3Loaded: true })
     }
     else {
       window.alert('Please install MetaMask in order to access to CryptoGram')
@@ -116,7 +118,7 @@ class App extends Component {
   }
 
   tipImage(id, tipAmount) {
-    
+
     this.state.cryptogram.methods.tipImageOwner(id).send({ from: this.state.account, value: tipAmount }).on('transactionHash', (hash) => {
       console.log("tipImageOwner completed", hash)
     })
@@ -130,7 +132,8 @@ class App extends Component {
       account: '',
       cryptogram: null,
       images: [],
-      loading: true
+      loading: true,
+      sharePost: false
     }
     this.uploadImage = this.uploadImage.bind(this)
     this.tipImage = this.tipImage.bind(this)
@@ -141,13 +144,35 @@ class App extends Component {
    * 
    *  
    */
-  
+
 
   render() {
     return (
       <div id="header" className="bg-dark">
-      <Navbar account={this.state.account} />
-      { this.state.loading
+        <Navbar account={this.state.account} sharePost={this.state.sharePost}/>
+        <Switch> {/* The Switch decides which component to show based on the current URL.*/}
+          
+          {this.state.loading
+            ? <Route exact path='/' component={Loading}></Route>
+            : this.state.sharePost 
+            ? <SharePost />
+            : <Main
+              images={this.state.images}
+              captureFile={this.captureFile}
+              uploadImage={this.uploadImage}
+              tipImage={this.tipImage}
+            />
+          }
+        </Switch>
+      </div>
+    );
+  }
+}
+
+export default App;
+
+/**
+ { this.state.loading
         ? <Loading />
         : <Main
             images={this.state.images}
@@ -156,9 +181,4 @@ class App extends Component {
             tipImage={this.tipImage}
           />
       }
-    </div> 
-    );
-  }
-}
-
-export default App;
+ */

@@ -12,6 +12,8 @@ contract CryptoGram {
   mapping(uint => Image) public images;
   mapping(address => User) public users;
 
+  
+
   struct Image {
     uint id;
     string hash;
@@ -69,7 +71,6 @@ contract CryptoGram {
     uint256 timeStamp
   );
 
-
   event ImageTipped(
     uint id,
     string hash, 
@@ -78,6 +79,8 @@ contract CryptoGram {
     address payable author,
     uint256 timeStamp
   );
+
+  
 
   //Fallback: reverts if Ether is sent to this contract unintentionally 
 	function() external {
@@ -120,12 +123,13 @@ contract CryptoGram {
     //increment image ID
     imageCount++;
 
-    //add image hash to contract
+    //add image hash to mapping
     images[imageCount] = Image(imageCount, _hash, _desc, 0, msg.sender, now);
 
     //emit event
     emit ImageCreated(imageCount, _hash, _desc, 0, msg.sender, now);
   }
+  
 
   function deleteImage(uint _id) public {
     //require valid ID
