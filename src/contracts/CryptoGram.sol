@@ -56,7 +56,7 @@ contract CryptoGram {
     uint256 timeStamp
   );
 
-  event ImageCreated(
+  event ImageAdded(
     uint id,
     string hash, 
     string description, 
@@ -127,7 +127,7 @@ contract CryptoGram {
     images[imageCount] = Image(imageCount, _hash, _desc, 0, msg.sender, now);
 
     //emit event
-    emit ImageCreated(imageCount, _hash, _desc, 0, msg.sender, now);
+    emit ImageAdded(imageCount, _hash, _desc, 0, msg.sender, now);
   }
   
 
