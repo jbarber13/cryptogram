@@ -14,7 +14,7 @@ class Navbar extends Component {
 
   render() {
     return (
-      <nav class="navbar navbar-expand-lg navbar-dark bg-primary bg-primary fixed-top">
+      <nav className="navbar navbar-expand-lg navbar-dark bg-primary bg-primary fixed-top">
         <a
           className="navbar-brand"
           href="https://www.jake-barber.com/#cryptogram"
@@ -24,23 +24,23 @@ class Navbar extends Component {
           <img src={photo} width="30" height="30" className="d-inline-block align-top" alt="" />
           &nbsp;CryptoGram - A Decentralized Social Media Platform  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
         </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
+        <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+          <span className="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse" id="navbarText">
-          <ul class="navbar-nav mr-auto">
-          <li class="nav-item">
-              <a class="nav-link" href="#" >Front Page</a>
+        <div className="collapse navbar-collapse" id="navbarText">
+          <ul className="navbar-nav mr-auto">
+          <li className="nav-item">
+              <a className="nav-link" href="#" >Front Page</a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">New Post</a>
+            <li className="nav-item">
+              <a className="nav-link" href="#">New Post</a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Account</a>
+            <li className="nav-item">
+              <a className="nav-link" href="#">Account</a>
             </li>
             
           </ul>
-          <span class="navbar-text">
+          <span className="navbar-text">
           <a
                 className="nav-link"
                 href={`https://rinkeby.etherscan.io/address/${this.props.account}`}

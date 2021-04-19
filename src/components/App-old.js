@@ -1,19 +1,10 @@
 import React, { Component } from 'react';
-import { connect } from 'react-redux'
-
 import Web3 from 'web3';
 //import Identicon from 'identicon.js';
 import './App.css';
 import CryptoGram from '../abis/CryptoGram.json'
 import { Switch, Route, Link } from 'react-router-dom';
-import {
-  loadWeb3,
-  loadAccount,
-  loadCryptogram,
-  loadImages,
-  loadUsers
-} from '../store/interactions'
-import { cryptogramLoadedSelector, imagesSelector } from '../store/selectors'
+import {loadWeb3}from '../store/interactions'
 
 import Navbar from './Navbar'
 import Main from './Main';
@@ -25,32 +16,70 @@ const ipfs = ipfsClient({ host: 'ipfs.infura.io', port: 5001, protocol: 'https' 
 
 class App extends Component {
 
-  componentWillMount() {
-    this.loadBlockchainData(this.props.dispatch)
-  }
-
-
-  //CHECK NETWORK AND ACCOUNT IN META MASK
-  async loadBlockchainData(dispatch) {
-
-
-
-
-    const web3 = await loadWeb3(dispatch)
-    const networkId = await web3.eth.net.getId()
-    await loadAccount(web3, dispatch)
-
-    const cryptogram = await loadCryptogram(web3, networkId, dispatch)
-    if (!cryptogram) {
-      window.alert('CryptoGram smart contract not detected on the current network. Please select another network with Metamask.')
-      return
+  //run before render function
+  async componentWillMount() {
+    await this.loadWeb3()
+    if (this.state.web3Loaded) {
+      await this.loadBlockchainData()
     } else {
-      //load images and users
-      loadImages(cryptogram, dispatch)
-      loadUsers(cryptogram, dispatch)
+      //this.setState({loading: false})
     }
 
-  }//loadBlockchainData  
+  }
+  async loadWeb3() {
+    if (window.ethereum) {
+      window.web3 = new Web3(window.ethereum)
+      await window.ethereum.enable()
+      this.setState({ web3Loaded: true })
+    }
+    else if (window.web3) {
+      window.web3 = new Web3(window.web3.currentProvider)
+      this.setState({ web3Loaded: true })
+    }
+    else {
+      window.alert('Please install MetaMask in order to access to CryptoGram')
+      window.location.href = "https://metamask.io/"
+    }
+  }
+
+  async loadBlockchainData() {
+    const web3 = window.web3
+    const accounts = await web3.eth.getAccounts()
+    this.setState({ account: accounts[0] }) //set state varriable
+
+    //Load contract
+    const networkID = await web3.eth.net.getId()//get networkID from MetaMask
+    const cryptogramData = CryptoGram.networks[networkID]
+    //check for null contract data
+    if (cryptogramData) {
+      const cryptogram = new web3.eth.Contract(CryptoGram.abi, cryptogramData.address)
+      this.setState({ cryptogram })
+
+      //load images
+      const imageCount = await cryptogram.methods.imageCount().call()
+      this.setState({ imageCount })
+
+      //load images
+      for (var i = 1; i <= imageCount; i++) {
+        const image = await cryptogram.methods.images(i).call()
+        this.setState({
+          images: [...this.state.images, image]
+        })
+      }
+
+      //sort by most tipped first
+      this.setState({
+        images: this.state.images.sort((a, b) => b.tipAmount - a.tipAmount)
+      })
+
+      this.setState({ loading: false })
+    } else {
+      window.alert('CryptoGram contract not deployed to the detected network, please switch your network in MetaMask to Rinkeby and refresh the page')
+    }
+
+
+
+  }//loadBlockchianData
 
   captureFile = event => {
     event.preventDefault()
@@ -121,22 +150,25 @@ class App extends Component {
   render() {
     return (
       <div id="header" className="bg-dark">
-        <Navbar account={this.state.account} sharePost={this.state.sharePost} />
-        <Main
+        <Navbar account={this.state.account} sharePost={this.state.sharePost}/>
+        { this.state.loading
+        ? <Loading />
+        : <Main
             images={this.state.images}
             captureFile={this.captureFile}
             uploadImage={this.uploadImage}
             tipImage={this.tipImage}
           />
+      }
       </div>
     );
   }
 }
 
-//export default App;
+export default App;
 
 /**
-{ this.props.cryptogramLoaded
+ { this.state.loading
         ? <Loading />
         : <Main
             images={this.state.images}
@@ -146,17 +178,3 @@ class App extends Component {
           />
       }
  */
-
-
-function mapStateToProps(state) {
-
-  //console.log("contractsLoaded", contractsLoadedSelector(state))
-  //console.log({images: imagesSelector(state)})
-  return {
-    //account: accountSelector(state)//enable selector for testing via console log
-    cryptogramLoaded: cryptogramLoadedSelector(state),
-    images: imagesSelector(state)
-  }
-}
-
-export default connect(mapStateToProps)(App)
