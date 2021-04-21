@@ -10,8 +10,6 @@ import {
   loadWeb3,
   loadAccount,
   loadCryptogram,
-  loadImages,
-  loadUsers
 } from '../store/interactions'
 import { cryptogramLoadedSelector, imagesSelector } from '../store/selectors'
 
@@ -28,31 +26,20 @@ class App extends Component {
   componentWillMount() {
     this.loadBlockchainData(this.props.dispatch)
   }
-
-
   //CHECK NETWORK AND ACCOUNT IN META MASK
   async loadBlockchainData(dispatch) {
-
-
-
-
     const web3 = await loadWeb3(dispatch)
     const networkId = await web3.eth.net.getId()
     await loadAccount(web3, dispatch)
-
     const cryptogram = await loadCryptogram(web3, networkId, dispatch)
-    if (!cryptogram) {
-      window.alert('CryptoGram smart contract not detected on the current network. Please select another network with Metamask.')
+    if(!cryptogram) {
+      window.alert('Exchange smart contract not detected on the current network. Please select another network with Metamask.')
       return
-    } else {
-      //load images and users
-      loadImages(cryptogram, dispatch)
-      loadUsers(cryptogram, dispatch)
-    }
-
+    }    
   }//loadBlockchainData  
 
-  captureFile = event => {
+  /**
+   captureFile = event => {
     event.preventDefault()
     const file = event.target.files[0]
     const reader = new window.FileReader()
@@ -62,9 +49,12 @@ class App extends Component {
       this.setState({ buffer: Buffer(reader.result) })
       console.log('buffer', this.state.buffer)
     }
-  }
+  } 
+   */
+  
 
-  uploadImage = description => {
+  /**
+   uploadImage = description => {
     console.log("uploading to IPFS...")
     //view image: https://ipfs.infura.io/ipfs/<image hash> 
 
@@ -79,25 +69,29 @@ class App extends Component {
         return
       }
 
-      this.setState({ loading: true })
+      //this.setState({ loading: true })
       this.state.cryptogram.methods.uploadImage(result[0].hash, description).send({ from: this.state.account })
         .on('transactionHash', (hash) => {
-          this.setState({ loading: false })
+          //this.setState({ loading: false })
           console.log("Upload transaction hash: ", hash)
         })
     })
 
   }
+   */
+  
 
-  tipImage(id, tipAmount) {
+  /**
+   tipImage(id, tipAmount) {
 
     this.state.cryptogram.methods.tipImageOwner(id).send({ from: this.state.account, value: tipAmount }).on('transactionHash', (hash) => {
       console.log("tipImageOwner completed", hash)
     })
   }
+   */ 
 
-
-  constructor(props) {
+  /**
+   constructor(props) {
     super(props)
     this.state = {
       web3Loaded: false,
@@ -111,23 +105,24 @@ class App extends Component {
     this.tipImage = this.tipImage.bind(this)
     this.captureFile = this.captureFile.bind(this)
   }
-
-  /**
-   * 
-   *  
    */
 
 
   render() {
+
     return (
       <div id="header" className="bg-dark">
-        <Navbar account={this.state.account} sharePost={this.state.sharePost} />
-        <Main
-            images={this.state.images}
-            captureFile={this.captureFile}
-            uploadImage={this.uploadImage}
-            tipImage={this.tipImage}
-          />
+        <Navbar />
+
+
+        {this.props.cryptogramLoaded ? 
+        <Main /> : <div classname = "content"></div>
+        }
+
+
+
+
+        
       </div>
     );
   }
@@ -150,12 +145,14 @@ class App extends Component {
 
 function mapStateToProps(state) {
 
-  //console.log("contractsLoaded", contractsLoadedSelector(state))
+  //console.log("cryptogramLoaded", cryptogramLoadedSelector(state))
   //console.log({images: imagesSelector(state)})
+
   return {
     //account: accountSelector(state)//enable selector for testing via console log
+
     cryptogramLoaded: cryptogramLoadedSelector(state),
-    images: imagesSelector(state)
+    //images: imagesSelector(state)
   }
 }
 

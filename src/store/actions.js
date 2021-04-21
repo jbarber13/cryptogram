@@ -42,3 +42,21 @@ export function allUsersLoaded(users){
 		users
 	}
 }
+export function fileCaptured(file){
+	return{
+		type: 'FILE_CAPTURED',
+		file		
+	}
+}
+export function imageDescriptionChanged(imageDescription){
+	console.log("actions: ", imageDescription)
+	return{
+		type: 'IMAGE_DESCRIPTION_CHANGED',
+		imageDescription
+	}
+}
+export function uploadingImage(){
+	return{
+		type: 'UPLOADING_IMAGE'
+	}
+}

@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import Identicon from 'identicon.js';
 import photo from '../images/photo.png'
-
+import { connect } from 'react-redux'
+import {accountSelector} from '../store/selectors'
 import { Switch, Route } from 'react-router-dom';
 
 
@@ -66,5 +67,10 @@ class Navbar extends Component {
     );
   }
 }
-
-export default Navbar;
+function mapStateToProps(state) {
+  
+  return {
+    account: accountSelector(state), //display account name in top right of navbar, uses ../store/selectors.js, imported above    
+  }
+}
+export default connect(mapStateToProps)(Navbar)

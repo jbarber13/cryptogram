@@ -9,8 +9,10 @@ export const accountSelector = createSelector(account, a => a) //(account) => {r
 const web3 = state => get(state, 'web3.connection')
 export const web3Selector = createSelector(web3, w => w) 
 
-const cryptogramLoaded = state => get(state, 'cryptogram.loaded', true)
-export const cryptogramLoadedSelector = createSelector(cryptogramLoaded, el => el) 
+const cryptogramLoaded = state => get(state, 'cryptogram.loaded', false)
+export const cryptogramLoadedSelector = createSelector(cryptogramLoaded, cl => cl)
+
+
 
 const cryptogram = state => get(state, 'cryptogram.contract')
 export const cryptogramSelector = createSelector(cryptogram, c => c) 
@@ -27,3 +29,9 @@ export const imagesSelector = createSelector(
         return img
     }
 )
+
+const file = state => get(state, 'cryptogram.file', [])
+export const fileSelector = createSelector(file, f => f)
+
+const imageDescription = state => get(state, 'cryptogram.image.description', {})
+export const imageDescriptionSelector = createSelector(imageDescription, i => i)
