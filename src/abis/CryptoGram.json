@@ -19373,15 +19373,59 @@
           ],
           "name": "UserUpdated",
           "type": "event"
+        },
+        "0xaf0f8ed6ea5dadf339b2e34e90cb6f2241025b73ee623db1f0a447d2cc37f8ee": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "id",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "hash",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "description",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "tipAmount",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "address payable",
+              "name": "author",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "timeStamp",
+              "type": "uint256"
+            }
+          ],
+          "name": "ImageAdded",
+          "type": "event"
         }
       },
       "links": {},
-      "address": "0xa7e1F311dC2B5B0fe7CCB7588431E8Acf4594920",
-      "transactionHash": "0x2bbec0b8fa3292388716d757575eae99b6bb57c4e272ec2f8e0c657ca4acaf38"
+      "address": "0xD4378AAa2A1fc3931fD1E2de804F7c7893Bf2779",
+      "transactionHash": "0x7d4f2bb57be01e896e47b63fb4a0b2ed787849d51755a76322dfeb52fe27b122"
     }
   },
   "schemaVersion": "3.3.3",
-  "updatedAt": "2021-04-19T19:57:39.773Z",
+  "updatedAt": "2021-04-23T18:06:10.834Z",
+  "networkType": "ethereum",
   "devdoc": {
     "methods": {}
   },

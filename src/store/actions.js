@@ -30,10 +30,16 @@ export function imageLoaded(image){
 		image
 	}
 }
-export function allImagesLoaded(images){
+export function loadImage(newImage){
+	return {
+		type: 'IMAGE_LOADED',
+		newImage
+	}
+}
+export function allImagesLoaded(allImages){
 	return {
 		type: 'ALL_IMAGES_LOADED',
-		images
+		allImages
 	}
 }
 export function allUsersLoaded(users){
@@ -49,7 +55,6 @@ export function fileCaptured(file){
 	}
 }
 export function imageDescriptionChanged(imageDescription){
-	console.log("actions: ", imageDescription)
 	return{
 		type: 'IMAGE_DESCRIPTION_CHANGED',
 		imageDescription
@@ -58,5 +63,11 @@ export function imageDescriptionChanged(imageDescription){
 export function uploadingImage(){
 	return{
 		type: 'UPLOADING_IMAGE'
+	}
+}
+export function contractUpdating(message){
+	return{
+		type: 'CONTRACT_UPDATING',
+		message
 	}
 }

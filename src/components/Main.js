@@ -8,6 +8,7 @@ import {
 import { cryptogramSelector } from '../store/selectors';
 import {processFile} from '../store/actions'
 import SharePost from './SharePost'
+import ImageFeed from './ImageFeed'
 
 class Main extends Component {
   componentWillMount() {
@@ -24,10 +25,9 @@ class Main extends Component {
   render() {
 
     return (
-      <div className="container-fluid mt-5 text-light ">
-        <br /><br /><br /><br /><br />
-        MAIN STUFF GOES HERE
-        <SharePost />
+      <div>  
+        <SharePost />      
+        <ImageFeed />
       </div>
     );
   }

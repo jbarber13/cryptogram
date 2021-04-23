@@ -5,7 +5,7 @@ import {
   cryptogramLoaded,
   allImagesLoaded,
   allUsersLoaded,
-  uploadingImage
+  contractUpdating
 } from './actions'
 import CryptoGram from '../abis/CryptoGram.json'
 
@@ -47,12 +47,18 @@ export const loadCryptogram = async (web3, networkId, dispatch) => {
   }
 }
 
+
+//To future me potentially: first time I tried this, it was returning an empty array for seemingly no reason, re-deploying the contract fixed this.....
 export const loadImages = async (cryptogram, dispatch) => {
-  const imageStream = await cryptogram.getPastEvents('ImageAdded', { fromBlock: 0, toBlock: 'latest' })//entire chain history
+  const imageStream = await cryptogram.getPastEvents('ImageAdded', { fromBlock: 0, toBlock: 'latest' })
+  //console.log("ImageStream: ", imageStream.hash)
   const allImages = imageStream.map((event) => event.returnValues)
   //console.log("loadAllImages", allImages)
   dispatch(allImagesLoaded(allImages))
 }
+
+
+
 export const loadUsers = async (cryptogram, dispatch) => {
   const userStream = await cryptogram.getPastEvents('UserAdded', { fromBlock: 0, toBlock: 'latest' })//entire chain history
   const allUsers = userStream.map((event) => event.returnValues)
@@ -60,18 +66,20 @@ export const loadUsers = async (cryptogram, dispatch) => {
   dispatch(allUsersLoaded(allUsers))
 }
 
+
 export const addImageToContract = async (dispatch, account, cryptogram, result, description) => {
-  //dispatch(uploadingImage)
-
   cryptogram.methods.uploadImage(result[0].hash, description).send({ from: account })
-        .on('transactionHash', (hash) => {
-          dispatch(uploadingImage())
-          console.log("Upload transaction hash: ", hash)
-        })
-        .on('error',(error) => {
-          console.error(error)
-          window.alert(`There was an error while uploading an image to the blockchain`)
-        })
+    .on('transactionHash', (hash) => {
+      console.log("Upload transaction hash: ", hash)
+      dispatch(contractUpdating("addImageToContract"))
+    })
 
+}
 
+export const tipImage = async (dispatch, account, cryptogram, id, tipAmount,) => {
+  cryptogram.methods.tipImageOwner(id).send({ from: account, value: tipAmount })
+    .on('transactionHash', (hash) => {
+      console.log("tipImageOwner completed", hash)
+      dispatch(contractUpdating("tipImage"))
+    })
 }

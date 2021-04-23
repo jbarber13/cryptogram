@@ -9,12 +9,12 @@ import Loading from './Loading'
 import { Switch, Route, Link } from 'react-router-dom';
 import { fileCaptured, imageDescriptionChanged } from '../store/actions'
 import {
-  fileSelector, 
+  fileSelector,
   imageDescriptionSelector,
   accountSelector,
-  cryptogramSelector  
+  cryptogramSelector
 } from '../store/selectors'
-import {addImageToContract} from '../store/interactions'
+import { addImageToContract } from '../store/interactions'
 
 const ipfsClient = require('ipfs-http-client')
 const ipfs = ipfsClient({ host: 'ipfs.infura.io', port: 5001, protocol: 'https' })
@@ -48,7 +48,7 @@ const capture = (event, props) => {
 
 
 const showForm = (props) => {
-  const { dispatch, buffer, imageDescription, account, cryptogram } = props
+  const { dispatch, file, imageDescription, account, cryptogram } = props
 
   const captureFile = (event) => {
     console.log('captureFile arrow function')
@@ -59,32 +59,23 @@ const showForm = (props) => {
 
     reader.onloadend = () => {
       //this.setState({ buffer: Buffer(reader.result) })
-      console.log('buffer', Buffer(reader.result))
+      console.log('file', Buffer(reader.result))
       dispatch(fileCaptured(Buffer(reader.result)))
     }
   }
-  const uploadImage = (description) => {
-    
-    //upload to IPFS with image description from state [x]
-    //send hash to blockchain with interaction
-      //dispatch making state
-      //listen for event
-        //dispatch upload complete
-
-
-
+  const uploadImage = () => {
     console.log("uploading to IPFS... ")
     //view image: https://ipfs.infura.io/ipfs/<image hash> 
     //add to IPFS
-     ipfs.add(buffer, (error, result) => {
+    ipfs.add(file, (error, result) => {
       console.log('IPFS Result', result)
       if (error) {
         console.error(error)
         return
-      }     
-      addImageToContract(dispatch, account, cryptogram, result, description) 
-    }) 
-    
+      }
+      addImageToContract(dispatch, account, cryptogram, result, imageDescription)
+    })
+
   }
 
 
@@ -94,8 +85,7 @@ const showForm = (props) => {
       <h3>Share Image</h3>
       <form onSubmit={(event) => {
         event.preventDefault()
-        const description = imageDescription
-        uploadImage(description)
+        uploadImage()
       }} >
         <input className="btn btn-secondary" type='file' accept=".jpg, .jpeg, .png, .bmp, .gif" onChange={captureFile} />
         <div className="form-group mr-sm-2">
@@ -103,12 +93,12 @@ const showForm = (props) => {
           <input
             name="imageDescription"
             type="text"
-            onChange={(e) => dispatch( imageDescriptionChanged( e.target.value ) )}
+            onChange={(e) => dispatch(imageDescriptionChanged(e.target.value))}
             className="form-control"
             placeholder="Image description..."
             required />
         </div>
-        <button type="submit" className="btn btn-secondary btn-block btn-lg">Upload</button>
+        <button type="submit" className="btn btn-primary btn-block btn-lg">Upload</button>
       </form>
 
       <p>&nbsp;</p>
@@ -120,9 +110,21 @@ class SharePost extends Component {
   render() {
 
     return (
-      <div className="component" id="loading">
-        {showForm(this.props)}
+
+
+      <div className="component" id="sharePost">
+
+        <div className="sharePost">
+
+          {showForm(this.props)}
+
+
+        </div>
       </div>
+
+
+
+
 
     );
   }
@@ -130,7 +132,7 @@ class SharePost extends Component {
 
 function mapStateToProps(state) {
   return {
-    buffer: fileSelector(state),
+    file: fileSelector(state),
     imageDescription: imageDescriptionSelector(state),
     account: accountSelector(state),
     cryptogram: cryptogramSelector(state),
