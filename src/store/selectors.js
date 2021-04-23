@@ -20,18 +20,16 @@ export const cryptogramSelector = createSelector(cryptogram, c => c)
 const users = state => get(state, 'cryptogram.users.data', [])
 export const usersSelector = createSelector(users, u => u )
 
-const images = state => get(state, 'cryptogram.images.data', [])//return empty array if it doesn't exist
-export const imagesSelector = createSelector(
-    images,
-    (img) => {
-        //sort by tipAmount
-        img = img.sort((a,b) => a.tipAmount - b.tipAmount)
-        return img
-    }
+
+const allImages = state => get(state, 'cryptogram.allImages.data', [])
+export const allImagesSelector = createSelector(
+    allImages, 
+    ai => ai
+    
 )
 
-const file = state => get(state, 'cryptogram.file', [])
+const file = state => get(state, 'uploadHandler.file', [])
 export const fileSelector = createSelector(file, f => f)
 
-const imageDescription = state => get(state, 'cryptogram.image.description', {})
+const imageDescription = state => get(state, 'uploadHandler.imageDescription', {})
 export const imageDescriptionSelector = createSelector(imageDescription, i => i)
