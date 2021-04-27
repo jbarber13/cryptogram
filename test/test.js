@@ -57,9 +57,9 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser]) => {
           assert.equal(image.tipAmount, '0', 'tip amount is correct')
           assert.equal(image.author, author, 'author is correct')
         })
-        it('emits an ImageCreated event', async () => {
+        it('emits an ImageAdded event', async () => {
           const log = result.logs[0]
-          log.event.should.eq('ImageCreated')
+          log.event.should.eq('ImageAdded')
           const event = log.args
           event.id.toNumber().should.equal(imageCount.toNumber(), 'ID is correct')
           event.hash.toString().should.equal(hash, 'hash is correct')

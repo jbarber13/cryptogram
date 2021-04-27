@@ -25,8 +25,7 @@ class Main extends Component {
   render() {
 
     return (
-      <div>  
-        <SharePost />      
+      <div id="header" className="bg-dark">  
         <ImageFeed />
       </div>
     );
