@@ -12,11 +12,13 @@ module.exports = {
   networks: {
     development: {
       host: "127.0.0.1",
-      port: 7545,
-      network_id: "*" // Match any network id
+      port: 8545,
+      network_id: "*", // Match any network id
+      
     },
+
     rinkeby: {
-      provider: function() {
+      provider: function () {
         return new HDWalletProvider(
           privateKeys.split(','), // Array of account private keys
           `https://rinkeby.infura.io/v3/${process.env.INFURA_API_KEY}`// Url to an Ethereum Node
@@ -27,7 +29,7 @@ module.exports = {
       network_id: 4 //kovan
     },
     kovan: {
-      provider: function() {
+      provider: function () {
         return new HDWalletProvider(
           privateKeys.split(','), // Array of account private keys
           `https://kovan.infura.io/v3/${process.env.INFURA_API_KEY}`// Url to an Ethereum Node

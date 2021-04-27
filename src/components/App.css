@@ -72,6 +72,10 @@ html, body {
   align-items: center;
   text-align: center;
 }
+.ImageFeedImage{
+  margin: auto;
+  width: 50%;
+}
 
 
 .component {
