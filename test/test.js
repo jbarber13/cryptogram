@@ -37,7 +37,7 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser]) => {
     link = "makePost link"
 
     before(async () => {
-      const firstPost = await cryptogram.makePost(hash, desc, title, link, true, { from: author })
+      createPostResult = await cryptogram.makePost(hash, desc, title, link, true, { from: author })
       imageCount = await cryptogram.imageCount()
       postCount = await cryptogram.postCount()
     })
@@ -45,32 +45,64 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser]) => {
     describe('Create Posts', async () => {
       describe('Success', async () => {
         it('creates a post with the required attributes', async () => {
-
-
-
+          assert.equal(postCount, 1)
+          const post = await cryptogram.posts(postCount)
+          assert.equal(post.id.toNumber(), postCount.toNumber(), 'ID is correct')
+          assert.equal(post.imageID.toNumber(), imageCount, 'imageCount is correct')
+          assert.equal(post.title, title, 'title is correct')
+          assert.equal(post.author, author, 'author is correct')
+          assert.equal(post.link, link, 'link is correct')
+          post.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
         })
         //compare result to createPostResult.imageID
         it('image for the post is correct', async () => {
-
+          const event  = await cryptogram.posts(postCount)
+          const postImage = await cryptogram.images(event.imageID)
+          assert.equal(postImage.id.toNumber(), imageCount.toNumber(), 'ID is correct')
+          assert.equal(postImage.hash, hash, 'Hash is correct')
+          assert.equal(postImage.description, desc, 'description is correct')
+          assert.equal(postImage.tipAmount, '0', 'tip amount is correct')
+          assert.equal(postImage.author, author, 'author is correct')
+          event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
+        })
+        it('emits an ImageAdded event', async () => {
+          const log = createPostResult.logs[0]//PostAdded - happens after the image added event, in the logs at [0]
+          log.event.should.eq('ImageAdded')
+          const event = log.args
+          assert.equal(event.id.toNumber(), imageCount.toNumber(), 'ID is correct')
+          assert.equal(event.hash, hash, 'hash is correct')
+          assert.equal(event.description, desc, 'desc is correct')
+          assert.equal(event.tipAmount.toNumber(), 0, 'tipAmount is correct')
+          assert.equal(event.author, author, 'author is correct')
+          event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
         })
         it('emits a PostAdded event', async () => {
-
-
+          const log = createPostResult.logs[1]//PostAdded - happens after the image added event, in the logs at [0]
+          log.event.should.eq('PostAdded')
+          const event = log.args
+          assert.equal(event.id.toNumber(), postCount.toNumber(), 'ID is correct')
+          assert.equal(event.imageID.toNumber(), imageCount, 'imageCount is correct')
+          assert.equal(event.title, title, 'title is correct')
+          assert.equal(event.author, author, 'author is correct')
+          assert.equal(event.link, link, 'link is correct')
+          event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
         })
-
       })
       describe('Failure', async () => {
         it('prevents a post with an invalid image ID from being created', async () => {
-
+          await cryptogram.makePost('', title, link, { from: author }).should.be.rejected
+          await cryptogram.makePost(2154, title, link, { from: author }).should.be.rejected
         })
         it('prevents a post without a title', async () => {
+          await cryptogram.makePost(imageCount, '', link, { from: author }).should.be.rejected
         })
         it('prevents a post without a link', async () => {
+          await cryptogram.makePost(imageCount, title, '', { from: author }).should.be.rejected
         })
         it('prevents a post from being created with an image that has been deleted', async () => {
-
+            //make new post, then delete it, and add the image from that post
         })
-      })
+      })    
     })//create Posts
 
     describe('Delete Posts', async () => {
@@ -254,7 +286,6 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser]) => {
       })
     })//Delete User
 
-
     describe('Comment Functionality', async () => {
 
       before(async () => {
@@ -274,7 +305,6 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser]) => {
 
       })
     })//Comments
-
 
 
 
@@ -442,7 +472,7 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser]) => {
 
 
 
-})
+})//CONTRACT
 
 
 
