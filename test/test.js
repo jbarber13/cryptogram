@@ -153,11 +153,17 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser]) => {
           result = await cryptogram.deleteImage(imageCount, { from: author })
           lastImage = await cryptogram.images(imageCount)
 
+          let deletedImageMapping = await cryptogram.deletedImages(imageCount)
+          assert.equal(deletedImageMapping, true, "image ID is in the deleted images mapping")
+
           assert.equal(lastImage.id.toNumber(), 0, 'ID is correct')
           assert.equal(lastImage.hash, '', 'Hash is correct')
           assert.equal(lastImage.description, '', 'description is correct')
           assert.equal(lastImage.tipAmount.toString(), '0', 'tip amount is correct')
           assert.equal(lastImage.author, (0x0), 'author is correct')
+
+
+
         })
 
         it('emits an ImageDeleted event', async () => {
@@ -190,7 +196,7 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser]) => {
       email = "realEmail@email.email"
       occupation = "lucrative posistion at GNB"
       before(async () => {
-        result = await cryptogram.addUser(userName, status, location, phone, email, occupation, { from: otherUser })        
+        result = await cryptogram.addUser(userName, status, location, phone, email, occupation, { from: otherUser })
         userCount = await cryptogram.userCount()
       })
       describe('Success', async () => {
@@ -294,6 +300,118 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser]) => {
         })
       })
     })//Delete User
+
+    describe('Create Posts', async () => {
+      hash = "CreatePost Image Hash"
+      desc = "CreatePost Image Description"
+      let title = "makePost Title"
+      let link = "makePost link"
+      let createPostResult, postCount
+      before(async () => {
+        result = await cryptogram.uploadImage(hash, desc, { from: author })
+        imageCount = await cryptogram.imageCount()
+        createPostResult = await cryptogram.makePost(result.logs[0].args.id, title, link, { from: author })
+        postCount = await cryptogram.postCount()
+      })
+      describe('Success', async () => {
+        it('creates a post with the required attributes', async () => {
+          assert.equal(postCount, 1)
+          const post = await cryptogram.posts(postCount)
+          assert.equal(post.id.toNumber(), postCount.toNumber(), 'ID is correct')
+          assert.equal(post.imageID.toNumber(), imageCount, 'imageCount is correct')
+          assert.equal(post.title, title, 'title is correct')
+          assert.equal(post.author, author, 'author is correct')
+          assert.equal(post.link, link, 'link is correct')
+          post.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
+          
+
+        })
+        //compare result to createPostResult.imageID
+        it('image for the post is correct', async () => {
+          const event  = await cryptogram.posts(postCount)
+          const postImage = await cryptogram.images(event.imageID)
+          assert.equal(postImage.id.toNumber(), imageCount.toNumber(), 'ID is correct')
+          assert.equal(postImage.hash, hash, 'Hash is correct')
+          assert.equal(postImage.description, desc, 'description is correct')
+          assert.equal(postImage.tipAmount, '0', 'tip amount is correct')
+          assert.equal(postImage.author, author, 'author is correct')
+          event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
+        })
+        it('emits a PostAdded event', async () => {
+
+          const log = createPostResult.logs[0]
+          log.event.should.eq('PostAdded')
+          const event = log.args
+          assert.equal(event.id.toNumber(), postCount.toNumber(), 'ID is correct')
+          assert.equal(event.imageID.toNumber(), imageCount, 'imageCount is correct')
+          assert.equal(event.title, title, 'title is correct')
+          assert.equal(event.author, author, 'author is correct')
+          assert.equal(event.link, link, 'link is correct')
+          event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
+        })
+
+      })
+      describe('Failure', async () => {
+        it('prevents a post with an invalid image ID from being created', async () => {
+          await cryptogram.makePost('', title, link, { from: author }).should.be.rejected
+          await cryptogram.makePost(2154, title, link, { from: author }).should.be.rejected
+        })
+        it('prevents a post without a title', async () => {
+          await cryptogram.makePost(imageCount, '', link, { from: author }).should.be.rejected
+        })
+        it('prevents a post without a link', async () => {
+          await cryptogram.makePost(imageCount, title, '', { from: author }).should.be.rejected
+        })
+        it('prevents a post from being created with an image that has been deleted', async () => {
+          await cryptogram.deleteImage(imageCount, {from: author})
+          await cryptogram.makePost(imageCount, title, link, { from: author }).should.be.rejected
+        })
+      })
+    })//Create Post
+    describe('Delete Posts', async () => {
+
+      before(async () => {
+
+      })
+      describe('Success', async () => {
+        it('deletes user account name from mapping and decrements user count', async () => {
+
+
+        })
+        it('emits a UserDeleted event', async () => {
+
+        })
+
+      })
+      describe('Failure', async () => {
+
+      })
+    })//Delete Post
+    describe('Comment Functionality', async () => {
+
+      before(async () => {
+
+      })
+      describe('Success', async () => {
+        it('deletes user account name from mapping and decrements user count', async () => {
+
+
+        })
+        it('emits a UserDeleted event', async () => {
+
+        })
+
+      })
+      describe('Failure', async () => {
+
+      })
+    })//Comments
+
+
+
+
+
+
     describe('Setter Functions', async () => {
       let user, newValue
       before(async () => {
@@ -302,12 +420,12 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser]) => {
       describe('setUserName', async () => {
         before(async () => {
           newValue = "updated userName"
-          user = await cryptogram.setUserName(newValue, {from: otherUser})
+          user = await cryptogram.setUserName(newValue, { from: otherUser })
         })
         describe('Success', async () => {
-          it('updates the userName value', async () => { 
-            const updatedUser = await cryptogram.users(otherUser)   
-            assert.equal(updatedUser.userName, newValue, 'userName is correct')    
+          it('updates the userName value', async () => {
+            const updatedUser = await cryptogram.users(otherUser)
+            assert.equal(updatedUser.userName, newValue, 'userName is correct')
           })
           it('emits a UserUpdated event', async () => {
             const log = user.logs[0]
@@ -331,12 +449,12 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser]) => {
       describe('setLocation', async () => {
         before(async () => {
           newValue = "updated Location"
-          user = await cryptogram.setLocation(newValue, {from: otherUser})
+          user = await cryptogram.setLocation(newValue, { from: otherUser })
         })
         describe('Success', async () => {
-          it('updates the location value', async () => { 
-            const updatedUser = await cryptogram.users(otherUser)   
-            assert.equal(updatedUser.location, newValue, 'location is correct')    
+          it('updates the location value', async () => {
+            const updatedUser = await cryptogram.users(otherUser)
+            assert.equal(updatedUser.location, newValue, 'location is correct')
           })
           it('emits a UserUpdated event', async () => {
             const log = user.logs[0]
@@ -360,12 +478,12 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser]) => {
       describe('setPhone', async () => {
         before(async () => {
           newValue = "updated Phone"
-          user = await cryptogram.setPhone(newValue, {from: otherUser})
+          user = await cryptogram.setPhone(newValue, { from: otherUser })
         })
         describe('Success', async () => {
-          it('updates the setPhone value', async () => { 
-            const updatedUser = await cryptogram.users(otherUser)   
-            assert.equal(updatedUser.phone, newValue, 'phone is correct')    
+          it('updates the setPhone value', async () => {
+            const updatedUser = await cryptogram.users(otherUser)
+            assert.equal(updatedUser.phone, newValue, 'phone is correct')
           })
           it('emits a UserUpdated event', async () => {
             const log = user.logs[0]
@@ -389,12 +507,12 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser]) => {
       describe('setEmail', async () => {
         before(async () => {
           newValue = "updated Email"
-          user = await cryptogram.setEmail(newValue, {from: otherUser})
+          user = await cryptogram.setEmail(newValue, { from: otherUser })
         })
         describe('Success', async () => {
-          it('updates the email value', async () => { 
-            const updatedUser = await cryptogram.users(otherUser)   
-            assert.equal(updatedUser.email, newValue, 'email is correct')    
+          it('updates the email value', async () => {
+            const updatedUser = await cryptogram.users(otherUser)
+            assert.equal(updatedUser.email, newValue, 'email is correct')
           })
           it('emits a UserUpdated event', async () => {
             const log = user.logs[0]
@@ -418,12 +536,12 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser]) => {
       describe('setOccupation', async () => {
         before(async () => {
           newValue = "updated Occupation"
-          user = await cryptogram.setOccupation(newValue, {from: otherUser})
+          user = await cryptogram.setOccupation(newValue, { from: otherUser })
         })
         describe('Success', async () => {
-          it('updates the email value', async () => { 
-            const updatedUser = await cryptogram.users(otherUser)   
-            assert.equal(updatedUser.occupation, newValue, 'Occupation is correct')    
+          it('updates the email value', async () => {
+            const updatedUser = await cryptogram.users(otherUser)
+            assert.equal(updatedUser.occupation, newValue, 'Occupation is correct')
           })
           it('emits a UserUpdated event', async () => {
             const log = user.logs[0]
