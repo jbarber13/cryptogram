@@ -30,71 +30,92 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser]) => {
   })
 
   describe('Contract Functions', async () => {
-    let result, imageCount, userCount
-    let desc = 'description'
-    let hash = 'A991A5B251866474D04E8A1EC783BF28'
+    let result, imageCount, userCount, postCount, desc, hash, title, link, createPostResult
+    hash = "CreatePost Image Hash"
+    desc = "CreatePost Image Description"
+    title = "makePost Title"
+    link = "makePost link"
+
     before(async () => {
-      result = await cryptogram.uploadImage(hash, desc, { from: author })
+      const firstPost = await cryptogram.makePost(hash, desc, title, link, true, { from: author })
       imageCount = await cryptogram.imageCount()
+      postCount = await cryptogram.postCount()
     })
-    describe('Uploading Image Hashes', async () => {
+
+    describe('Create Posts', async () => {
       describe('Success', async () => {
-        it('adds image hashes to the contract correctly', async () => {
-          assert.equal(imageCount, 1)
-          const event = result.logs[0].args
-          assert.equal(event.id.toNumber(), imageCount.toNumber(), 'ID is correct')
-          assert.equal(event.hash, hash, 'Hash is correct')
-          assert.equal(event.description, desc, 'description is correct')
-          assert.equal(event.tipAmount, '0', 'tip amount is correct')
-          assert.equal(event.author, author, 'author is correct')
-          event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
+        it('creates a post with the required attributes', async () => {
+
+
+
         })
-        it('lists image hashes', async () => {
-          const image = await cryptogram.images(imageCount)
-          assert.equal(image.id.toNumber(), imageCount.toNumber(), 'ID is correct')
-          assert.equal(image.hash, hash, 'Hash is correct')
-          assert.equal(image.description, desc, 'description is correct')
-          assert.equal(image.tipAmount, '0', 'tip amount is correct')
-          assert.equal(image.author, author, 'author is correct')
+        //compare result to createPostResult.imageID
+        it('image for the post is correct', async () => {
+
         })
-        it('emits an ImageAdded event', async () => {
-          const log = result.logs[0]
-          log.event.should.eq('ImageAdded')
-          const event = log.args
-          event.id.toNumber().should.equal(imageCount.toNumber(), 'ID is correct')
-          event.hash.toString().should.equal(hash, 'hash is correct')
-          event.description.toString().should.equal(desc, 'description address is correct')
-          event.tipAmount.toString().should.equal('0', 'tipAmount is correct')
-          assert.equal(event.author, author, 'author is correct')
-          event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
+        it('emits a PostAdded event', async () => {
+
+
         })
+
       })
       describe('Failure', async () => {
-        it('prevents a blank hash from being uploaded', async () => {
-          await cryptogram.uploadImage('', desc, { from: author }).should.be.rejected
+        it('prevents a post with an invalid image ID from being created', async () => {
+
         })
-        it('prevents upload without a description', async () => {
-          await cryptogram.uploadImage(hash, '', { from: author }).should.be.rejected
+        it('prevents a post without a title', async () => {
+        })
+        it('prevents a post without a link', async () => {
+        })
+        it('prevents a post from being created with an image that has been deleted', async () => {
+
         })
       })
-    })
+    })//create Posts
+
+    describe('Delete Posts', async () => {
+
+      before(async () => {
+
+      })
+      describe('Success', async () => {
+        it('deletes user account name from mapping and decrements user count', async () => {
+
+
+        })
+        it('emits a UserDeleted event', async () => {
+
+        })
+
+      })
+      describe('Failure', async () => {
+
+      })
+    })//Delete Post 
 
     describe('Tipping Images', async () => {
       let oldAuthorBalance
 
       before(async () => {
+        imageCount = await cryptogram.imageCount()
         oldAuthorBalance = await web3.eth.getBalance(author)
         oldAuthorBalance = new web3.utils.BN(oldAuthorBalance)
         result = await cryptogram.tipImageOwner(imageCount, { from: tipper, value: web3.utils.toWei('1', 'Ether') })
       })
       describe('Success', async () => {
-        it('tips author', async () => {
-          const event = result.logs[0].args
+        it('tips author and emits event with correct data', async () => {
+          let tipAmount
+          tipAmount = web3.utils.toWei('1', 'Ether')
+          const log = result.logs[0]
+          log.event.should.eq('ImageTipped')
+          const event = log.args
           assert.equal(event.id.toNumber(), imageCount.toNumber(), 'ID is correct')
           assert.equal(event.hash, hash, 'Hash is correct')
           assert.equal(event.description, desc, 'description is correct')
           assert.equal(event.tipAmount, '1000000000000000000', 'tip amount is correct')
           assert.equal(event.author, author, 'author is correct')
+
+
         })
         it('updates author balance', async () => {
           let newAuthorBalance = await web3.eth.getBalance(author)
@@ -109,82 +130,14 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser]) => {
           assert.equal(newAuthorBalance.toString(), expectedBalance.toString())
           assert.notEqual(newAuthorBalance, oldAuthorBalance)
         })
-        it('emits an ImageTipped event', async () => {
-          let tipAmount
-          tipAmount = web3.utils.toWei('1', 'Ether')
-          const log = result.logs[0]
-          log.event.should.eq('ImageTipped')
-          const event = log.args
-          event.id.toNumber().should.equal(imageCount.toNumber(), 'ID is correct')
-          event.hash.toString().should.equal(hash, 'hash is correct')
-          event.description.toString().should.equal(desc, 'description address is correct')
-          event.tipAmount.toString().should.equal(tipAmount.toString(), 'tipAmount is correct')
-          assert.equal(event.author, author, 'author is correct')
-          event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
-        })
+        
       })
       describe('Failure', async () => {
         it('prevents an invalid image ID from being tipped', async () => {
           await cryptogram.tipImageOwner(99999, { from: tipper, value: web3.utils.toWei('1', 'Ether') }).should.be.rejected
         })
       })
-    })//tipping Images
-
-    describe('Deleting Images', async () => {
-      let hash1 = "imageHash1"
-      let hash2 = "imageHash2"
-      let hash3 = "imageHash3"
-      let lastImage
-      let imageCount
-      before(async () => {
-        result = await cryptogram.uploadImage(hash1, desc, { from: author })
-        result = await cryptogram.uploadImage(hash2, desc, { from: author })
-        result = await cryptogram.uploadImage(hash3, desc, { from: author })
-        imageCount = await cryptogram.imageCount()
-
-
-      })
-      describe('Success', async () => {
-        it('deletes an image - sets all values of that struct to 0 or null', async () => {
-          lastImage = await cryptogram.images(imageCount)
-          assert.equal(lastImage.hash, hash3, 'Hash is correct before the delete')
-
-          //DELETE and reset lastImage data - count stays the same, so last image points to deleted image, values should be set to 0 or null
-          result = await cryptogram.deleteImage(imageCount, { from: author })
-          lastImage = await cryptogram.images(imageCount)
-
-          let deletedImageMapping = await cryptogram.deletedImages(imageCount)
-          assert.equal(deletedImageMapping, true, "image ID is in the deleted images mapping")
-
-          assert.equal(lastImage.id.toNumber(), 0, 'ID is correct')
-          assert.equal(lastImage.hash, '', 'Hash is correct')
-          assert.equal(lastImage.description, '', 'description is correct')
-          assert.equal(lastImage.tipAmount.toString(), '0', 'tip amount is correct')
-          assert.equal(lastImage.author, (0x0), 'author is correct')
-
-
-
-        })
-
-        it('emits an ImageDeleted event', async () => {
-          const log = result.logs[0]
-          log.event.should.eq('ImageDeleted')
-          const event = log.args
-          event.id.toNumber().should.equal(imageCount.toNumber(), 'ID is correct')
-          assert.equal(event.author, author, 'author is correct')
-          event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
-        })
-
-      })
-      describe('Failure', async () => {
-        it('images can only be deleted by the account that uploaded them', async () => {
-          await cryptogram.deleteImage(imageCount, { from: otherUser }).should.be.rejected
-        })
-        it('prevents an invalid image ID from being deleted', async () => {
-          await cryptogram.deleteImage(99999, { from: author }).should.be.rejected
-        })
-      })
-    })//deleting Images
+    })//tipping Images    
 
     describe('Adding Users', async () => {
       //addUser(string memory _userName, string memory _status, string memory _location, string memory _phone, string memory _email, string memory _occupation)
@@ -301,92 +254,7 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser]) => {
       })
     })//Delete User
 
-    describe('Create Posts', async () => {
-      hash = "CreatePost Image Hash"
-      desc = "CreatePost Image Description"
-      let title = "makePost Title"
-      let link = "makePost link"
-      let createPostResult, postCount
-      before(async () => {
-        result = await cryptogram.uploadImage(hash, desc, { from: author })
-        imageCount = await cryptogram.imageCount()
-        createPostResult = await cryptogram.makePost(result.logs[0].args.id, title, link, { from: author })
-        postCount = await cryptogram.postCount()
-      })
-      describe('Success', async () => {
-        it('creates a post with the required attributes', async () => {
-          assert.equal(postCount, 1)
-          const post = await cryptogram.posts(postCount)
-          assert.equal(post.id.toNumber(), postCount.toNumber(), 'ID is correct')
-          assert.equal(post.imageID.toNumber(), imageCount, 'imageCount is correct')
-          assert.equal(post.title, title, 'title is correct')
-          assert.equal(post.author, author, 'author is correct')
-          assert.equal(post.link, link, 'link is correct')
-          post.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
-          
 
-        })
-        //compare result to createPostResult.imageID
-        it('image for the post is correct', async () => {
-          const event  = await cryptogram.posts(postCount)
-          const postImage = await cryptogram.images(event.imageID)
-          assert.equal(postImage.id.toNumber(), imageCount.toNumber(), 'ID is correct')
-          assert.equal(postImage.hash, hash, 'Hash is correct')
-          assert.equal(postImage.description, desc, 'description is correct')
-          assert.equal(postImage.tipAmount, '0', 'tip amount is correct')
-          assert.equal(postImage.author, author, 'author is correct')
-          event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
-        })
-        it('emits a PostAdded event', async () => {
-
-          const log = createPostResult.logs[0]
-          log.event.should.eq('PostAdded')
-          const event = log.args
-          assert.equal(event.id.toNumber(), postCount.toNumber(), 'ID is correct')
-          assert.equal(event.imageID.toNumber(), imageCount, 'imageCount is correct')
-          assert.equal(event.title, title, 'title is correct')
-          assert.equal(event.author, author, 'author is correct')
-          assert.equal(event.link, link, 'link is correct')
-          event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
-        })
-
-      })
-      describe('Failure', async () => {
-        it('prevents a post with an invalid image ID from being created', async () => {
-          await cryptogram.makePost('', title, link, { from: author }).should.be.rejected
-          await cryptogram.makePost(2154, title, link, { from: author }).should.be.rejected
-        })
-        it('prevents a post without a title', async () => {
-          await cryptogram.makePost(imageCount, '', link, { from: author }).should.be.rejected
-        })
-        it('prevents a post without a link', async () => {
-          await cryptogram.makePost(imageCount, title, '', { from: author }).should.be.rejected
-        })
-        it('prevents a post from being created with an image that has been deleted', async () => {
-          await cryptogram.deleteImage(imageCount, {from: author})
-          await cryptogram.makePost(imageCount, title, link, { from: author }).should.be.rejected
-        })
-      })
-    })//Create Post
-    describe('Delete Posts', async () => {
-
-      before(async () => {
-
-      })
-      describe('Success', async () => {
-        it('deletes user account name from mapping and decrements user count', async () => {
-
-
-        })
-        it('emits a UserDeleted event', async () => {
-
-        })
-
-      })
-      describe('Failure', async () => {
-
-      })
-    })//Delete Post
     describe('Comment Functionality', async () => {
 
       before(async () => {
@@ -564,10 +432,19 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser]) => {
       })//setOccupation           
     })/**********SETTERS BLOCK***********/
 
-  })
 
 
+
+
+
+
+  })//CONTRACT FUNCTIONS
 
 
 
 })
+
+
+
+
+

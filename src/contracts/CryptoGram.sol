@@ -144,6 +144,7 @@ contract CryptoGram {
     function tipImageOwner(uint256 _id) public payable {
         //require valid ID
         require(_id > 0 && _id <= imageCount);
+        require(!deletedImages[_id]);
 
         //get image
         Image memory _image = images[_id];
@@ -170,7 +171,7 @@ contract CryptoGram {
     }
 
     //internal function
-    function _uploadImage(string memory _hash, string memory _desc) internal {
+    function _uploadImage(string memory _hash, string memory _desc, address payable _author) internal {
         //require a hash to be included
         require(bytes(_hash).length > 0);
 
@@ -187,12 +188,12 @@ contract CryptoGram {
             _hash,
             _desc,
             0,
-            msg.sender,
+            _author,
             now
         );
 
         //emit event
-        emit ImageAdded(imageCount, _hash, _desc, 0, msg.sender, now);
+        emit ImageAdded(imageCount, _hash, _desc, 0, _author, now);
     }
 
     //internal function
@@ -283,7 +284,7 @@ contract CryptoGram {
 
         if(includesImage || !(bytes(_hash).length > 0)){
             //add image hash to mapping
-            _uploadImage(_hash, _desc);
+            _uploadImage(_hash, _desc, msg.sender);
             _imageID = imageCount;
         }
 
