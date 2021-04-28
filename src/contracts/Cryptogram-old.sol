@@ -5,7 +5,7 @@ pragma solidity >=0.5.0;
 
 //use ganache-cli --allowUnlimitedContractSize  --gasLimit 0xFFFFFFFFFFFF
 
-contract CryptoGram {
+contract CryptoGramOld {
     string public name =
         "CryptoGram - decentralized image sharing social media platform";
     string public contractDescription =
@@ -91,7 +91,7 @@ contract CryptoGram {
         uint256 timeStamp
     );
 
-    event ImageDeleted(uint256 id, uint256 timeStamp);
+    event ImageDeleted(uint256 id, address author, uint256 timeStamp);
 
     event ImageTipped(
         uint256 id,
@@ -111,7 +111,7 @@ contract CryptoGram {
         uint256 timeStamp
     );
 
-    event PostDeleted(uint256 id, address author, uint256 timeStamp);
+    event PostDeleted(uint256 id, uint256 timeStamp);
 
     event CommentAdded(
         uint256 id,
@@ -169,15 +169,16 @@ contract CryptoGram {
         );
     }
 
-    //internal function
-    function _uploadImage(string memory _hash, string memory _desc) internal {
+    function uploadImage(string memory _hash, string memory _desc) public {
         //require a hash to be included
         require(bytes(_hash).length > 0);
 
         //require a description to be included
         require(bytes(_desc).length > 0);
 
-        
+        //require uploader address to exist
+        require(msg.sender != address(0x0));
+
         //increment image ID
         imageCount++;
 
@@ -195,16 +196,23 @@ contract CryptoGram {
         emit ImageAdded(imageCount, _hash, _desc, 0, msg.sender, now);
     }
 
-    //internal function
-    function _deleteImage(uint256 _id) internal {
-        //require valid ID and image has not already been deleted
+    function deleteImage(uint256 _id) public {
+        //require valid ID
         require(_id > 0 && _id <= imageCount);
-        require(!deletedImages[_id]);
+
+        //get image
+        Image memory _image = images[_id];
+
+        //get image author
+        address _author = _image.author;
+
+        //check if image author matches message sender - only delete your own images
+        require(msg.sender == _author);
 
         //delete image from mapping and emit event
         delete (images[_id]);
         deletedImages[_id] = true;
-        emit ImageDeleted(_id, now);
+        emit ImageDeleted(_id, _author, now);
     }
 
     function addUser(
@@ -268,24 +276,17 @@ contract CryptoGram {
     }
 
     function makePost(
-        string memory _hash,
-        string memory _desc,
+        uint256 _imageID,
         string memory _title,
-        string memory _link,
-        bool includesImage
+        string memory _link
     ) public {
         require(bytes(_title).length > 0);
         require(bytes(_link).length > 0);        
         require(msg.sender != address(0x0));
 
-        //default imageID if there is no inluded
-        uint256 _imageID = 0;
-
-        if(includesImage || !(bytes(_hash).length > 0)){
-            //add image hash to mapping
-            _uploadImage(_hash, _desc);
-            _imageID = imageCount;
-        }
+        //require valid image ID
+        require(_imageID > 0 && _imageID <= imageCount);
+        require(!deletedImages[_imageID]);
 
         postCount++;
 
@@ -298,7 +299,7 @@ contract CryptoGram {
             now
         );
 
-        emit PostAdded(postCount, imageCount, _title, msg.sender, _link, now);
+        emit PostAdded(postCount, _imageID, _title, msg.sender, _link, now);
     }
 
     function deletePost(uint256 _postID) public {
@@ -307,20 +308,14 @@ contract CryptoGram {
 
         Post memory _post = posts[_postID];
         address _author = _post.author;
-         //check if image author matches message sender - only delete your own comments
+        //check if image author matches message sender - only delete your own comments
         require(msg.sender == _author);
-
-        //get imageID to delete
-        uint256 _imageID = _post.imageID;
-        if(_imageID != 0){
-            _deleteImage(_imageID);
-        }       
 
         delete (posts[_postID]);
         deletedPosts[_postID] = true;
 
         //emit event
-        emit PostDeleted(_postID, _author, now);
+        emit PostDeleted(_postID, now);
     }
 
     function comment(uint256 _postID, string memory _comment) public {
@@ -377,17 +372,6 @@ contract CryptoGram {
         //emit event
         emit CommentDeleted(_commentID, _author, now);
     }
-
-
-
-
-
-
-
-
-
-
-
 
     /***************Setter Functions********************/
     function setUserName(string memory _userName) public {
