@@ -306,6 +306,9 @@ contract CryptoGram {
         //require user address to exist
         require(msg.sender != address(0x0));
 
+        //require valid post ID
+        require(_postID > 0 && _postID <= postCount);
+
         Post memory _post = posts[_postID];
         address _author = _post.author;
          //check if image author matches message sender - only delete your own comments
