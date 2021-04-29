@@ -7,7 +7,7 @@ require('chai')
   .use(require('chai-as-promised'))
   .should()
 
-contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser]) => {
+contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser, commentor]) => {
   let cryptogram
 
   before(async () => {
@@ -43,7 +43,7 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser]) => {
     })
 
     describe('Create Posts', async () => {
-      describe('Success', async () => {
+      describe('Success - with Image', async () => {
         it('creates a post with the required attributes', async () => {
           assert.equal(postCount, 1)
           const post = await cryptogram.posts(postCount)
@@ -52,6 +52,7 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser]) => {
           assert.equal(post.title, title, 'title is correct')
           assert.equal(post.author, author, 'author is correct')
           assert.equal(post.link, link, 'link is correct')
+          assert.equal(post.status, desc, 'status is correct')
           post.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
         })
         //compare result to createPostResult.imageID
@@ -85,9 +86,46 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser]) => {
           assert.equal(event.title, title, 'title is correct')
           assert.equal(event.author, author, 'author is correct')
           assert.equal(event.link, link, 'link is correct')
+          assert.equal(event.status, desc, 'status is correct')
           event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
         })
-      })
+      })//with image
+      describe('Success - without Image', async () => {
+        let withoutImageResult
+        hash = ""
+        desc = "makePostWithoutImage Description"
+        title = "makePostWithoutImage Title"
+        link = "makePostWithoutImage link"
+        before(async () => {
+          withoutImageResult = await cryptogram.makePost(hash, desc, title, link, false, { from: author })
+          imageCount = await cryptogram.imageCount()
+          postCount = await cryptogram.postCount()
+        })
+        it('creates a post with the required attributes', async () => {
+          const post = await cryptogram.posts(postCount)
+          assert.equal(post.id.toNumber(), postCount.toNumber(), 'ID is correct')
+          assert.equal(post.imageID.toNumber(), 0, 'imageCount is correct')
+          assert.equal(post.title, title, 'title is correct')
+          assert.equal(post.author, author, 'author is correct')
+          assert.equal(post.link, link, 'link is correct')
+          assert.equal(post.status, desc, 'status is correct')
+          post.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
+        })
+        
+        it('emits a PostAdded event', async () => {
+          const log = withoutImageResult.logs[0]
+          assert.equal(log[1], undefined, 'Does NOT produce an event for uploading image')
+          log.event.should.eq('PostAdded')
+          const event = log.args
+          assert.equal(event.id.toNumber(), postCount.toNumber(), 'ID is correct')
+          assert.equal(event.imageID.toNumber(), imageCount, 'imageCount is correct')
+          assert.equal(event.title, title, 'title is correct')
+          assert.equal(event.author, author, 'author is correct')
+          assert.equal(event.link, link, 'link is correct')
+          assert.equal(event.status, desc, 'status is correct')
+          event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
+        })
+      })//without image
       describe('Failure', async () => {
         it('prevents a post with an invalid image ID from being created', async () => {
           await cryptogram.makePost('', title, link, { from: author }).should.be.rejected
@@ -102,8 +140,6 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser]) => {
 
       })
     })//create Posts
-
-
 
     describe('Tipping Images', async () => {
       let oldAuthorBalance
@@ -126,6 +162,7 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser]) => {
           assert.equal(event.description, desc, 'description is correct')
           assert.equal(event.tipAmount, '1000000000000000000', 'tip amount is correct')
           assert.equal(event.author, author, 'author is correct')
+          event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
 
 
         })
@@ -267,22 +304,171 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser]) => {
     })//Delete User
 
     describe('Comment Functionality', async () => {
-
+      hash = "CommentPost Image Hash"
+      desc = "CommentPost Image Description"
+      title = "CommentPost Title"
+      link = "CommentPost link"
+      let tipAmount
+      tipAmount = web3.utils.toWei('1', 'Ether')
+      tipAmount = new web3.utils.BN(tipAmount)
+      let comment = "Making a comment"
+      let comment2 = "Making a second comment"
+      let comment3 = "Making a third comment"
+      let comment4 = "Making a fourth comment"
+      let firstCommentResult,
+        secondCommentResult,
+        thirdCommentResult,
+        fourthCommentResult,
+        tipCommentResult,
+        deleteCommentResult,
+        commentCount,
+        firstPostID
       before(async () => {
+        makePostResult = await cryptogram.makePost(hash, desc, title, link, true, { from: author })
+        imageCount = await cryptogram.imageCount()
+        postCount = await cryptogram.postCount()
+        firstPostID = postCount.toNumber()
 
+        //2 comments on first post
+        firstCommentResult = await cryptogram.comment(postCount, comment, { from: commentor })
+        secondCommentResult = await cryptogram.comment(postCount, comment2, { from: commentor })
+
+        //new post
+        makePostResult = await cryptogram.makePost(hash, desc, title, link, true, { from: author })
+        imageCount = await cryptogram.imageCount()
+        postCount = await cryptogram.postCount()
+
+        //2 comments on second post
+        thirdCommentResult = await cryptogram.comment(postCount, comment3, { from: commentor })
+        fourthCommentResult = await cryptogram.comment(postCount, comment4, { from: commentor })
+
+        //get comment count
+        commentCount = await cryptogram.commentCount()
       })
       describe('Success', async () => {
-        it('deletes user account name from mapping and decrements user count', async () => {
+        it('creates comments for the correct post', async () => {
+          let c
+          var i
+          for (i = 1; i <= commentCount; i++) {
+            c = await cryptogram.comments(i)
+            if (c.id == 1) {
+              assert.equal(c.comment, comment, 'comment 1 is correct')
+              assert.equal(c.postID.toNumber(), firstPostID, 'Comment 1 postID is correct')
+            } else if (c.id == 2) {
+              assert.equal(c.comment, comment2, 'comment 2 is correct')
+              assert.equal(c.postID.toNumber(), firstPostID, 'Comment 2 postID is correct')
+            }
+            else if (c.id == 3) {
+              assert.equal(c.comment, comment3, 'comment 3 is correct')
+              assert.equal(c.postID.toNumber(), postCount, 'Comment 3 postID is correct')
+            }
+            else if (c.id == 4) {
+              assert.equal(c.comment, comment4, 'comment 4 is correct')
+              assert.equal(c.postID.toNumber(), postCount, 'Comment 4 postID is correct')
+            }
+          }
+          it('emits CommentAdded event correctly', async () => {
+            let log, event
+            log = firstCommentResult.logs[0]
+            log.event.should.eq('CommentAdded')
+            event = log.args
+            assert.equal(event.id.toNumber(), 1, 'ID is correct')
+            assert.equal(event.postID.toNumber(), firstPostID, 'Post ID is correct')
+            assert.equal(event.comment, comment, 'comment is correct')
+            assert.equal(event.author, commentor, 'author is correct')
+            event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
+
+            log = secondCommentResult.logs[0]
+            log.event.should.eq('CommentAdded')
+            event = log.args
+            assert.equal(event.id.toNumber(), 2, 'ID is correct')
+            assert.equal(event.postID.toNumber(), firstPostID, 'Post ID is correct')
+            assert.equal(event.comment, comment2, 'comment is correct')
+            assert.equal(event.author, commentor, 'author is correct')
+            event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
+
+            log = thirdCommentResult.logs[0]
+            log.event.should.eq('CommentAdded')
+            event = log.args
+            assert.equal(event.id.toNumber(), 3, 'ID is correct')
+            assert.equal(event.postID.toNumber(), firstPostID, 'Post ID is correct')
+            assert.equal(event.comment, comment3, 'comment is correct')
+            assert.equal(event.author, commentor, 'author is correct')
+            event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
+
+            log = fourthCommentResult.logs[0]
+            log.event.should.eq('CommentAdded')
+            event = log.args
+            assert.equal(event.id.toNumber(), 4, 'ID is correct')
+            assert.equal(event.postID.toNumber(), firstPostID, 'Post ID is correct')
+            assert.equal(event.comment, comment4, 'comment is correct')
+            assert.equal(event.author, commentor, 'author is correct')
+            event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
+          })//CommentAdded emit
+        })//create comment
+        it('tipping comments updates balances correctly', async () => {
+          let oldAuthorBalance
+
+          commentCount = await cryptogram.commentCount()
+          oldAuthorBalance = await web3.eth.getBalance(commentor)
+          oldAuthorBalance = new web3.utils.BN(oldAuthorBalance)
+          tipCommentResult = await cryptogram.tipComment(commentCount, { from: tipper, value: tipAmount })
+
+          let newAuthorBalance = await web3.eth.getBalance(commentor)
+          newAuthorBalance = new web3.utils.BN(newAuthorBalance)
+
+          const expectedBalance = oldAuthorBalance.add(tipAmount)
+
+          assert.equal(newAuthorBalance.toString(), expectedBalance.toString(), 'balances are correct')
+          assert.notEqual(newAuthorBalance, oldAuthorBalance, 'balances are not incorrect')
+          let tippedComment = await cryptogram.comments(commentCount)
+          assert.equal(tippedComment.tipAmount, '1000000000000000000', 'updated tipAmount value is correct')
+
+          it('emits CommentTipped event', async () => {
+            const log = tipCommentResult.logs[0]
+            log.event.should.eq('CommentTipped')
+            const event = log.args
+            assert.equal(event.id.toNumber(), commentCount.toNumber(), 'ID is correct')
+            assert.equal(event.postID.toNumber(), postCount.toNumber(), 'post ID is correct')
+            assert.equal(event.comment, comment4, 'Comment is correct')
+            assert.equal(event.author, commentor, 'author is correct')
+            assert.equal(event.tipAmount, '1000000000000000000', 'tip amount is correct')
+            event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
+          })//tip comment emit
+        })//tip comment
+        it('deletes comments correctly', async () => {
+          deleteCommentResult = await cryptogram.deleteComment(commentCount, { from: commentor })
+          let c = await cryptogram.comments(commentCount)
+          assert.equal(c.id.toNumber(), 0, 'ID is correct after the delete')
+          assert.equal(c.postID.toNumber(), 0, 'postID is correct after the delete')
+          assert.equal(c.comment.toString(), '', 'comment is correct after the delete')
+          assert.equal(c.author, (0x0), 'Author is correct after the delete')
+          assert.equal(c.tipAmount.toNumber(), 0, 'tipAmount is correct after the delete')
+          assert.equal(c.timeStamp.toNumber(), 0, 'timeStamp is correct after the delete')
+          c = await cryptogram.deletedComments(commentCount)
+          assert.equal(c, true, 'commentID is in the deleted comments mapping')
 
 
-        })
-        it('emits a UserDeleted event', async () => {
-
-        })
-
+          it('emits CommentDeleted event', async () => {
+            const log = deleteCommentResult.logs[0]
+            log.event.should.eq('CommentDeleted')
+            const event = logs.args
+            assert.equal(event.id.toNumber(), commentCount, 'ID is correct')
+            assert.equal(event.author, commentor, 'Author is correct')
+            event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
+          })//delete emit
+        })//delete
       })
       describe('Failure', async () => {
-
+        it('prevents an empty comment from being posted', async () => {
+          await cryptogram.comment('', { from: deployer }).should.be.rejected
+        })
+        it('prevents a comment being made on a post with an invalid ID', async () => {
+          await cryptogram.comment(9999, { from: deployer }).should.be.rejected
+        })
+        it('prevents a a comment with an invalid ID from being tipped', async () => {
+          await cryptogram.tipComment(9999, { from: tipper, value: 1 }).should.be.rejected
+        })
       })
     })//Comments
 
@@ -358,14 +544,14 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser]) => {
         })
         it('prevents a post with an invalid ID from being deleted', async () => {
           await cryptogram.deletePost(9999, { from: author }).should.be.rejected
-          await cryptogram.deletePost(2, { from: author }).should.be.rejected
+          //await cryptogram.deletePost(2, { from: author }).should.be.rejected
         })
 
       })
     })//Delete Post 
 
 
-    describe('Setter Functions', async () => {
+    describe('Setter Functions for user attributes', async () => {
       let user, newValue
       before(async () => {
         user = await cryptogram.users(otherUser)
