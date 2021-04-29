@@ -31,6 +31,7 @@ contract CryptoGram {
         string title;
         address author;
         string link;
+        string status;
         uint256 timeStamp;
     }
 
@@ -108,6 +109,7 @@ contract CryptoGram {
         string title,
         address author,
         string link,
+        string status,
         uint256 timeStamp
     );
 
@@ -296,10 +298,11 @@ contract CryptoGram {
             _title,
             msg.sender,
             _link,
+            _desc,
             now
         );
 
-        emit PostAdded(postCount, imageCount, _title, msg.sender, _link, now);
+        emit PostAdded(postCount, imageCount, _title, msg.sender, _link, _desc, now);
     }
 
     function deletePost(uint256 _postID) public {
@@ -329,7 +332,10 @@ contract CryptoGram {
     }
 
     function comment(uint256 _postID, string memory _comment) public {
-        //require
+        require(bytes(_comment).length > 0);
+        require(_postID > 0 && _postID <= postCount);
+        require(!deletedPosts[_postID]);
+        
 
         commentCount++;
         comments[commentCount] = Comment(
@@ -346,7 +352,11 @@ contract CryptoGram {
     }
 
     function tipComment(uint256 _commentID) public payable {
-        //get image
+         //require valid ID
+        require(_commentID > 0 && _commentID <= commentCount);
+        require(!deletedComments[_commentID]);
+        
+        //get comment
         Comment memory _comment = comments[_commentID];
 
         //get comment data
@@ -368,6 +378,7 @@ contract CryptoGram {
     function deleteComment(uint256 _commentID) public {
         //require valid ID
         require(_commentID > 0 && _commentID <= commentCount);
+        require(!deletedComments[_commentID]);
 
         Comment memory _comment = comments[_commentID];
 
