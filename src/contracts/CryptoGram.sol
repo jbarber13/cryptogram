@@ -308,6 +308,7 @@ contract CryptoGram {
 
         //require valid post ID
         require(_postID > 0 && _postID <= postCount);
+        require(!deletedPosts[_postID]);
 
         Post memory _post = posts[_postID];
         address _author = _post.author;

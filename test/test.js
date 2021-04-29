@@ -358,8 +358,6 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser]) => {
         })
         it('prevents a post with an invalid ID from being deleted', async () => {
           await cryptogram.deletePost(9999, { from: author }).should.be.rejected
-        })        
-        it('prevents an image from being deleted if the image has already been deleted', async () => {
           await cryptogram.deletePost(2, { from: author }).should.be.rejected
         })
 
