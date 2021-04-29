@@ -30,14 +30,14 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser]) => {
   })
 
   describe('Contract Functions', async () => {
-    let result, imageCount, userCount, postCount, desc, hash, title, link, createPostResult
-    hash = "CreatePost Image Hash"
-    desc = "CreatePost Image Description"
+    let result, imageCount, userCount, postCount, desc, hash, title, link, makePostResult
+    hash = "makePost Image Hash"
+    desc = "makePost Image Description"
     title = "makePost Title"
     link = "makePost link"
 
     before(async () => {
-      createPostResult = await cryptogram.makePost(hash, desc, title, link, true, { from: author })
+      makePostResult = await cryptogram.makePost(hash, desc, title, link, true, { from: author })
       imageCount = await cryptogram.imageCount()
       postCount = await cryptogram.postCount()
     })
@@ -56,7 +56,7 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser]) => {
         })
         //compare result to createPostResult.imageID
         it('image for the post is correct', async () => {
-          const event  = await cryptogram.posts(postCount)
+          const event = await cryptogram.posts(postCount)
           const postImage = await cryptogram.images(event.imageID)
           assert.equal(postImage.id.toNumber(), imageCount.toNumber(), 'ID is correct')
           assert.equal(postImage.hash, hash, 'Hash is correct')
@@ -66,7 +66,7 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser]) => {
           event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
         })
         it('emits an ImageAdded event', async () => {
-          const log = createPostResult.logs[0]//PostAdded - happens after the image added event, in the logs at [0]
+          const log = makePostResult.logs[0]//PostAdded - happens after the image added event, in the logs at [0]
           log.event.should.eq('ImageAdded')
           const event = log.args
           assert.equal(event.id.toNumber(), imageCount.toNumber(), 'ID is correct')
@@ -77,7 +77,7 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser]) => {
           event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
         })
         it('emits a PostAdded event', async () => {
-          const log = createPostResult.logs[1]//PostAdded - happens after the image added event, in the logs at [0]
+          const log = makePostResult.logs[1]//PostAdded - happens after the image added event, in the logs at [0]
           log.event.should.eq('PostAdded')
           const event = log.args
           assert.equal(event.id.toNumber(), postCount.toNumber(), 'ID is correct')
@@ -99,31 +99,11 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser]) => {
         it('prevents a post without a link', async () => {
           await cryptogram.makePost(imageCount, title, '', { from: author }).should.be.rejected
         })
-        it('prevents a post from being created with an image that has been deleted', async () => {
-            //make new post, then delete it, and add the image from that post
-        })
-      })    
+
+      })
     })//create Posts
 
-    describe('Delete Posts', async () => {
 
-      before(async () => {
-
-      })
-      describe('Success', async () => {
-        it('deletes user account name from mapping and decrements user count', async () => {
-
-
-        })
-        it('emits a UserDeleted event', async () => {
-
-        })
-
-      })
-      describe('Failure', async () => {
-
-      })
-    })//Delete Post 
 
     describe('Tipping Images', async () => {
       let oldAuthorBalance
@@ -162,7 +142,7 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser]) => {
           assert.equal(newAuthorBalance.toString(), expectedBalance.toString())
           assert.notEqual(newAuthorBalance, oldAuthorBalance)
         })
-        
+
       })
       describe('Failure', async () => {
         it('prevents an invalid image ID from being tipped', async () => {
@@ -307,7 +287,84 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser]) => {
     })//Comments
 
 
+    describe('Delete Posts', async () => {
+      hash = "deletePost Image Hash"
+      desc = "deletePost Image Description"
+      title = "deletePost Title"
+      link = "deletePost Link"
+      let lastPost, lastImage, imageIDholder, deletePostResult
+      before(async () => {
+        //make a new post with a new image to delete
+        createPostResult = await cryptogram.makePost(hash, desc, title, link, true, { from: author })
+        imageCount = await cryptogram.imageCount()
+        postCount = await cryptogram.postCount()
+        lastPost = await cryptogram.posts(postCount)
+        imageIDholder = lastPost.imageID.toNumber()
+        lastImage = await cryptogram.images(imageIDholder)
 
+        //delete image and update control vars
+        deletePostResult = await cryptogram.deletePost(postCount, { from: author })
+        lastPost = await cryptogram.posts(postCount)
+        lastImage = await cryptogram.images(imageIDholder)
+
+      })
+      describe('Success', async () => {
+        it('deletes post from mapping', async () => {
+          assert.equal(lastPost.id.toNumber(), 0, 'Title is correct after the delete')
+          assert.equal(lastPost.imageID.toNumber(), 0, 'Link is correct after the delete')
+          assert.equal(lastPost.title, '', 'Title is correct after the delete')
+          assert.equal(lastPost.author, (0x0), 'Author is correct after the delete')
+          assert.equal(lastPost.link, '', 'Link is correct after the delete')
+        })
+        it('sets postID in deletedPosts mapping to true', async () => {
+          const deletedPostMapping = await cryptogram.deletedPosts(postCount)
+          assert.equal(deletedPostMapping, true, 'deletedPostMapping is correct after the delete')
+        })
+        it('deletes image from mapping', async () => {
+          assert.equal(lastImage.id.toNumber(), 0, 'ID is correct')
+          assert.equal(lastImage.hash, '', 'Hash is correct')
+          assert.equal(lastImage.description, '', 'description is correct')
+          assert.equal(lastImage.tipAmount.toString(), '0', 'tip amount is correct')
+          assert.equal(lastImage.author, (0x0), 'author is correct')
+
+        })
+        it('sets imageID in deletedImages mapping to true', async () => {
+          const deletedImagesMapping = await cryptogram.deletedImages(imageIDholder)
+          assert.equal(deletedImagesMapping, true, 'deletedPostMapping is correct after the delete')
+        })
+        it('emits a ImageDeleted event', async () => {
+          const log = deletePostResult.logs[0]//PostAdded - happens after the image added event, in the logs at [0]
+          log.event.should.eq('ImageDeleted')
+          const event = log.args
+          assert.equal(event.id.toNumber(), imageCount.toNumber(), 'ID is correct')
+          event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
+        })
+        it('emits a PostDeleted event', async () => {
+          const log = deletePostResult.logs[1]//PostAdded - happens after the image added event, in the logs at [0]
+          log.event.should.eq('PostDeleted')
+          const event = log.args
+          assert.equal(event.id.toNumber(), postCount.toNumber(), 'ID is correct')
+          assert.equal(event.author, author, 'author is correct')
+          event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
+        })
+
+      })
+      describe('Failure', async () => {
+        it('prevents a post from being deleted by a user that did not make the post', async () => {
+          await cryptogram.deletePost(1, { from: deployer }).should.be.rejected
+        })
+        it('prevents a post from being deleted by blank address', async () => {
+          await cryptogram.deletePost(1, { from: 0x0 }).should.be.rejected
+        })
+        it('prevents a post with an invalid ID from being deleted', async () => {
+          await cryptogram.deletePost(9999, { from: author }).should.be.rejected
+        })        
+        it('prevents an image from being deleted if the image has already been deleted', async () => {
+          await cryptogram.deletePost(2, { from: author }).should.be.rejected
+        })
+
+      })
+    })//Delete Post 
 
 
     describe('Setter Functions', async () => {
