@@ -5,6 +5,7 @@
 require('dotenv').config();
 require('babel-register');
 require('babel-polyfill');
+
 const HDWalletProvider = require('truffle-hdwallet-provider-privkey');
 const privateKeys = process.env.PRIVATE_KEYS || "not found"
 
@@ -12,7 +13,7 @@ module.exports = {
   networks: {
     development: {
       host: "127.0.0.1",
-      port: 8545,
+      port: 7545,
       network_id: "*", // Match any network id
       
     },
@@ -26,7 +27,7 @@ module.exports = {
       },
       gas: 5000000,
       gasPrice: 25000000000,
-      network_id: 4 //kovan
+      network_id: 4 //rinkeby
     },
     kovan: {
       provider: function () {
@@ -49,5 +50,6 @@ module.exports = {
         runs: 200
       }
     }
-  }
+  },
+  plugins: ["truffle-contract-size"]
 }

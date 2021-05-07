@@ -30,16 +30,11 @@ export function imageLoaded(image){
 		image
 	}
 }
-export function loadImage(newImage){
+
+export function allPostsLoaded(allPosts){
 	return {
-		type: 'IMAGE_LOADED',
-		newImage
-	}
-}
-export function allImagesLoaded(allImages){
-	return {
-		type: 'ALL_IMAGES_LOADED',
-		allImages
+		type: 'ALL_POSTS_LOADED',
+		allPosts
 	}
 }
 export function allUsersLoaded(users){

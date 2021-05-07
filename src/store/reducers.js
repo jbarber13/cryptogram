@@ -37,8 +37,8 @@ function cryptogram(state = {}, action) {
   switch (action.type) {
     case 'CRYPTOGRAM_LOADED':
       return { ...state, loaded: true, contract: action.contract }
-    case 'ALL_IMAGES_LOADED':
-      return { ...state, allImages: {loaded: true, data: action.allImages} }
+    case 'ALL_POSTS_LOADED':
+      return { ...state, allPosts: {loaded: true, data: action.allPosts} }
     case 'IMAGE_LOADED':
       return { ...state, allImages: { ...state.allImages, data: action.newImage } }
     case 'CONTRACT_UPDATING': 
