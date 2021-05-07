@@ -409,8 +409,10 @@ contract CryptoGram {
         //get user
         User memory _user = users[msg.sender];
 
+        //user can only modify their own account
         require(_user.userAccount == msg.sender);
 
+        //compare type to appropriate user attribute
         if (keccak256(bytes(_type)) == keccak256(bytes("userName"))) {
             //update value and put back into mapping
             _user.userName = _value;
