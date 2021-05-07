@@ -14,7 +14,7 @@ import {
   accountSelector,
   cryptogramSelector
 } from '../store/selectors'
-import { addImageToContract } from '../store/interactions'
+import { makePost } from '../store/interactions'
 
 const ipfsClient = require('ipfs-http-client')
 const ipfs = ipfsClient({ host: 'ipfs.infura.io', port: 5001, protocol: 'https' })
@@ -73,7 +73,10 @@ const showForm = (props) => {
         console.error(error)
         return
       }
-      addImageToContract(dispatch, account, cryptogram, result, imageDescription)
+      if(result[0].hash != undefined){
+        console.log("the thing is not there")
+      }
+      //makePost(dispatch, account, cryptogram, result, imageDescription)
     })
 
   }

@@ -31,6 +31,7 @@ contract CryptoGramOld {
         string title;
         address author;
         string link;
+        string status;
         uint256 timeStamp;
     }
 
@@ -91,7 +92,7 @@ contract CryptoGramOld {
         uint256 timeStamp
     );
 
-    event ImageDeleted(uint256 id, address author, uint256 timeStamp);
+    event ImageDeleted(uint256 id, uint256 timeStamp);
 
     event ImageTipped(
         uint256 id,
@@ -108,10 +109,11 @@ contract CryptoGramOld {
         string title,
         address author,
         string link,
+        string status,
         uint256 timeStamp
     );
 
-    event PostDeleted(uint256 id, uint256 timeStamp);
+    event PostDeleted(uint256 id, address author, uint256 timeStamp);
 
     event CommentAdded(
         uint256 id,
@@ -144,6 +146,7 @@ contract CryptoGramOld {
     function tipImageOwner(uint256 _id) public payable {
         //require valid ID
         require(_id > 0 && _id <= imageCount);
+        require(!deletedImages[_id]);
 
         //get image
         Image memory _image = images[_id];
@@ -169,16 +172,15 @@ contract CryptoGramOld {
         );
     }
 
-    function uploadImage(string memory _hash, string memory _desc) public {
+    //internal function
+    function _uploadImage(string memory _hash, string memory _desc, address payable _author) internal {
         //require a hash to be included
         require(bytes(_hash).length > 0);
 
         //require a description to be included
         require(bytes(_desc).length > 0);
 
-        //require uploader address to exist
-        require(msg.sender != address(0x0));
-
+        
         //increment image ID
         imageCount++;
 
@@ -188,31 +190,24 @@ contract CryptoGramOld {
             _hash,
             _desc,
             0,
-            msg.sender,
+            _author,
             now
         );
 
         //emit event
-        emit ImageAdded(imageCount, _hash, _desc, 0, msg.sender, now);
+        emit ImageAdded(imageCount, _hash, _desc, 0, _author, now);
     }
 
-    function deleteImage(uint256 _id) public {
-        //require valid ID
+    //internal function
+    function _deleteImage(uint256 _id) internal {
+        //require valid ID and image has not already been deleted
         require(_id > 0 && _id <= imageCount);
-
-        //get image
-        Image memory _image = images[_id];
-
-        //get image author
-        address _author = _image.author;
-
-        //check if image author matches message sender - only delete your own images
-        require(msg.sender == _author);
+        require(!deletedImages[_id]);
 
         //delete image from mapping and emit event
         delete (images[_id]);
         deletedImages[_id] = true;
-        emit ImageDeleted(_id, _author, now);
+        emit ImageDeleted(_id, now);
     }
 
     function addUser(
@@ -276,17 +271,24 @@ contract CryptoGramOld {
     }
 
     function makePost(
-        uint256 _imageID,
+        string memory _hash,
+        string memory _desc,
         string memory _title,
-        string memory _link
+        string memory _link,
+        bool includesImage
     ) public {
         require(bytes(_title).length > 0);
         require(bytes(_link).length > 0);        
         require(msg.sender != address(0x0));
 
-        //require valid image ID
-        require(_imageID > 0 && _imageID <= imageCount);
-        require(!deletedImages[_imageID]);
+        //default imageID if there is no inluded
+        uint256 _imageID = 0;
+
+        if(includesImage || !(bytes(_hash).length > 0)){
+            //add image hash to mapping
+            _uploadImage(_hash, _desc, msg.sender);
+            _imageID = imageCount;
+        }
 
         postCount++;
 
@@ -296,30 +298,44 @@ contract CryptoGramOld {
             _title,
             msg.sender,
             _link,
+            _desc,
             now
         );
 
-        emit PostAdded(postCount, _imageID, _title, msg.sender, _link, now);
+        emit PostAdded(postCount, imageCount, _title, msg.sender, _link, _desc, now);
     }
 
     function deletePost(uint256 _postID) public {
         //require user address to exist
         require(msg.sender != address(0x0));
 
+        //require valid post ID
+        require(_postID > 0 && _postID <= postCount);
+        require(!deletedPosts[_postID]);
+
         Post memory _post = posts[_postID];
         address _author = _post.author;
-        //check if image author matches message sender - only delete your own comments
+         //check if image author matches message sender - only delete your own comments
         require(msg.sender == _author);
+
+        //get imageID to delete
+        uint256 _imageID = _post.imageID;
+        if(_imageID != 0){
+            _deleteImage(_imageID);
+        }       
 
         delete (posts[_postID]);
         deletedPosts[_postID] = true;
 
         //emit event
-        emit PostDeleted(_postID, now);
+        emit PostDeleted(_postID, _author, now);
     }
 
     function comment(uint256 _postID, string memory _comment) public {
-        //require
+        require(bytes(_comment).length > 0);
+        require(_postID > 0 && _postID <= postCount);
+        require(!deletedPosts[_postID]);
+        
 
         commentCount++;
         comments[commentCount] = Comment(
@@ -336,7 +352,11 @@ contract CryptoGramOld {
     }
 
     function tipComment(uint256 _commentID) public payable {
-        //get image
+         //require valid ID
+        require(_commentID > 0 && _commentID <= commentCount);
+        require(!deletedComments[_commentID]);
+        
+        //get comment
         Comment memory _comment = comments[_commentID];
 
         //get comment data
@@ -358,6 +378,7 @@ contract CryptoGramOld {
     function deleteComment(uint256 _commentID) public {
         //require valid ID
         require(_commentID > 0 && _commentID <= commentCount);
+        require(!deletedComments[_commentID]);
 
         Comment memory _comment = comments[_commentID];
 
@@ -372,6 +393,17 @@ contract CryptoGramOld {
         //emit event
         emit CommentDeleted(_commentID, _author, now);
     }
+
+
+
+
+
+
+
+
+
+
+
 
     /***************Setter Functions********************/
     function setUserName(string memory _userName) public {

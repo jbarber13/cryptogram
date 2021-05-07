@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import {buffer} from '../store/actions'
 import {
+  loadPosts,
   loadImages,
   loadUsers,  
 } from '../store/interactions'
@@ -17,7 +18,8 @@ class Main extends Component {
   async loadBlockchainData(props) {    
 
     const {dispatch, cryptogram} = props
-    loadImages(cryptogram, dispatch)
+
+    loadPosts(cryptogram, dispatch)
     loadUsers(cryptogram, dispatch)    
     //subscribe to events
   }//loadBlockchainData
@@ -26,6 +28,7 @@ class Main extends Component {
 
     return (
       <div id="header" className="bg-dark">  
+        <SharePost />
         <ImageFeed />
       </div>
     );

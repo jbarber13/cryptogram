@@ -3,7 +3,7 @@ import {
   web3Loaded,
   web3AccountLoaded,
   cryptogramLoaded,
-  allImagesLoaded,
+  allPostsLoaded,
   allUsersLoaded,
   contractUpdating
 } from './actions'
@@ -48,13 +48,14 @@ export const loadCryptogram = async (web3, networkId, dispatch) => {
 }
 
 
-//To future me potentially: first time I tried this, it was returning an empty array for seemingly no reason, re-deploying the contract fixed this.....
-export const loadImages = async (cryptogram, dispatch) => {
-  const imageStream = await cryptogram.getPastEvents('ImageAdded', { fromBlock: 0, toBlock: 'latest' })
+
+
+export const loadPosts = async (cryptogram, dispatch) => {
+  const imageStream = await cryptogram.getPastEvents('PostAdded', { fromBlock: 0, toBlock: 'latest' })
   //console.log("ImageStream: ", imageStream.hash)
-  const allImages = imageStream.map((event) => event.returnValues)
+  const allPosts = imageStream.map((event) => event.returnValues)
   //console.log("loadAllImages", allImages)
-  dispatch(allImagesLoaded(allImages))
+  dispatch(allPostsLoaded(allPosts))
 }
 
 
@@ -67,7 +68,8 @@ export const loadUsers = async (cryptogram, dispatch) => {
 }
 
 
-export const addImageToContract = async (dispatch, account, cryptogram, result, description) => {
+export const makePost = async (dispatch, account, cryptogram, result, description, includesImage) => {
+  console.log(includesImage)
   cryptogram.methods.uploadImage(result[0].hash, description).send({ from: account })
     .on('transactionHash', (hash) => {
       console.log("Upload transaction hash: ", hash)
