@@ -28,6 +28,7 @@ import { tipImage } from '../store/interactions'
 class ImageFeed extends Component {
   render() {
 
+    
     return (
       <div className="imageFeed" id="imageFeed">
         <br /><br /><br /><br /><br /><br />
