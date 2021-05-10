@@ -11,38 +11,18 @@ function web3(state = {}, action) {
   }
 }
 
-/**
-function cryptogram(state = {}, action) {
-  switch (action.type) {
-    case 'CRYPTOGRAM_LOADED':
-      return { ...state, loaded: true, contract: action.contract }
-    case 'ALL_IMAGES_LOADED':
-      return { ...state, allImages: {...state.allImages, loaded: true} }
-    case 'IMAGE_LOADED': 
-      return {...state, allImages: {...state.allImages, data: action.newImage}}
-    case 'FILE_CAPTURED':
-      return { ...state, file: action.file, captured: true }
-    case 'IMAGE_DESCRIPTION_CHANGED':
-      return {...state, images: {...state.image, description: action.imageDescription}}
-    case 'UPLOADING_IMAGE':
-      return {...state, images: {...state.image, description: null, uploading: true}}
-    default:
-      return state
-  }
-}
- */
+
 
 function cryptogram(state = {}, action) {
-  let data
   switch (action.type) {
     case 'CRYPTOGRAM_LOADED':
       return { ...state, loaded: true, contract: action.contract }
     case 'ALL_POSTS_LOADED':
-      return { ...state, allPosts: {loaded: true, data: action.allPosts} }
+      return { ...state, allPosts: { loaded: true, data: action.allPosts } }
     case 'IMAGE_LOADED':
       return { ...state, allImages: { ...state.allImages, data: action.newImage } }
-    case 'CONTRACT_UPDATING': 
-      return {...state, loading: true, message: action.message}
+    case 'CONTRACT_UPDATING':
+      return { ...state, loaded: false, message: action.message }
     default:
       return state
   }
@@ -50,12 +30,15 @@ function cryptogram(state = {}, action) {
 
 function uploadHandler(state = {}, action) {
   switch (action.type) {
-    case 'IMAGE_DESCRIPTION_CHANGED':
-      return { ...state, imageDescription: action.imageDescription }
+    case 'POST_TITLE_CHANGED':
+      return { ...state, postTitle: action.postTitle }
+    case 'POST_DESCRIPTION_CHANGED':
+      return { ...state, postDescription: action.postDescription }
+    case 'POST_LINK_CHANGED':
+      return { ...state, postLink: action.postLink }
     case 'FILE_CAPTURED':
       return { ...state, file: action.file, captured: true }
-    case 'UPLOADING_IMAGE':
-      return { ...state, uploading: true }
+    
     default:
       return state
   }

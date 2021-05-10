@@ -49,10 +49,22 @@ export function fileCaptured(file){
 		file		
 	}
 }
-export function imageDescriptionChanged(imageDescription){
+export function postTitleChanged(postTitle){
 	return{
-		type: 'IMAGE_DESCRIPTION_CHANGED',
-		imageDescription
+		type: 'POST_TITLE_CHANGED',
+		postTitle
+	}
+}
+export function postDescriptionChanged(postDescription){
+	return{
+		type: 'POST_DESCRIPTION_CHANGED',
+		postDescription
+	}
+}
+export function postLinkChanged(postLink){
+	return{
+		type: 'POST_LINK_CHANGED',
+		postLink
 	}
 }
 export function uploadingImage(){
