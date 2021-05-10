@@ -11,7 +11,7 @@ import {
   loadAccount,
   loadCryptogram,
 } from '../store/interactions'
-import { cryptogramLoadedSelector, imagesSelector } from '../store/selectors'
+import { cryptogramLoadedSelector, contractUpdatingSelector  } from '../store/selectors'
 
 import Navbar from './Navbar'
 import Main from './Main';
@@ -44,7 +44,7 @@ class App extends Component {
 
 
         {this.props.cryptogramLoaded ? 
-        <Main /> : <div classname = "content"></div>
+        <Main /> : <Loading />
         }
 
        
@@ -62,6 +62,7 @@ function mapStateToProps(state) {
   return {
     //account: accountSelector(state)//enable selector for testing via console log
     cryptogramLoaded: cryptogramLoadedSelector(state),
+    contractUpdating: contractUpdatingSelector(state)
   }
 }
 

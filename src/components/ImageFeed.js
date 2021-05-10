@@ -4,7 +4,6 @@ import { connect } from 'react-redux'
 import Identicon from 'identicon.js';
 import moment from 'moment'
 import Main from './Main'
-import Loading from './Loading'
 
 import { Switch, Route, Link } from 'react-router-dom';
 import { fileCaptured, imageDescriptionChanged } from '../store/actions'
@@ -28,7 +27,7 @@ import { tipImage } from '../store/interactions'
 class ImageFeed extends Component {
   render() {
 
-    
+
     return (
       <div className="imageFeed" id="imageFeed">
         <br /><br /><br /><br /><br /><br />

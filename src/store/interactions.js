@@ -51,9 +51,9 @@ export const loadCryptogram = async (web3, networkId, dispatch) => {
 
 
 export const loadPosts = async (cryptogram, dispatch) => {
-  const imageStream = await cryptogram.getPastEvents('PostAdded', { fromBlock: 0, toBlock: 'latest' })
-  //console.log("ImageStream: ", imageStream.hash)
-  const allPosts = imageStream.map((event) => event.returnValues)
+  const postStream = await cryptogram.getPastEvents('PostAdded', { fromBlock: 0, toBlock: 'latest' })
+  //console.log("postStream: ", postStream.id)
+  const allPosts = postStream.map((event) => event.returnValues)
   //console.log("loadAllImages", allImages)
   dispatch(allPostsLoaded(allPosts))
 }
@@ -68,13 +68,26 @@ export const loadUsers = async (cryptogram, dispatch) => {
 }
 
 
-export const makePost = async (dispatch, account, cryptogram, result, description, includesImage) => {
-  console.log(includesImage)
-  cryptogram.methods.uploadImage(result[0].hash, description).send({ from: account })
-    .on('transactionHash', (hash) => {
-      console.log("Upload transaction hash: ", hash)
-      dispatch(contractUpdating("addImageToContract"))
-    })
+export const makePost = async (dispatch, cryptogram, account,  result, description, title, link) => {
+  let hash = '0'
+  let includesImage = true
+  if(result === undefined){
+    includesImage = false
+    console.log("No Image Present")
+  }else{
+    hash = result[0].hash
+    console.log("IPFS Result: ", result)
+    console.log("Image Hash: ", hash)
+  }
+
+  
+  cryptogram.methods.makePost(hash, description, title, link, includesImage).send({ from: account })
+  .on('transactionHash', (hash) => {
+    console.log("Upload transaction hash: ", hash)
+    dispatch(contractUpdating("makePost"))
+  })
+
+  
 
 }
 

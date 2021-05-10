@@ -7,12 +7,16 @@ import Main from './Main'
 import Loading from './Loading'
 
 import { Switch, Route, Link } from 'react-router-dom';
-import { fileCaptured, imageDescriptionChanged } from '../store/actions'
+import { fileCaptured, postTitleChanged, postDescriptionChanged, postLinkChanged} from '../store/actions'
 import {
   fileSelector,
-  imageDescriptionSelector,
+  postTitleSelector,
+  postDescriptionSelector,
+  postLinkSelector,
   accountSelector,
-  cryptogramSelector
+  cryptogramSelector,
+  fileUploadedSelector,
+  contractUpdatingSelector
 } from '../store/selectors'
 import { makePost } from '../store/interactions'
 
@@ -20,35 +24,10 @@ const ipfsClient = require('ipfs-http-client')
 const ipfs = ipfsClient({ host: 'ipfs.infura.io', port: 5001, protocol: 'https' })
 
 
-/**
-const capture = (event, props) => {
-  console.log("CAPTURE FUNCTION CALLED")
-  const {dispatch} = props
-  event.preventDefault()
-    const file = event.target.files[0]
-    const reader = new window.FileReader()
-    reader.readAsArrayBuffer(file)
-
-    reader.onloadend = () => {
-      //this.setState({ buffer: Buffer(reader.result) })
-      console.log('buffer', reader.result)
-      dispatch(buffer(reader.result))
-
-    }
-}
-
- */
-
-//onChange={(e) => processFile(e, dispatch)}
-
-//dispatch(processFile(captureFile(e)))
-
-
-
 
 
 const showForm = (props) => {
-  const { dispatch, file, imageDescription, account, cryptogram } = props
+  const { dispatch, file, postTitle, postDescription, postLink, account, cryptogram } = props
 
   const captureFile = (event) => {
     console.log('captureFile arrow function')
@@ -63,48 +42,61 @@ const showForm = (props) => {
       dispatch(fileCaptured(Buffer(reader.result)))
     }
   }
-  const uploadImage = () => {
-    console.log("uploading to IPFS... ")
+  const initiatePost = () => {
     //view image: https://ipfs.infura.io/ipfs/<image hash> 
+    
     //add to IPFS
-    ipfs.add(file, (error, result) => {
-      console.log('IPFS Result', result)
+    ipfs.add(file, (error, result) => {      
+      //console.log('IPFS Result', result)
       if (error) {
-        console.error(error)
-        return
+        console.error(error)        
+        console.log("An error may have been thrown if there was no image detected, this is expected")
       }
-      if(result[0].hash != undefined){
-        console.log("the thing is not there")
-      }
-      //makePost(dispatch, account, cryptogram, result, imageDescription)
-    })
+      makePost(dispatch, cryptogram, account, result, postDescription, postTitle, postLink)
+
+    })    
 
   }
 
 
-  
+
   return (
     <div>
       <p>&nbsp;</p>
-      <h3>Share Image</h3>
+      <h3>Make a New Post</h3>
       <form onSubmit={(event) => {
         event.preventDefault()
-        uploadImage()
+        initiatePost()
       }} >
+        <input
+            name="PostTitle"
+            type="text"
+            onChange={(e) => dispatch(postTitleChanged(e.target.value))}
+            className="form-control"
+            placeholder="Post Title"
+            required />
+        <br />
         <input className="btn btn-secondary" type='file' accept=".jpg, .jpeg, .png, .bmp, .gif" onChange={captureFile} />
         <div className="form-group mr-sm-2">
           <br></br>
           <input
-            name="imageDescription"
+            name="PostDescription"
             type="text"
-            onChange={(e) => dispatch(imageDescriptionChanged(e.target.value))}
+            onChange={(e) => dispatch(postDescriptionChanged(e.target.value))}
             className="form-control"
-            placeholder="Image description..."
+            placeholder="Whats on your mind...?"
             required />
+          <br></br>
+          <input
+            name="Link"
+            type="url"
+            onChange={(e) => dispatch(postLinkChanged(e.target.value))}
+            className="form-control"
+            placeholder="Add a url to a link (optional)"
+             />
         </div>
         <button type="submit" className="btn btn-primary btn-block btn-lg">Upload</button>
       </form>
-
       <p>&nbsp;</p>
     </div>
   )
@@ -114,32 +106,26 @@ class SharePost extends Component {
   render() {
 
     return (
-
-
       <div className="component" id="sharePost">
-
         <div className="sharePost">
-
-          {showForm(this.props)}
-
-
+          {this.props.contractUpdating ? showForm(this.props) : <Loading />}          
         </div>
       </div>
-
-
-
-
-
     );
   }
 }
 
 function mapStateToProps(state) {
+
   return {
     file: fileSelector(state),
-    imageDescription: imageDescriptionSelector(state),
+    fileUploaded: fileUploadedSelector(state),
+    postTitle: postTitleSelector(state),
+    postDescription: postDescriptionSelector(state),
+    postLink: postLinkSelector(state),
     account: accountSelector(state),
     cryptogram: cryptogramSelector(state),
+    contractUpdating: contractUpdatingSelector(state)
   }
 }
 

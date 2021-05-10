@@ -6,7 +6,7 @@ import {
   loadImages,
   loadUsers,  
 } from '../store/interactions'
-import { cryptogramSelector } from '../store/selectors';
+import { cryptogramSelector} from '../store/selectors';
 import {processFile} from '../store/actions'
 import SharePost from './SharePost'
 import ImageFeed from './ImageFeed'
@@ -38,6 +38,7 @@ function mapStateToProps(state) {
   const cryptogram = cryptogramSelector(state)
   return {
     cryptogram
+
   }
 }
 export default connect(mapStateToProps)(Main)

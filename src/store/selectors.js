@@ -13,7 +13,6 @@ const cryptogramLoaded = state => get(state, 'cryptogram.loaded', false)
 export const cryptogramLoadedSelector = createSelector(cryptogramLoaded, cl => cl)
 
 
-
 const cryptogram = state => get(state, 'cryptogram.contract')
 export const cryptogramSelector = createSelector(cryptogram, c => c) 
 
@@ -24,12 +23,24 @@ export const usersSelector = createSelector(users, u => u )
 const allImages = state => get(state, 'cryptogram.allImages.data', [])
 export const allImagesSelector = createSelector(
     allImages, 
-    ai => ai
-    
+    ai => ai    
 )
+
+const contractUpdating = state => get(state, 'cryptogram.loading', true)
+export const contractUpdatingSelector = createSelector(contractUpdating, cu => cu)
+
+const fileUploaded = state => get(state, 'uploadHandler.captured', [])
+export const fileUploadedSelector = createSelector(fileUploaded, fu => fu)
 
 const file = state => get(state, 'uploadHandler.file', [])
 export const fileSelector = createSelector(file, f => f)
 
-const imageDescription = state => get(state, 'uploadHandler.imageDescription', {})
-export const imageDescriptionSelector = createSelector(imageDescription, i => i)
+
+const postTitle = state => get(state, 'uploadHandler.postTitle', {})
+export const postTitleSelector = createSelector(postTitle, pt => pt)
+
+const postDescription = state => get(state, 'uploadHandler.postDescription', {})
+export const postDescriptionSelector = createSelector(postDescription, i => i)
+
+const postLink = state => get(state, 'uploadHandler.postLink', {})
+export const postLinkSelector = createSelector(postLink, i => i)
