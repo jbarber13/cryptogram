@@ -212,7 +212,6 @@ contract CryptoGram {
         string memory _link
     ) public {
         require(bytes(_title).length > 0);
-        require(bytes(_link).length > 0);
         require(msg.sender != address(0x0));
 
         postCount++;

@@ -111,7 +111,7 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser, comme
           assert.equal(post.status, desc, 'status is correct')
           post.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
         })
-        
+
         it('emits a PostAdded event', async () => {
           const log = withoutImageResult.logs[0]
           assert.equal(log[1], undefined, 'Does NOT produce an event for uploading image')
@@ -551,20 +551,19 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser, comme
     })//Delete Post 
 
 
-    describe('Setter Functions for user attributes', async () => {
+    describe('UpdateUser function to set various user attributes', async () => {
       let user, newValue
       before(async () => {
         user = await cryptogram.users(otherUser)
       })
-      describe('setUserName', async () => {
+      describe('Setting the userName', async () => {
         before(async () => {
           newValue = "updated userName"
-          user = await cryptogram.setUserName(newValue, { from: otherUser })
+          user = await cryptogram.updateUser("userName", newValue, { from: otherUser })
         })
-        describe('Success', async () => {
           it('updates the userName value', async () => {
             const updatedUser = await cryptogram.users(otherUser)
-            assert.equal(updatedUser.userName, newValue, 'userName is correct')
+            assert.equal(updatedUser.userName, newValue, 'newValue is correct')
           })
           it('emits a UserUpdated event', async () => {
             const log = user.logs[0]
@@ -575,25 +574,15 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser, comme
             assert.equal(event.newValue.toString(), newValue, 'New Value is correct')
             event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
           })
-
-        })
-        describe('Failure', async () => {
-          it('prevents an invalid address from being deleted from to the mapping', async () => {
-            it('prevents an invalid address from executing the function', async () => {
-              await cryptogram.setUserName(newValue, { from: 0x0 }).should.be.rejected
-            })
-          })
-        })
       })//setUserName
-      describe('setLocation', async () => {
+      describe('Setting the location', async () => {
         before(async () => {
-          newValue = "updated Location"
-          user = await cryptogram.setLocation(newValue, { from: otherUser })
+          newValue = "updated location"
+          user = await cryptogram.updateUser("location", newValue, { from: otherUser })
         })
-        describe('Success', async () => {
-          it('updates the location value', async () => {
+          it('updates the locaiton value', async () => {
             const updatedUser = await cryptogram.users(otherUser)
-            assert.equal(updatedUser.location, newValue, 'location is correct')
+            assert.equal(updatedUser.location, newValue, 'newValue is correct')
           })
           it('emits a UserUpdated event', async () => {
             const log = user.logs[0]
@@ -604,25 +593,15 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser, comme
             assert.equal(event.newValue.toString(), newValue, 'New Value is correct')
             event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
           })
-
-        })
-        describe('Failure', async () => {
-          it('prevents an invalid address from being deleted from to the mapping', async () => {
-            it('prevents an invalid address from executing the function', async () => {
-              await cryptogram.setLocation(newValue, { from: 0x0 }).should.be.rejected
-            })
-          })
-        })
       })//setLocation
-      describe('setPhone', async () => {
+      describe('Setting the phone', async () => {
         before(async () => {
-          newValue = "updated Phone"
-          user = await cryptogram.setPhone(newValue, { from: otherUser })
+          newValue = "updated phone"
+          user = await cryptogram.updateUser("phone", newValue, { from: otherUser })
         })
-        describe('Success', async () => {
-          it('updates the setPhone value', async () => {
+          it('updates the phone value', async () => {
             const updatedUser = await cryptogram.users(otherUser)
-            assert.equal(updatedUser.phone, newValue, 'phone is correct')
+            assert.equal(updatedUser.phone, newValue, 'newValue is correct')
           })
           it('emits a UserUpdated event', async () => {
             const log = user.logs[0]
@@ -633,25 +612,15 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser, comme
             assert.equal(event.newValue.toString(), newValue, 'New Value is correct')
             event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
           })
-
-        })
-        describe('Failure', async () => {
-          it('prevents an invalid address from being deleted from to the mapping', async () => {
-            it('prevents an invalid address from executing the function', async () => {
-              await cryptogram.setPhone(newValue, { from: 0x0 }).should.be.rejected
-            })
-          })
-        })
       })//setPhone
-      describe('setEmail', async () => {
+      describe('Setting the email', async () => {
         before(async () => {
-          newValue = "updated Email"
-          user = await cryptogram.setEmail(newValue, { from: otherUser })
+          newValue = "updated email"
+          user = await cryptogram.updateUser("email", newValue, { from: otherUser })
         })
-        describe('Success', async () => {
           it('updates the email value', async () => {
             const updatedUser = await cryptogram.users(otherUser)
-            assert.equal(updatedUser.email, newValue, 'email is correct')
+            assert.equal(updatedUser.email, newValue, 'newValue is correct')
           })
           it('emits a UserUpdated event', async () => {
             const log = user.logs[0]
@@ -662,25 +631,15 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser, comme
             assert.equal(event.newValue.toString(), newValue, 'New Value is correct')
             event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
           })
-
-        })
-        describe('Failure', async () => {
-          it('prevents an invalid address from being deleted from to the mapping', async () => {
-            it('prevents an invalid address from executing the function', async () => {
-              await cryptogram.setEmail(newValue, { from: 0x0 }).should.be.rejected
-            })
-          })
-        })
       })//setEmail
-      describe('setOccupation', async () => {
+      describe('Setting the occupation', async () => {
         before(async () => {
-          newValue = "updated Occupation"
-          user = await cryptogram.setOccupation(newValue, { from: otherUser })
+          newValue = "updated occupation"
+          user = await cryptogram.updateUser("occupation", newValue, { from: otherUser })
         })
-        describe('Success', async () => {
-          it('updates the email value', async () => {
+          it('updates the occupation value', async () => {
             const updatedUser = await cryptogram.users(otherUser)
-            assert.equal(updatedUser.occupation, newValue, 'Occupation is correct')
+            assert.equal(updatedUser.occupation, newValue, 'newValue is correct')
           })
           it('emits a UserUpdated event', async () => {
             const log = user.logs[0]
@@ -691,16 +650,19 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser, comme
             assert.equal(event.newValue.toString(), newValue, 'New Value is correct')
             event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
           })
-
+      })//setOccupation
+      describe('Failure', async () => {
+        it('prevents an invalid address from executing the function', async () => {
+          await cryptogram.updateUser("userName", newValue, { from: 0x0 }).should.be.rejected
         })
-        describe('Failure', async () => {
-          it('prevents an invalid address from being deleted from to the mapping', async () => {
-            it('prevents an invalid address from executing the function', async () => {
-              await cryptogram.setOccupation(newValue, { from: 0x0 }).should.be.rejected
-            })
-          })
+        it('prevents an account from being updated by someone who does not own it', async () => {
+          await cryptogram.updateUser("userName", newValue, { from: deployer }).should.be.rejected
         })
-      })//setOccupation           
+        it('reverts if the user value type is not valid', async () => {
+          await cryptogram.updateUser("UserName", newValue, { from: otherUser }).should.be.rejected
+          await cryptogram.updateUser("someValue", newValue, { from: otherUser }).should.be.rejected
+        })
+      })
     })/**********SETTERS BLOCK***********/
 
 
