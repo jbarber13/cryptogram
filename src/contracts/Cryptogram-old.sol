@@ -5,11 +5,12 @@ pragma solidity >=0.5.0;
 
 //use ganache-cli --allowUnlimitedContractSize  --gasLimit 0xFFFFFFFFFFFF
 
-contract CryptoGramOld {
+contract CryptoGram {
     string public name =
         "CryptoGram - decentralized image sharing social media platform";
     string public contractDescription =
         "version 2 of the original DSM - decentralized social media, many new features, and accounts are tied to the user's wallet address";
+
 
     uint256 public imageCount = 0;
     uint256 public userCount = 0;
@@ -130,11 +131,7 @@ contract CryptoGramOld {
         uint256 tipAmount,
         uint256 timeStamp
     );
-    event CommentDeleted(
-        uint256 id,
-        address author,
-        uint256 timeStamp
-    );
+    event CommentDeleted(uint256 id, address author, uint256 timeStamp);
 
     /******************FUNCTIONS*************************/
 
@@ -143,6 +140,7 @@ contract CryptoGramOld {
         revert();
     }
 
+   
     function tipImageOwner(uint256 _id) public payable {
         //require valid ID
         require(_id > 0 && _id <= imageCount);
@@ -173,26 +171,22 @@ contract CryptoGramOld {
     }
 
     //internal function
-    function _uploadImage(string memory _hash, string memory _desc, address payable _author) internal {
+    function _uploadImage(
+        string memory _hash,
+        string memory _desc,
+        address payable _author
+    ) internal {
         //require a hash to be included
         require(bytes(_hash).length > 0);
 
         //require a description to be included
         require(bytes(_desc).length > 0);
 
-        
         //increment image ID
         imageCount++;
 
         //add image hash to mapping
-        images[imageCount] = Image(
-            imageCount,
-            _hash,
-            _desc,
-            0,
-            _author,
-            now
-        );
+        images[imageCount] = Image(imageCount, _hash, _desc, 0, _author, now);
 
         //emit event
         emit ImageAdded(imageCount, _hash, _desc, 0, _author, now);
@@ -278,13 +272,13 @@ contract CryptoGramOld {
         bool includesImage
     ) public {
         require(bytes(_title).length > 0);
-        require(bytes(_link).length > 0);        
+        require(bytes(_link).length > 0);
         require(msg.sender != address(0x0));
 
         //default imageID if there is no inluded
         uint256 _imageID = 0;
 
-        if(includesImage || !(bytes(_hash).length > 0)){
+        if (includesImage || !(bytes(_hash).length > 0)) {
             //add image hash to mapping
             _uploadImage(_hash, _desc, msg.sender);
             _imageID = imageCount;
@@ -302,7 +296,15 @@ contract CryptoGramOld {
             now
         );
 
-        emit PostAdded(postCount, imageCount, _title, msg.sender, _link, _desc, now);
+        emit PostAdded(
+            postCount,
+            imageCount,
+            _title,
+            msg.sender,
+            _link,
+            _desc,
+            now
+        );
     }
 
     function deletePost(uint256 _postID) public {
@@ -315,14 +317,14 @@ contract CryptoGramOld {
 
         Post memory _post = posts[_postID];
         address _author = _post.author;
-         //check if image author matches message sender - only delete your own comments
+        //check if image author matches message sender - only delete your own comments
         require(msg.sender == _author);
 
         //get imageID to delete
         uint256 _imageID = _post.imageID;
-        if(_imageID != 0){
+        if (_imageID != 0) {
             _deleteImage(_imageID);
-        }       
+        }
 
         delete (posts[_postID]);
         deletedPosts[_postID] = true;
@@ -335,7 +337,6 @@ contract CryptoGramOld {
         require(bytes(_comment).length > 0);
         require(_postID > 0 && _postID <= postCount);
         require(!deletedPosts[_postID]);
-        
 
         commentCount++;
         comments[commentCount] = Comment(
@@ -352,10 +353,10 @@ contract CryptoGramOld {
     }
 
     function tipComment(uint256 _commentID) public payable {
-         //require valid ID
+        //require valid ID
         require(_commentID > 0 && _commentID <= commentCount);
         require(!deletedComments[_commentID]);
-        
+
         //get comment
         Comment memory _comment = comments[_commentID];
 
@@ -372,7 +373,14 @@ contract CryptoGramOld {
         comments[_commentID] = _comment;
 
         //emit event
-        emit CommentTipped(commentCount, _postID, _commentString, msg.sender, 0, now);
+        emit CommentTipped(
+            commentCount,
+            _postID,
+            _commentString,
+            msg.sender,
+            0,
+            now
+        );
     }
 
     function deleteComment(uint256 _commentID) public {
@@ -394,90 +402,38 @@ contract CryptoGramOld {
         emit CommentDeleted(_commentID, _author, now);
     }
 
-
-
-
-
-
-
-
-
-
-
-
-    /***************Setter Functions********************/
-    function setUserName(string memory _userName) public {
+    function updateUser(string memory _type, string memory _value) public {
         //require user address to exist
         require(msg.sender != address(0x0));
 
         //get user
         User memory _user = users[msg.sender];
 
-        //update value and put back into mapping
-        _user.userName = _userName;
-        users[msg.sender] = _user;
+        //user can only modify their own account
+        require(_user.userAccount == msg.sender);
 
-        //emit event
-        emit UserUpdated(msg.sender, "userName", _userName, now);
+        //compare type to appropriate user attribute
+        if (keccak256(bytes(_type)) == keccak256(bytes("userName"))) {
+            //update value and put back into mapping
+            _user.userName = _value;
+            users[msg.sender] = _user;
+        } else if (keccak256(bytes(_type)) == keccak256(bytes("location"))) {
+            _user.location = _value;
+            users[msg.sender] = _user;
+        } else if (keccak256(bytes(_type)) == keccak256(bytes("phone"))) {
+            _user.phone = _value;
+            users[msg.sender] = _user;
+        } else if (keccak256(bytes(_type)) == keccak256(bytes("email"))) {
+            _user.email = _value;
+            users[msg.sender] = _user;
+        } else if (keccak256(bytes(_type)) == keccak256(bytes("occupation"))) {
+            _user.occupation = _value;
+            users[msg.sender] = _user;
+        } else {
+            revert();
+        }
+        emit UserUpdated(msg.sender, _type, _value, now);
     }
 
-    function setLocation(string memory _location) public {
-        //require user address to exist
-        require(msg.sender != address(0x0));
-
-        //get user
-        User memory _user = users[msg.sender];
-
-        //update value and put back into mapping
-        _user.location = _location;
-        users[msg.sender] = _user;
-
-        //emit event
-        emit UserUpdated(msg.sender, "location", _location, now);
-    }
-
-    function setPhone(string memory _phone) public {
-        //require user address to exist
-        require(msg.sender != address(0x0));
-
-        //get user
-        User memory _user = users[msg.sender];
-
-        //update value and put back into mapping
-        _user.phone = _phone;
-        users[msg.sender] = _user;
-
-        //emit event
-        emit UserUpdated(msg.sender, "phone", _phone, now);
-    }
-
-    function setEmail(string memory _email) public {
-        //require user address to exist
-        require(msg.sender != address(0x0));
-
-        //get user
-        User memory _user = users[msg.sender];
-
-        //update value and put back into mapping
-        _user.email = _email;
-        users[msg.sender] = _user;
-
-        //emit event
-        emit UserUpdated(msg.sender, "email", _email, now);
-    }
-
-    function setOccupation(string memory _occupation) public {
-        //require user address to exist
-        require(msg.sender != address(0x0));
-
-        //get user
-        User memory _user = users[msg.sender];
-
-        //update value and put back into mapping
-        _user.occupation = _occupation;
-        users[msg.sender] = _user;
-
-        //emit event
-        emit UserUpdated(msg.sender, "occupation", _occupation, now);
-    }
+    
 }

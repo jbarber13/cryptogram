@@ -24,10 +24,10 @@ export function cryptogramLoaded(contract){
         contract
     }
 }
-export function imageLoaded(image){
+export function allImagesLoaded(allImages){
 	return {
-		type: 'IMAGE_LOADED',
-		image
+		type: 'ALL_IMAGES_LOADED',
+		allImages
 	}
 }
 
@@ -75,6 +75,12 @@ export function uploadingImage(){
 export function contractUpdating(message){
 	return{
 		type: 'CONTRACT_UPDATING',
+		message
+	}
+}
+export function contractUpdated(message){
+	return{
+		type: 'CONTRACT_UPDATED',
 		message
 	}
 }

@@ -19,10 +19,12 @@ function cryptogram(state = {}, action) {
       return { ...state, loaded: true, contract: action.contract }
     case 'ALL_POSTS_LOADED':
       return { ...state, allPosts: { loaded: true, data: action.allPosts } }
-    case 'IMAGE_LOADED':
-      return { ...state, allImages: { ...state.allImages, data: action.newImage } }
+    case 'ALL_IMAGES_LOADED':
+      return { ...state, allImages: { loaded: true, data: action.allImages } }
     case 'CONTRACT_UPDATING':
       return { ...state, loaded: false, message: action.message }
+    case 'CONTRACT_UPDATED': 
+      return { ...state, loaded: true, message: action.message }
     default:
       return state
   }
