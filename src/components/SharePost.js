@@ -1,12 +1,8 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux'
 
-import Identicon from 'identicon.js';
-import moment from 'moment'
-import Main from './Main'
 import Loading from './Loading'
 
-import { Switch, Route, Link } from 'react-router-dom';
 import { fileCaptured, postTitleChanged, postDescriptionChanged, postLinkChanged} from '../store/actions'
 import {
   fileSelector,

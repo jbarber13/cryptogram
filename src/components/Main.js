@@ -1,13 +1,12 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import {buffer} from '../store/actions'
 import {
   loadPosts,
   loadImages,
-  loadUsers,  
+  loadUsers, 
+  subscribeToEvents 
 } from '../store/interactions'
 import { cryptogramSelector} from '../store/selectors';
-import {processFile} from '../store/actions'
 import SharePost from './SharePost'
 import ImageFeed from './ImageFeed'
 
@@ -19,8 +18,13 @@ class Main extends Component {
 
     const {dispatch, cryptogram} = props
 
-    loadPosts(cryptogram, dispatch)
-    loadUsers(cryptogram, dispatch)    
+    await loadPosts(cryptogram, dispatch)
+    await loadImages(cryptogram, dispatch)
+    await loadUsers(cryptogram, dispatch)    
+
+    await subscribeToEvents(cryptogram, dispatch)
+
+
     //subscribe to events
   }//loadBlockchainData
   

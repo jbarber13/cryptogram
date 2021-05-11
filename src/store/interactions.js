@@ -4,8 +4,10 @@ import {
   web3AccountLoaded,
   cryptogramLoaded,
   allPostsLoaded,
+  allImagesLoaded,
   allUsersLoaded,
-  contractUpdating
+  contractUpdating,
+  contractUpdated
 } from './actions'
 import CryptoGram from '../abis/CryptoGram.json'
 
@@ -58,6 +60,12 @@ export const loadPosts = async (cryptogram, dispatch) => {
   dispatch(allPostsLoaded(allPosts))
 }
 
+export const loadImages = async (cryptogram, dispatch) => {
+  const imageStream = await cryptogram.getPastEvents('ImageAdded', { fromBlock: 0, toBlock: 'latest' })
+  const allImages = imageStream.map((event) => event.returnValues)
+  dispatch(allImagesLoaded(allImages))
+}
+
 
 
 export const loadUsers = async (cryptogram, dispatch) => {
@@ -85,9 +93,7 @@ export const makePost = async (dispatch, cryptogram, account,  result, descripti
   .on('transactionHash', (hash) => {
     console.log("Upload transaction hash: ", hash)
     dispatch(contractUpdating("makePost"))
-  })
-
-  
+  }) 
 
 }
 
@@ -97,4 +103,16 @@ export const tipImage = async (dispatch, account, cryptogram, id, tipAmount,) =>
       console.log("tipImageOwner completed", hash)
       dispatch(contractUpdating("tipImage"))
     })
+}
+
+
+
+
+//listen for events emitted from contract and update component in real time
+export const subscribeToEvents = async (cryptogram, dispatch) => {
+  
+  cryptogram.events.PostAdded({}, (error, event) => {
+    dispatch(contractUpdated(event.returnValues)) 
+    console.log("PostAdded Event Heard", event.returnValues)
+  })
 }

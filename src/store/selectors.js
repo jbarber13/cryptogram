@@ -25,6 +25,12 @@ export const allImagesSelector = createSelector(
     allImages, 
     ai => ai    
 )
+const allPosts = state => get(state, 'cryptogram.allPosts.data', [])
+export const allPostSelector = createSelector(
+    allPosts, 
+    ap => ap    
+)
+
 
 const contractUpdating = state => get(state, 'cryptogram.loading', true)
 export const contractUpdatingSelector = createSelector(contractUpdating, cu => cu)
