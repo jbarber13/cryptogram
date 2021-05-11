@@ -5,7 +5,7 @@ pragma solidity >=0.5.0;
 
 //use ganache-cli --allowUnlimitedContractSize  --gasLimit 0xFFFFFFFFFFFF
 
-contract CryptoGram {
+contract CryptoGramOld {
     string public name =
         "CryptoGram - decentralized image sharing social media platform";
     string public contractDescription =
