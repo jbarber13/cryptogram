@@ -134,6 +134,14 @@ contract CryptoGram {
         _post.tipAmount = _post.tipAmount + msg.value;
         posts[_id] = _post;
 
+        emit PostTipped(
+            _id,
+            _post.title,
+            _author,
+            _post.tipAmount, 
+            now
+        );
+
     }
 
     function addUser(
