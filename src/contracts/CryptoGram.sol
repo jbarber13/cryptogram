@@ -85,6 +85,7 @@ contract CryptoGram {
         string imageHash,
         string title,
         address author,
+        uint256 tipAmount,
         string link,
         string status,
         uint256 timeStamp
@@ -231,6 +232,7 @@ contract CryptoGram {
             _hash,
             _title,
             msg.sender,
+            0,
             _link,
             _desc,
             now

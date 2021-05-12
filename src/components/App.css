@@ -1,3 +1,6 @@
+:root{
+  --btcOrange: #FF9900;
+}
 .App {
   text-align: center;
 }
@@ -76,8 +79,16 @@ html, body {
   margin: auto;
   width: 50%;
 }
-
-
+.text-link{
+  font-size: 150%;
+  color: lightgray;
+  text-decoration: underline;
+}
+.text-link:hover{  
+   transition: .5s ease-in-out;
+   color: black;
+   background-color: var(--btcOrange);
+}
 .component {
   background-color: #343a40;
   color: #f8f9fa;
@@ -91,4 +102,7 @@ html, body {
 .uploadedImage{
   max-width: 85%;
   max-height: 35rem;
+}
+.description-input{
+  resize:both;
 }

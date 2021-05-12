@@ -4,10 +4,10 @@ import {
   web3AccountLoaded,
   cryptogramLoaded,
   allPostsLoaded,
-  allImagesLoaded,
   allUsersLoaded,
   contractUpdating,
-  contractUpdated
+  contractUpdated,
+  allCommentsLoaded
 } from './actions'
 import CryptoGram from '../abis/CryptoGram.json'
 
@@ -52,6 +52,8 @@ export const loadCryptogram = async (web3, networkId, dispatch) => {
 
 
 
+
+
 export const loadPosts = async (cryptogram, dispatch) => {
   const postStream = await cryptogram.getPastEvents('PostAdded', { fromBlock: 0, toBlock: 'latest' })
   //console.log("postStream: ", postStream.id)
@@ -60,13 +62,11 @@ export const loadPosts = async (cryptogram, dispatch) => {
   dispatch(allPostsLoaded(allPosts))
 }
 
-export const loadImages = async (cryptogram, dispatch) => {
-  const imageStream = await cryptogram.getPastEvents('ImageAdded', { fromBlock: 0, toBlock: 'latest' })
-  const allImages = imageStream.map((event) => event.returnValues)
-  dispatch(allImagesLoaded(allImages))
+export const loadComments = async (cryptogram, dispatch) => {
+  const commentStream = await cryptogram.getPastEvents('CommentAdded', {fromBlock: 0, toBlock: 'latest'})
+  const allComments = commentStream.map((event) => event.returnValues)
+  dispatch(allCommentsLoaded(allComments))
 }
-
-
 
 export const loadUsers = async (cryptogram, dispatch) => {
   const userStream = await cryptogram.getPastEvents('UserAdded', { fromBlock: 0, toBlock: 'latest' })//entire chain history
@@ -77,36 +77,51 @@ export const loadUsers = async (cryptogram, dispatch) => {
 
 
 export const makePost = async (dispatch, cryptogram, account,  result, description, title, link) => {
-  let hash = '0'
-  let includesImage = true
+  let hash = "No Image Present"
+  let desc = ""
+  let postLink = ""
   if(result === undefined){
-    includesImage = false
     console.log("No Image Present")
   }else{
     hash = result[0].hash
     console.log("IPFS Result: ", result)
     console.log("Image Hash: ", hash)
   }
-
   
-  cryptogram.methods.makePost(hash, description, title, link, includesImage).send({ from: account })
+  //check if description or link are included
+  if(description.toString() === "[object Object]"){
+    console.log("No Description Detected")
+  }else{
+    desc = description
+  }
+  if(link.toString() === "[object Object]"){
+    console.log("No Link Detected")
+  }else{
+    postLink = link
+  }
+  
+   cryptogram.methods.makePost(hash, desc, title, postLink).send({ from: account })
   .on('transactionHash', (hash) => {
     console.log("Upload transaction hash: ", hash)
     dispatch(contractUpdating("makePost"))
   }) 
-
 }
-
-export const tipImage = async (dispatch, account, cryptogram, id, tipAmount,) => {
+export const tipPost = async (dispatch, account, cryptogram, id, tipAmount,) => {
   cryptogram.methods.tipImageOwner(id).send({ from: account, value: tipAmount })
     .on('transactionHash', (hash) => {
       console.log("tipImageOwner completed", hash)
-      dispatch(contractUpdating("tipImage"))
+      dispatch(contractUpdating("tipPost"))
     })
 }
 
-
-
+export const makeComment = async (dispatch, account, cryptogram, postID, comment) => {
+  
+   cryptogram.methods.comment(postID, comment,).send({from: account})
+  .on('transactionHash', (hash) => {
+    console.log("Comment transaction hash: ", hash)
+    dispatch(contractUpdating("comment"))
+  })  
+}
 
 //listen for events emitted from contract and update component in real time
 export const subscribeToEvents = async (cryptogram, dispatch) => {
