@@ -30,6 +30,13 @@ export const allPostSelector = createSelector(
     allPosts, 
     ap => ap    
 )
+const allComments = state => get(state, 'cryptogram.allComments.data', [])
+export const allCommentsSelector = createSelector(
+    allComments, 
+    ac => ac    
+)
+const commentText = state => get(state, 'uploadHandler.commentText', {})
+export const commentTextSelector = createSelector(commentText, ct => ct)
 
 
 const contractUpdating = state => get(state, 'cryptogram.loading', true)

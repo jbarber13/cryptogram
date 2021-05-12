@@ -26,7 +26,6 @@ const showForm = (props) => {
   const { dispatch, file, postTitle, postDescription, postLink, account, cryptogram } = props
 
   const captureFile = (event) => {
-    console.log('captureFile arrow function')
     event.preventDefault()
     const file = event.target.files[0]
     const reader = new window.FileReader()
@@ -49,7 +48,6 @@ const showForm = (props) => {
         console.log("An error may have been thrown if there was no image detected, this is expected")
       }
       makePost(dispatch, cryptogram, account, result, postDescription, postTitle, postLink)
-
     })    
 
   }
@@ -72,26 +70,29 @@ const showForm = (props) => {
             placeholder="Post Title"
             required />
         <br />
-        <input className="btn btn-secondary" type='file' accept=".jpg, .jpeg, .png, .bmp, .gif" onChange={captureFile} />
         <div className="form-group mr-sm-2">
-          <br></br>
-          <input
-            name="PostDescription"
-            type="text"
+          <textarea
+            rows="4"
+            cols="50"
             onChange={(e) => dispatch(postDescriptionChanged(e.target.value))}
             className="form-control"
             placeholder="Whats on your mind...?"
-            required />
+            >            
+          </textarea>
+          
           <br></br>
           <input
             name="Link"
             type="url"
             onChange={(e) => dispatch(postLinkChanged(e.target.value))}
             className="form-control"
-            placeholder="Add a url to a link (optional)"
+            placeholder="Add a link URL (optional)"
              />
         </div>
+        <input className="btn btn-secondary" type='file' accept=".jpg, .jpeg, .png, .bmp, .gif" onChange={captureFile} />
+        <br /><br />
         <button type="submit" className="btn btn-primary btn-block btn-lg">Upload</button>
+
       </form>
       <p>&nbsp;</p>
     </div>

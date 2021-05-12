@@ -19,8 +19,8 @@ function cryptogram(state = {}, action) {
       return { ...state, loaded: true, contract: action.contract }
     case 'ALL_POSTS_LOADED':
       return { ...state, allPosts: { loaded: true, data: action.allPosts } }
-    case 'ALL_IMAGES_LOADED':
-      return { ...state, allImages: { loaded: true, data: action.allImages } }
+    case 'ALL_COMMENTS_LOADED':
+      return { ...state, allComments: { loaded: true, data: action.allComments } }
     case 'CONTRACT_UPDATING':
       return { ...state, loaded: false, message: action.message }
     case 'CONTRACT_UPDATED': 
@@ -38,6 +38,8 @@ function uploadHandler(state = {}, action) {
       return { ...state, postDescription: action.postDescription }
     case 'POST_LINK_CHANGED':
       return { ...state, postLink: action.postLink }
+    case 'COMMENT_TEXT_CHANGED':
+      return{...state, commentText: action.commentText}
     case 'FILE_CAPTURED':
       return { ...state, file: action.file, captured: true }
     

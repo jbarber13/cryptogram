@@ -37,12 +37,19 @@ export function allPostsLoaded(allPosts){
 		allPosts
 	}
 }
+export function allCommentsLoaded(allComments){
+	return {
+		type: 'ALL_COMMENTS_LOADED',
+		allComments
+	}
+}
 export function allUsersLoaded(users){
 	return{
 		type: 'ALL_USERS_LOADED',
 		users
 	}
 }
+
 export function fileCaptured(file){
 	return{
 		type: 'FILE_CAPTURED',
@@ -65,6 +72,12 @@ export function postLinkChanged(postLink){
 	return{
 		type: 'POST_LINK_CHANGED',
 		postLink
+	}
+}
+export function commentTextChanged(commentText){
+	return{
+		type: 'COMMENT_TEXT_CHANGED',
+		commentText
 	}
 }
 export function uploadingImage(){

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import {
   loadPosts,
-  loadImages,
+  loadComments,
   loadUsers, 
   subscribeToEvents 
 } from '../store/interactions'
@@ -19,7 +19,7 @@ class Main extends Component {
     const {dispatch, cryptogram} = props
 
     await loadPosts(cryptogram, dispatch)
-    await loadImages(cryptogram, dispatch)
+    await loadComments(cryptogram, dispatch)
     await loadUsers(cryptogram, dispatch)    
 
     await subscribeToEvents(cryptogram, dispatch)
@@ -27,13 +27,14 @@ class Main extends Component {
 
     //subscribe to events
   }//loadBlockchainData
-  
+
   render() {
 
     return (
       <div id="header" className="bg-dark">  
-        <SharePost />
+
         <ImageFeed />
+        <SharePost />
       </div>
     );
   }
