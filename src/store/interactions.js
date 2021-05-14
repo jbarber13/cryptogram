@@ -7,8 +7,11 @@ import {
   allUsersLoaded,
   contractUpdating,
   contractUpdated,
-  allCommentsLoaded
+  allCommentsLoaded,
+  postLoaded,
+  doneLoadingPosts
 } from './actions'
+import {allPostSelector} from './selectors'
 import CryptoGram from '../abis/CryptoGram.json'
 
 
@@ -49,16 +52,28 @@ export const loadCryptogram = async (web3, networkId, dispatch) => {
   }
 }
 
+//whats happening is that the posts are loaded based on the initial emitted event from when they are created, which does not include any updated data such as the tipAmount
+export const updatePosts = async (cryptogram, dispatch) => {
+  const postCount = await cryptogram.methods.postCount().call()
+  for (var i = 1; i <= postCount; i++){
+    dispatch(postLoaded(await cryptogram.methods.posts(i).call()))
+    if(i >= postCount){
+      //dispatch all posts loaded if done
+      dispatch(doneLoadingPosts())
+    }
+    //update each post, as the tip amount here does not match the one in state since that one came from the OG event from when the post was created
+  }
 
-
-
+  
+  
+}
 
 
 export const loadPosts = async (cryptogram, dispatch) => {
   const postStream = await cryptogram.getPastEvents('PostAdded', { fromBlock: 0, toBlock: 'latest' })
   //console.log("postStream: ", postStream.id)
-  const allPosts = postStream.map((event) => event.returnValues)
-  //console.log("loadAllImages", allImages)
+  const allPosts = postStream.map((event) => (event.returnValues))
+  //console.log("allPosts", allPosts)
   dispatch(allPostsLoaded(allPosts))
 }
 
@@ -107,11 +122,26 @@ export const makePost = async (dispatch, cryptogram, account,  result, descripti
   }) 
 }
 export const tipPost = async (dispatch, account, cryptogram, id, tipAmount,) => {
-  cryptogram.methods.tipImageOwner(id).send({ from: account, value: tipAmount })
+  
+
+  console.log("tipPost stuff")
+  console.log("tipPost id", id)
+  console.log("tipPost tipAmount", tipAmount)
+  
+  
+
+
+  
+  cryptogram.methods.tipPost(id).send({ from: account, value: tipAmount })
     .on('transactionHash', (hash) => {
-      console.log("tipImageOwner completed", hash)
+      console.log("tipPost Transaction Hash: ", hash)
       dispatch(contractUpdating("tipPost"))
     })
+   
+  
+  
+  
+  
 }
 
 export const makeComment = async (dispatch, account, cryptogram, postID, comment) => {
@@ -123,11 +153,22 @@ export const makeComment = async (dispatch, account, cryptogram, postID, comment
   })  
 }
 
+const _clearState = () => {
+
+}
 //listen for events emitted from contract and update component in real time
 export const subscribeToEvents = async (cryptogram, dispatch) => {
   
   cryptogram.events.PostAdded({}, (error, event) => {
     dispatch(contractUpdated(event.returnValues)) 
     console.log("PostAdded Event Heard", event.returnValues)
+  })
+  cryptogram.events.CommentAdded({}, (error, event) => {
+    dispatch(contractUpdated(event.returnValues)) 
+    console.log("CommentAdded Event Heard", event.returnValues)
+  })
+  cryptogram.events.PostTipped({}, (error, event) => {
+    dispatch(contractUpdated(event.returnValues)) 
+    console.log("PostTipped Event Heard", event.returnValues)
   })
 }
