@@ -37,6 +37,31 @@ export function allPostsLoaded(allPosts){
 		allPosts
 	}
 }
+
+
+
+
+export function postLoaded(post){
+	return{
+		type: 'POST_LOADED',
+		post
+	}
+}
+export function doneLoadingPosts(){
+	return{
+		type: 'DONE_LOADING_POSTS'
+	}
+}
+
+
+
+
+
+
+
+
+
+
 export function allCommentsLoaded(allComments){
 	return {
 		type: 'ALL_COMMENTS_LOADED',
@@ -80,11 +105,7 @@ export function commentTextChanged(commentText){
 		commentText
 	}
 }
-export function uploadingImage(){
-	return{
-		type: 'UPLOADING_IMAGE'
-	}
-}
+
 export function contractUpdating(message){
 	return{
 		type: 'CONTRACT_UPDATING',

@@ -14,11 +14,21 @@ function web3(state = {}, action) {
 
 
 function cryptogram(state = {}, action) {
+  let index, data
   switch (action.type) {
     case 'CRYPTOGRAM_LOADED':
-      return { ...state, loaded: true, contract: action.contract }
+      return { ...state, loaded: true, contract: action.contract, allPosts: []}
     case 'ALL_POSTS_LOADED':
-      return { ...state, allPosts: { loaded: true, data: action.allPosts } }
+      return { ...state, oldAllPosts: { loaded: true, data: action.allPosts } }
+    case 'POST_LOADED'://append each new post to state array, initialized when CRYPTOGRAM_LOADED
+    //console.log("Action.post is correct in POST_LOADED: ", action.post)
+      return {
+        ...state,
+        allPosts: [...state.allPosts, action.post]//Unhandled Rejection (TypeError): Invalid attempt to spread non-iterable instance unless you initialize the array when cryptogram loads
+      }
+    case 'DONE_LOADING_POSTS':
+      return{...state, allPosts: {loaded: true, data: [...state.allPosts]}}
+
     case 'ALL_COMMENTS_LOADED':
       return { ...state, allComments: { loaded: true, data: action.allComments } }
     case 'CONTRACT_UPDATING':

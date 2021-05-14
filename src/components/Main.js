@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import {
   loadPosts,
+  updatePosts,
   loadComments,
   loadUsers, 
   subscribeToEvents 
@@ -19,6 +20,8 @@ class Main extends Component {
     const {dispatch, cryptogram} = props
 
     await loadPosts(cryptogram, dispatch)
+    //await newLoadPosts(cryptogram, dispatch)
+    await updatePosts(cryptogram, dispatch)
     await loadComments(cryptogram, dispatch)
     await loadUsers(cryptogram, dispatch)    
 
@@ -42,7 +45,7 @@ class Main extends Component {
 function mapStateToProps(state) {
   const cryptogram = cryptogramSelector(state)
   return {
-    cryptogram
+    cryptogram    
 
   }
 }

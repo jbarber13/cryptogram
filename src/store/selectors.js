@@ -20,11 +20,6 @@ const users = state => get(state, 'cryptogram.users.data', [])
 export const usersSelector = createSelector(users, u => u )
 
 
-const allImages = state => get(state, 'cryptogram.allImages.data', [])
-export const allImagesSelector = createSelector(
-    allImages, 
-    ai => ai    
-)
 const allPosts = state => get(state, 'cryptogram.allPosts.data', [])
 export const allPostSelector = createSelector(
     allPosts, 
@@ -33,8 +28,44 @@ export const allPostSelector = createSelector(
 const allComments = state => get(state, 'cryptogram.allComments.data', [])
 export const allCommentsSelector = createSelector(
     allComments, 
-    ac => ac    
+    (comments) => {
+        //console.log("AllComments: ", comments)
+        comments = decorateAllComments(comments)
+        return comments
+    }
 )
+
+const decorateAllComments = (comments) => {
+    return(
+        comments.map((comment) => {
+            //console.log("decorateAllComments: ", comment.postID)
+            comment = decorateComment(comment)
+            return comment
+        })
+    )
+}
+
+const decorateComment = (comment) => {
+    //console.log("decorateComment: ", comment.postID)
+    return({
+        ...comment,        
+        formattedTimeStamp: moment.unix(comment.timeStamp).format('h:mm:ss a M/D/Y') //hours mins seconds AM/PM Month/Day/Year -- https://momentjs.com/
+    })
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 const commentText = state => get(state, 'uploadHandler.commentText', {})
 export const commentTextSelector = createSelector(commentText, ct => ct)
 

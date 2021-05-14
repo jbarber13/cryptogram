@@ -98,6 +98,7 @@ contract CryptoGram {
         uint256 postID,
         string comment,
         address author,
+        uint256 tipAmount,
         uint256 timeStamp
     );
     event CommentTipped(
@@ -278,7 +279,7 @@ contract CryptoGram {
         );
 
         //emit event
-        emit CommentAdded(commentCount, _postID, _comment, msg.sender, now);
+        emit CommentAdded(commentCount, _postID, _comment, msg.sender, 0, now);
     }
 
     function tipComment(uint256 _commentID) public payable {

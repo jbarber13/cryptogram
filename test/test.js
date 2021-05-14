@@ -103,14 +103,18 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser, comme
 
           let tipAmount
           tipAmount = web3.utils.toWei('1', 'Ether')
-          tipAmount = new web3.utils.BN(tipAmount)
+          let tippedPost = await cryptogram.posts(postCount)
+          console.log(tippedPost.tipAmount.toString())
+          assert.equal(tippedPost.tipAmount, tipAmount)
 
-          const expectedBalance = oldAuthorBalance.add(tipAmount)
+
+          tipAmount = new web3.utils.BN(tipAmount)
+          const expectedBalance = oldAuthorBalance.add(tipAmount)    
 
           assert.equal(newAuthorBalance.toString(), expectedBalance.toString())
           assert.notEqual(newAuthorBalance, oldAuthorBalance)
         })
-
+        
       })
       describe('Failure', async () => {
         it('prevents an invalid post ID from being tipped', async () => {
