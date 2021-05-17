@@ -1,47 +1,57 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux'
 
-import Web3 from 'web3';
 //import Identicon from 'identicon.js';
 import './App.css';
-import CryptoGram from '../abis/CryptoGram.json'
 import { Switch, Route, Link } from 'react-router-dom';
 import {
-  loadWeb3,
-  loadAccount,
-  loadCryptogram,
+  
+  loadEverything
 } from '../store/interactions'
-import { cryptogramLoadedSelector, contractUpdatingSelector  } from '../store/selectors'
-
+import { cryptogramLoadedSelector, contractUpdatingSelector, allPostsLoadedSelector, eventHeardSelector  } from '../store/selectors'
 import Navbar from './Navbar'
 import Main from './Main';
 import Loading from './Loading'
 //import SharePost from './SharePost'
 
-const ipfsClient = require('ipfs-http-client')
-const ipfs = ipfsClient({ host: 'ipfs.infura.io', port: 5001, protocol: 'https' })
+
 
 class App extends Component {
 
   componentWillMount() {
-    this.loadBlockchainData(this.props.dispatch)
+    
+    if(!this.props.eventHeard){
+      this.loadBlockchainData(this.props.dispatch)
+    }
   }
   //CHECK NETWORK AND ACCOUNT IN META MASK
   async loadBlockchainData(dispatch) {
-    const web3 = await loadWeb3(dispatch)
+   // if(this.props.eventHeard){console.log("EVENT HEARD IN STATE!!!!", this.props.eventHeard)}
+    
+   await loadEverything(dispatch)
+    /**
+     const web3 = await loadWeb3(dispatch)
     const networkId = await web3.eth.net.getId()
     await loadAccount(web3, dispatch)
     const cryptogram = await loadCryptogram(web3, networkId, dispatch)
     if(!cryptogram) {
       window.alert('Exchange smart contract not detected on the current network. Please select another network with Metamask.')
       return
-    }    
+    }
+
+
+    {this.props.cryptogramLoaded || this.props.allPostsLoaded ? 
+        <Main /> : <Loading />
+        }
+     */
+
+
+        
   }//loadBlockchainData  
    render() {
     return (
       <div id="header" className="bg-dark">
         <Navbar />
-
 
         {this.props.cryptogramLoaded ? 
         <Main /> : <Loading />
@@ -61,8 +71,7 @@ function mapStateToProps(state) {
 
   return {
     //account: accountSelector(state)//enable selector for testing via console log
-    cryptogramLoaded: cryptogramLoadedSelector(state),
-    contractUpdating: contractUpdatingSelector(state)
+    cryptogramLoaded: cryptogramLoadedSelector(state)    
   }
 }
 

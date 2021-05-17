@@ -105,7 +105,7 @@ class SharePost extends Component {
     return (
       <div className="component" id="sharePost">
         <div className="sharePost">
-          {this.props.contractUpdating ? showForm(this.props) : <Loading />}          
+          {showForm(this.props)}          
         </div>
       </div>
     );

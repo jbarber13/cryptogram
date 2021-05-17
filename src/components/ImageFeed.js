@@ -17,7 +17,8 @@ import {
   allCommentsSelector,
   commentTextSelector
 } from '../store/selectors'
-import { tipPost, makeComment } from '../store/interactions'
+import { tipPost, tipComment, makeComment } from '../store/interactions'
+import Loading from './Loading'
 
 
 
@@ -25,7 +26,7 @@ import { tipPost, makeComment } from '../store/interactions'
 //portrait logo: QmUhWdN2ZMoNjxtTywNWJPVqn9TRYgxnNyUhiDa8nAzWtg
 
 const showFeed = (props) => {
-  const { dispatch, account, cryptogram, web3, allPosts, allComments, commentText } = props
+  const { dispatch, account, cryptogram, web3, allPosts, allPostsLoaded, allComments, commentText } = props
 
   function getImageURL(post) {
     let hash
@@ -37,16 +38,13 @@ const showFeed = (props) => {
   function showLink(post) {
     let output = ""
     if (post.link != "") {
-      output = <a className="text-link" href={post.link.toString()}>Attached Link</a>
+      output = <a className="text-link" href={post.link.toString()} target="#_blank">Attached Link</a>
     }
     return (
       output
     );
   }
-  function renderComments(post) {
-
-
-    
+  function renderComments(post) {    
     return (
       <div>
         <div>
@@ -61,9 +59,19 @@ const showFeed = (props) => {
                     height='30'
                     alt="#"
                     src={`data:image/png;base64,${new Identicon(comment.author, 30).toString()}`}
-                  /><small className="text-muted">{comment.formattedTimeStamp}</small>
+                  /><small className="text-muted">{comment.formattedTimeStamp} TIPS: {web3.utils.fromWei(comment.tipAmount.toString(), 'Ether')} ETH</small>
                   <br />
-                  {comment.comment}                                              
+                  {comment.comment} 
+                  <button
+                      className="btn btn-link btn-sm float-right pt-0"
+                      name={comment.id}
+                      onClick={(event) => {
+                        let tipAmount = web3.utils.toWei('0.1', 'Ether')
+                        tipComment(dispatch, account, cryptogram, event.target.name, tipAmount)
+                      }}
+                    >
+                      TIP 0.1 ETH
+                        </button>                                             
                 </p>
               )
             }
@@ -76,7 +84,6 @@ const showFeed = (props) => {
     )
   }
   function composeComment(post) {
-
     return (
       <div>
         <br></br>
@@ -145,6 +152,7 @@ const showFeed = (props) => {
                       name={post.id}
                       onClick={(event) => {
                         let tipAmount = web3.utils.toWei('0.1', 'Ether')
+
                         tipPost(dispatch, account, cryptogram, event.target.name, tipAmount)
                       }}
                     >
@@ -176,7 +184,10 @@ class ImageFeed extends Component {
     return (
       <div className="imageFeed" id="imageFeed">
         <br /><br /><br /><br /><br /><br />
-        {showFeed(this.props)}
+        {
+        showFeed(this.props) 
+        }
+
       </div>
     );
   }

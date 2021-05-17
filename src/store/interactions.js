@@ -3,19 +3,30 @@ import {
   web3Loaded,
   web3AccountLoaded,
   cryptogramLoaded,
-  allPostsLoaded,
-  allUsersLoaded,
+  userLoaded,
   contractUpdating,
-  contractUpdated,
-  allCommentsLoaded,
   postLoaded,
-  doneLoadingPosts
+  commentLoaded  
 } from './actions'
-import {allPostSelector} from './selectors'
 import CryptoGram from '../abis/CryptoGram.json'
 
 
-export const loadWeb3 = async (dispatch) => {
+//TODO: need to clear state when loading contract to avoid old data being dumped into new posts when made back to back
+export const loadEverything = async (dispatch) => {
+  const web3 = await _loadWeb3(dispatch)
+  const networkId = await web3.eth.net.getId()
+  await _loadAccount(web3, dispatch)
+  const cryptogram = await _loadCryptogram(web3, networkId, dispatch)
+  if (!cryptogram) {
+    window.alert('Exchange smart contract not detected on the current network. Please select another network with Metamask.')
+    return
+  }
+  await _loadPosts(cryptogram, dispatch)
+  await _loadComments(cryptogram, dispatch)
+  await _loadUsers(cryptogram, dispatch)
+}
+
+const _loadWeb3 = async (dispatch) => {
 
   if (typeof window.ethereum !== 'undefined') {
     const web3 = new Web3(window.ethereum)
@@ -29,7 +40,7 @@ export const loadWeb3 = async (dispatch) => {
   }
 }
 
-export const loadAccount = async (web3, dispatch) => {
+const _loadAccount = async (web3, dispatch) => {
   const accounts = await web3.eth.getAccounts()
   const account = await accounts[0]
   if (typeof account !== 'undefined') {
@@ -41,7 +52,7 @@ export const loadAccount = async (web3, dispatch) => {
   }
 }
 
-export const loadCryptogram = async (web3, networkId, dispatch) => {
+const _loadCryptogram = async (web3, networkId, dispatch) => {
   try {
     const cryptogram = new web3.eth.Contract(CryptoGram.abi, CryptoGram.networks[networkId].address)
     dispatch(cryptogramLoaded(cryptogram))
@@ -51,124 +62,146 @@ export const loadCryptogram = async (web3, networkId, dispatch) => {
     return null
   }
 }
+//for some reason, it is executing the loop body twice the second time it is called, putting post count in state when cryptogram loads.... 
+//next TODO: try a new kind of loop maybe..
+//if that doesn't work, maybe try to load all posts from event stream, then loop through state array to update each one (using .map()) with the most recent info viay .call()
+const _loadPosts = async (cryptogram, dispatch) => {
+  const postStream = await cryptogram.getPastEvents('PostAdded', {fromBlock: 0, toBlock: 'latest'})
+  const posts = postStream.map((event) => event.returnValues)
 
-//whats happening is that the posts are loaded based on the initial emitted event from when they are created, which does not include any updated data such as the tipAmount
-export const updatePosts = async (cryptogram, dispatch) => {
-  const postCount = await cryptogram.methods.postCount().call()
-  for (var i = 1; i <= postCount; i++){
-    dispatch(postLoaded(await cryptogram.methods.posts(i).call()))
-    if(i >= postCount){
-      //dispatch all posts loaded if done
-      dispatch(doneLoadingPosts())
-    }
-    //update each post, as the tip amount here does not match the one in state since that one came from the OG event from when the post was created
+  const loadPost = async id => {
+    dispatch(postLoaded(await cryptogram.methods.posts(id).call()))
   }
+  posts.map(post => loadPost(post.id))
 
-  
-  
-}
+} 
 
-
-export const loadPosts = async (cryptogram, dispatch) => {
-  const postStream = await cryptogram.getPastEvents('PostAdded', { fromBlock: 0, toBlock: 'latest' })
-  //console.log("postStream: ", postStream.id)
-  const allPosts = postStream.map((event) => (event.returnValues))
-  //console.log("allPosts", allPosts)
-  dispatch(allPostsLoaded(allPosts))
-}
-
-export const loadComments = async (cryptogram, dispatch) => {
+const _loadComments = async (cryptogram, dispatch) => {
   const commentStream = await cryptogram.getPastEvents('CommentAdded', {fromBlock: 0, toBlock: 'latest'})
-  const allComments = commentStream.map((event) => event.returnValues)
-  dispatch(allCommentsLoaded(allComments))
+  const comments = commentStream.map((event) => event.returnValues)
+
+  const loadComment = async id => {
+    dispatch(commentLoaded(await cryptogram.methods.comments(id).call()))
+  }
+  comments.map(comment => loadComment(comment.id))
 }
 
-export const loadUsers = async (cryptogram, dispatch) => {
+/**
+ const _loadPosts = async (cryptogram, dispatch, postCount) => {
+  dispatch(aboutToLoadPosts())
+  //console.log("loadPosts")
+  for (var i = 1; i <= postCount; i++) {
+    console.log("i in _loadPosts loop: ", i)
+    dispatch(postLoaded(await cryptogram.methods.posts(i).call()))
+    if (i >= postCount) {
+      //once done loading, it will dump the data into an array so it can be mapped
+      dispatch(doneLoadingPosts())
+      return
+    }
+  }
+}
+const _loadComments = async (cryptogram, dispatch) => {
+  const commentCount = await cryptogram.methods.commentCount().call()
+  for (var i = 1; i <= commentCount; i++) {
+    dispatch(commentLoaded(await cryptogram.methods.comments(i).call()))
+    if (i >= commentCount) {
+      //once done loading, it will dump the data into an array so it can be mapped
+      dispatch(doneLoadingComments())
+    }
+  }
+}
+ */
+
+const _loadUsers = async (cryptogram, dispatch) => {
   const userStream = await cryptogram.getPastEvents('UserAdded', { fromBlock: 0, toBlock: 'latest' })//entire chain history
   const allUsers = userStream.map((event) => event.returnValues)
-  //console.log("loadAllImages", allUsers)
-  dispatch(allUsersLoaded(allUsers))
+  
+  const loadUser = async id => {
+    dispatch(userLoaded(await cryptogram.methods.users(id).call()))
+  }
 }
 
 
-export const makePost = async (dispatch, cryptogram, account,  result, description, title, link) => {
+
+export const makePost = async (dispatch, cryptogram, account, result, description, title, link) => {
   let hash = "No Image Present"
   let desc = ""
   let postLink = ""
-  if(result === undefined){
+  if (result === undefined) {
     console.log("No Image Present")
-  }else{
+  } else {
     hash = result[0].hash
     console.log("IPFS Result: ", result)
     console.log("Image Hash: ", hash)
   }
-  
+
   //check if description or link are included
-  if(description.toString() === "[object Object]"){
+  if (description.toString() === "[object Object]") {
     console.log("No Description Detected")
-  }else{
+  } else {
     desc = description
   }
-  if(link.toString() === "[object Object]"){
+  if (link.toString() === "[object Object]") {
     console.log("No Link Detected")
-  }else{
+  } else {
     postLink = link
   }
-  
-   cryptogram.methods.makePost(hash, desc, title, postLink).send({ from: account })
-  .on('transactionHash', (hash) => {
-    console.log("Upload transaction hash: ", hash)
-    dispatch(contractUpdating("makePost"))
-  }) 
+
+  cryptogram.methods.makePost(hash, desc, title, postLink).send({ from: account })
+    .on('transactionHash', (hash) => {
+      console.log("Upload transaction hash: ", hash)
+      dispatch(contractUpdating("makePost"))
+    })
 }
 export const tipPost = async (dispatch, account, cryptogram, id, tipAmount,) => {
-  
 
-  console.log("tipPost stuff")
-  console.log("tipPost id", id)
-  console.log("tipPost tipAmount", tipAmount)
-  
-  
-
-
-  
   cryptogram.methods.tipPost(id).send({ from: account, value: tipAmount })
     .on('transactionHash', (hash) => {
       console.log("tipPost Transaction Hash: ", hash)
       dispatch(contractUpdating("tipPost"))
     })
-   
-  
-  
-  
-  
 }
 
 export const makeComment = async (dispatch, account, cryptogram, postID, comment) => {
-  
-   cryptogram.methods.comment(postID, comment,).send({from: account})
-  .on('transactionHash', (hash) => {
-    console.log("Comment transaction hash: ", hash)
-    dispatch(contractUpdating("comment"))
-  })  
+
+  cryptogram.methods.comment(postID, comment,).send({ from: account })
+    .on('transactionHash', (hash) => {
+      console.log("Comment transaction hash: ", hash)
+      dispatch(contractUpdating("comment"))
+    })
 }
 
-const _clearState = () => {
+export const tipComment = async (dispatch, account, cryptogram, id, tipAmount,) => {
 
+  cryptogram.methods.tipComment(id).send({ from: account, value: tipAmount })
+    .on('transactionHash', (hash) => {
+      console.log("tipComment Transaction Hash: ", hash)
+      dispatch(contractUpdating("tipComment"))
+    })
 }
+
+
 //listen for events emitted from contract and update component in real time
 export const subscribeToEvents = async (cryptogram, dispatch) => {
-  
+
   cryptogram.events.PostAdded({}, (error, event) => {
-    dispatch(contractUpdated(event.returnValues)) 
+    loadEverything(dispatch)
     console.log("PostAdded Event Heard", event.returnValues)
+    if(error){console.error(error)}
   })
   cryptogram.events.CommentAdded({}, (error, event) => {
-    dispatch(contractUpdated(event.returnValues)) 
+    loadEverything(dispatch)
     console.log("CommentAdded Event Heard", event.returnValues)
+    if(error){console.error(error)}
   })
   cryptogram.events.PostTipped({}, (error, event) => {
-    dispatch(contractUpdated(event.returnValues)) 
+    loadEverything(dispatch)
     console.log("PostTipped Event Heard", event.returnValues)
+    if(error){console.error(error)}
+  })
+  cryptogram.events.CommentTipped({}, (error, event) => {
+    loadEverything(dispatch)
+    console.log("CommentTipped Event Heard", event.returnValues)
+    if(error){console.error(error)}
   })
 }

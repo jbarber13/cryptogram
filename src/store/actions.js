@@ -24,21 +24,6 @@ export function cryptogramLoaded(contract){
         contract
     }
 }
-export function allImagesLoaded(allImages){
-	return {
-		type: 'ALL_IMAGES_LOADED',
-		allImages
-	}
-}
-
-export function allPostsLoaded(allPosts){
-	return {
-		type: 'ALL_POSTS_LOADED',
-		allPosts
-	}
-}
-
-
 
 
 export function postLoaded(post){
@@ -47,31 +32,20 @@ export function postLoaded(post){
 		post
 	}
 }
-export function doneLoadingPosts(){
+
+export function commentLoaded(comment){
 	return{
-		type: 'DONE_LOADING_POSTS'
+		type: 'COMMENT_LOADED',
+		comment
 	}
 }
 
 
 
-
-
-
-
-
-
-
-export function allCommentsLoaded(allComments){
-	return {
-		type: 'ALL_COMMENTS_LOADED',
-		allComments
-	}
-}
-export function allUsersLoaded(users){
+export function userLoaded(user){
 	return{
-		type: 'ALL_USERS_LOADED',
-		users
+		type: 'USER_LOADED',
+		user
 	}
 }
 
@@ -112,9 +86,4 @@ export function contractUpdating(message){
 		message
 	}
 }
-export function contractUpdated(message){
-	return{
-		type: 'CONTRACT_UPDATED',
-		message
-	}
-}
+
