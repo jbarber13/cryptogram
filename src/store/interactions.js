@@ -13,6 +13,7 @@ import CryptoGram from '../abis/CryptoGram.json'
 
 //TODO: need to clear state when loading contract to avoid old data being dumped into new posts when made back to back
 export const loadEverything = async (dispatch) => {
+
   const web3 = await _loadWeb3(dispatch)
   const networkId = await web3.eth.net.getId()
   await _loadAccount(web3, dispatch)
@@ -21,6 +22,8 @@ export const loadEverything = async (dispatch) => {
     window.alert('Exchange smart contract not detected on the current network. Please select another network with Metamask.')
     return
   }
+  console.log("loadEverything called")
+
   await _loadPosts(cryptogram, dispatch)
   await _loadComments(cryptogram, dispatch)
   await _loadUsers(cryptogram, dispatch)
@@ -68,8 +71,14 @@ const _loadCryptogram = async (web3, networkId, dispatch) => {
 const _loadPosts = async (cryptogram, dispatch) => {
   const postStream = await cryptogram.getPastEvents('PostAdded', {fromBlock: 0, toBlock: 'latest'})
   const posts = postStream.map((event) => event.returnValues)
+  const postCount = await cryptogram.methods.postCount().call()
+  
+  console.log("_loadPosts called")
+
 
   const loadPost = async id => {
+    console.log("loadPost called")
+
     dispatch(postLoaded(await cryptogram.methods.posts(id).call()))
   }
   posts.map(post => loadPost(post.id))
@@ -114,11 +123,13 @@ const _loadComments = async (cryptogram, dispatch) => {
 
 const _loadUsers = async (cryptogram, dispatch) => {
   const userStream = await cryptogram.getPastEvents('UserAdded', { fromBlock: 0, toBlock: 'latest' })//entire chain history
-  const allUsers = userStream.map((event) => event.returnValues)
+  const users = userStream.map((event) => event.returnValues)
   
   const loadUser = async id => {
     dispatch(userLoaded(await cryptogram.methods.users(id).call()))
   }
+
+  users.map(user => loadUser(user.id))
 }
 
 
@@ -150,15 +161,16 @@ export const makePost = async (dispatch, cryptogram, account, result, descriptio
   cryptogram.methods.makePost(hash, desc, title, postLink).send({ from: account })
     .on('transactionHash', (hash) => {
       console.log("Upload transaction hash: ", hash)
-      dispatch(contractUpdating("makePost"))
+      //dispatch(contractUpdating("makePost"))
     })
 }
 export const tipPost = async (dispatch, account, cryptogram, id, tipAmount,) => {
+  console.log("tipPost called")
 
   cryptogram.methods.tipPost(id).send({ from: account, value: tipAmount })
     .on('transactionHash', (hash) => {
       console.log("tipPost Transaction Hash: ", hash)
-      dispatch(contractUpdating("tipPost"))
+      //dispatch(contractUpdating("tipPost"))
     })
 }
 
@@ -167,7 +179,7 @@ export const makeComment = async (dispatch, account, cryptogram, postID, comment
   cryptogram.methods.comment(postID, comment,).send({ from: account })
     .on('transactionHash', (hash) => {
       console.log("Comment transaction hash: ", hash)
-      dispatch(contractUpdating("comment"))
+      //dispatch(contractUpdating("comment"))
     })
 }
 
@@ -176,13 +188,14 @@ export const tipComment = async (dispatch, account, cryptogram, id, tipAmount,) 
   cryptogram.methods.tipComment(id).send({ from: account, value: tipAmount })
     .on('transactionHash', (hash) => {
       console.log("tipComment Transaction Hash: ", hash)
-      dispatch(contractUpdating("tipComment"))
+      //dispatch(contractUpdating("tipComment"))
     })
 }
 
 
 //listen for events emitted from contract and update component in real time
 export const subscribeToEvents = async (cryptogram, dispatch) => {
+  console.log("subscribeToEvents called")
 
   cryptogram.events.PostAdded({}, (error, event) => {
     loadEverything(dispatch)
