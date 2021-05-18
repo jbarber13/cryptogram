@@ -14,6 +14,7 @@ class Main extends Component {
   async loadBlockchainData(props) {    
 
     const {dispatch, cryptogram} = props      
+    console.log("loadBlockchainData in MAIN called")
 
     await subscribeToEvents(cryptogram, dispatch)
     //subscribe to events
