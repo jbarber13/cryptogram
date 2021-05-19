@@ -4,9 +4,11 @@ import {
   web3AccountLoaded,
   cryptogramLoaded,
   userLoaded,
-  contractUpdating,
+  fileCaptured,
   postLoaded,
-  commentLoaded  
+  commentLoaded,
+  clearForm,
+  userAlreadyExists
 } from './actions'
 import CryptoGram from '../abis/CryptoGram.json'
 
@@ -73,7 +75,7 @@ const _loadPosts = async (cryptogram, dispatch) => {
   const posts = postStream.map((event) => event.returnValues)
   const postCount = await cryptogram.methods.postCount().call()
   
-  console.log("_loadPosts called")
+  console.log("_loadPosts called ")
 
 
   const loadPost = async id => {
@@ -82,6 +84,7 @@ const _loadPosts = async (cryptogram, dispatch) => {
     dispatch(postLoaded(await cryptogram.methods.posts(id).call()))
   }
   posts.map(post => loadPost(post.id))
+
 
 } 
 
@@ -125,13 +128,77 @@ const _loadUsers = async (cryptogram, dispatch) => {
   const userStream = await cryptogram.getPastEvents('UserAdded', { fromBlock: 0, toBlock: 'latest' })//entire chain history
   const users = userStream.map((event) => event.returnValues)
   
-  const loadUser = async id => {
-    dispatch(userLoaded(await cryptogram.methods.users(id).call()))
+  const loadUser = async userAccount => {
+    dispatch(userLoaded(await cryptogram.methods.users(userAccount).call()))
   }
 
-  users.map(user => loadUser(user.id))
+  users.map(user => loadUser(user.userAccount))
 }
 
+export const userExists = (account, allUsers, dispatch) => {
+  let exists = false
+  allUsers.map(user => {
+    if(user.userAccount == account){exists = true}
+  })
+  if(exists){dispatch(userAlreadyExists())}
+}
+
+export const captureFile = (event, dispatch) => {
+    event.preventDefault()
+    const file = event.target.files[0]
+    const reader = new window.FileReader()
+    reader.readAsArrayBuffer(file)
+
+    reader.onloadend = () => {
+      //this.setState({ buffer: Buffer(reader.result) })
+      console.log('file', Buffer(reader.result))
+      dispatch(fileCaptured(Buffer(reader.result)))
+    }
+}
+
+export const makeUser = async (dispatch, cryptogram, account, userName, result, status, location, contact, occupation) => {
+  let imageHash = "No Image Present"
+  let _status = ""
+  let _location = ""
+  let _contact = ""
+  let _occupation = ""
+  if (result === undefined) {
+    console.log("No Image Present")
+  } else {
+    imageHash = result[0].hash
+    console.log("IPFS Result: ", result)
+    console.log("Image Hash: ", imageHash)
+  }
+
+  //check if optional fields were populated
+  if (status.toString() === "[object Object]") {
+    console.log("No status Detected")
+  } else {
+    _status = status
+  }
+  if (location.toString() === "[object Object]") {
+    console.log("No location Detected")
+  } else {
+    _location = location
+  }
+  if (contact.toString() === "[object Object]") {
+    console.log("No contact Detected")
+  } else {
+    _contact = contact
+  }
+  if (occupation.toString() === "[object Object]") {
+    console.log("No occupation Detected")
+  } else {
+    _occupation = occupation
+  }
+  cryptogram.methods.addUser(userName, imageHash, _status, _location, _contact, _occupation).send({ from: account })
+    .on('transactionHash', (hash) => {
+      console.log("Upload transaction hash: ", hash)
+      dispatch(clearForm())
+      //dispatch(contractUpdating("makePost"))
+    })
+
+}
 
 
 export const makePost = async (dispatch, cryptogram, account, result, description, title, link) => {
@@ -146,7 +213,7 @@ export const makePost = async (dispatch, cryptogram, account, result, descriptio
     console.log("Image Hash: ", hash)
   }
 
-  //check if description or link are included
+  //check if optional fields were populated
   if (description.toString() === "[object Object]") {
     console.log("No Description Detected")
   } else {
@@ -161,6 +228,7 @@ export const makePost = async (dispatch, cryptogram, account, result, descriptio
   cryptogram.methods.makePost(hash, desc, title, postLink).send({ from: account })
     .on('transactionHash', (hash) => {
       console.log("Upload transaction hash: ", hash)
+      dispatch(clearForm())
       //dispatch(contractUpdating("makePost"))
     })
 }
@@ -197,6 +265,8 @@ export const tipComment = async (dispatch, account, cryptogram, id, tipAmount,) 
 export const subscribeToEvents = async (cryptogram, dispatch) => {
   console.log("subscribeToEvents called")
 
+  let eventHeard = 0
+
   cryptogram.events.PostAdded({}, (error, event) => {
     loadEverything(dispatch)
     console.log("PostAdded Event Heard", event.returnValues)
@@ -207,8 +277,11 @@ export const subscribeToEvents = async (cryptogram, dispatch) => {
     console.log("CommentAdded Event Heard", event.returnValues)
     if(error){console.error(error)}
   })
-  cryptogram.events.PostTipped({}, (error, event) => {
+  cryptogram.events.PostTipped({fromBlock: 'latest', toBlock: 'latest'}, (error, event) => {
     loadEverything(dispatch)
+    console.log("eventHeard called count: ", eventHeard)
+    eventHeard++
+    //loadEverything(dispatch)
     console.log("PostTipped Event Heard", event.returnValues)
     if(error){console.error(error)}
   })

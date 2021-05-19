@@ -12,6 +12,7 @@ import { cryptogramLoadedSelector, contractUpdatingSelector, allPostsLoadedSelec
 import Navbar from './Navbar'
 import Main from './Main';
 import Loading from './Loading'
+import CreateUser from './CreateUser'
 //import SharePost from './SharePost'
 
 
