@@ -44,10 +44,10 @@ contract CryptoGram {
     struct User {
         address userAccount; //wallet address
         string userName;
+        string imageHash;
         string status;
         string location;
-        string phone;
-        string email;
+        string contact;
         string occupation;
         uint256 timeStamp;
     }
@@ -55,10 +55,10 @@ contract CryptoGram {
     event UserAdded(
         address userAccount, //wallet address
         string userName,
+        string imageHash,
         string status,
         string location,
-        string phone,
-        string email,
+        string contact,
         string occupation,
         uint256 timeStamp
     );
@@ -147,10 +147,10 @@ contract CryptoGram {
 
     function addUser(
         string memory _userName,
+        string memory _imageHash,
         string memory _status,
         string memory _location,
-        string memory _phone,
-        string memory _email,
+        string memory _contact,
         string memory _occupation
     ) public {
         //require user address to exist
@@ -158,10 +158,7 @@ contract CryptoGram {
 
         //require all fields to be populated
         require(bytes(_userName).length > 0);
-        require(bytes(_status).length > 0);
-        require(bytes(_location).length > 0);
-        require(bytes(_email).length > 0);
-        require(bytes(_occupation).length > 0);
+        
 
         //increment count of users
         userCount++;
@@ -170,10 +167,10 @@ contract CryptoGram {
         users[msg.sender] = User(
             msg.sender,
             _userName,
+            _imageHash,
             _status,
             _location,
-            _phone,
-            _email,
+            _contact,
             _occupation,
             now
         );
@@ -182,10 +179,10 @@ contract CryptoGram {
         emit UserAdded(
             msg.sender,
             _userName,
+            _imageHash,
             _status,
             _location,
-            _phone,
-            _email,
+            _contact,
             _occupation,
             now
         );
@@ -346,14 +343,14 @@ contract CryptoGram {
             //update value and put back into mapping
             _user.userName = _value;
             users[msg.sender] = _user;
+        }else if (keccak256(bytes(_type)) == keccak256(bytes("imageHash"))) {
+            _user.imageHash = _value;
+            users[msg.sender] = _user;
         } else if (keccak256(bytes(_type)) == keccak256(bytes("location"))) {
             _user.location = _value;
             users[msg.sender] = _user;
-        } else if (keccak256(bytes(_type)) == keccak256(bytes("phone"))) {
-            _user.phone = _value;
-            users[msg.sender] = _user;
-        } else if (keccak256(bytes(_type)) == keccak256(bytes("email"))) {
-            _user.email = _value;
+        } else if (keccak256(bytes(_type)) == keccak256(bytes("contact"))) {
+            _user.contact = _value;
             users[msg.sender] = _user;
         } else if (keccak256(bytes(_type)) == keccak256(bytes("occupation"))) {
             _user.occupation = _value;

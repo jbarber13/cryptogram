@@ -33,9 +33,45 @@ function cryptogram(state = {}, action) {
         ...state, 
         allUsers: [...state.allUsers, action.user]
       }
-    //when loaded gets set to false, the whole thing loads again from App, causing duplicates
-    //case 'CONTRACT_UPDATING':
-      //return { ...state, loaded: false, message: action.message }    
+
+    case 'USER_EXISTS': 
+      return{...state, userExists: true}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    case 'EVENT_HEARD':
+        return{
+          ...state, 
+          eventHeard: action.eventHeard
+        }
+    case 'LOADING_COMPLETE':
+        return{
+          ...state,
+          eventHeard: false
+        }
+    //things are still breaking when the user account is switched, restarting the server fixes it...
+    //for some reason, this causes duplicates to appear after the second time it is called
+    /**
+     case 'CONTRACT_UPDATING':
+      console.log("CONTRACT_UPDATING")
+      return { ...state, loaded: false, message: action.message } 
+     */
+       
     default:
       return state
   }
@@ -53,6 +89,21 @@ function uploadHandler(state = {}, action) {
       return { ...state, commentText: action.commentText }
     case 'FILE_CAPTURED':
       return { ...state, file: action.file, captured: true }
+/*****************Create User Account*****************/
+    case 'USERNAME_CHANGED': 
+      return{...state, userName: action.userName}
+    case 'STATUS_CHANGED': 
+      return{...state, status: action.status}
+    case 'LOCATION_CHANGED': 
+      return{...state, location: action.location}
+    case 'CONTACT_CHANGED': 
+      return{...state, contact: action.contact}
+    case 'OCCUPATION_CHANGED': 
+      return{...state, occupation: action.occupation}
+
+/*****************Clear Form from state after submit*****************/
+    case 'CLEAR_FORM':
+      return {...state, postTitle:"", postDescription:"", postLink:"", commentText:"", file:"", captured: false, userName:"", status:"", location:"", contact:"", occupation:"", }
     default:
       return state
   }

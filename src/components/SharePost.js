@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 
 import Loading from './Loading'
 
-import { fileCaptured, postTitleChanged, postDescriptionChanged, postLinkChanged} from '../store/actions'
+import {  postTitleChanged, postDescriptionChanged, postLinkChanged} from '../store/actions'
 import {
   fileSelector,
   postTitleSelector,
@@ -11,10 +11,9 @@ import {
   postLinkSelector,
   accountSelector,
   cryptogramSelector,
-  fileUploadedSelector,
-  contractUpdatingSelector
+  fileUploadedSelector
 } from '../store/selectors'
-import { makePost } from '../store/interactions'
+import { makePost, captureFile} from '../store/interactions'
 
 const ipfsClient = require('ipfs-http-client')
 const ipfs = ipfsClient({ host: 'ipfs.infura.io', port: 5001, protocol: 'https' })
@@ -25,18 +24,7 @@ const ipfs = ipfsClient({ host: 'ipfs.infura.io', port: 5001, protocol: 'https' 
 const showForm = (props) => {
   const { dispatch, file, postTitle, postDescription, postLink, account, cryptogram } = props
 
-  const captureFile = (event) => {
-    event.preventDefault()
-    const file = event.target.files[0]
-    const reader = new window.FileReader()
-    reader.readAsArrayBuffer(file)
-
-    reader.onloadend = () => {
-      //this.setState({ buffer: Buffer(reader.result) })
-      console.log('file', Buffer(reader.result))
-      dispatch(fileCaptured(Buffer(reader.result)))
-    }
-  }
+ 
   const initiatePost = () => {
     //view image: https://ipfs.infura.io/ipfs/<image hash> 
     
@@ -89,7 +77,7 @@ const showForm = (props) => {
             placeholder="Add a link URL (optional)"
              />
         </div>
-        <input className="btn btn-secondary" type='file' accept=".jpg, .jpeg, .png, .bmp, .gif" onChange={captureFile} />
+        <input className="btn btn-secondary" type='file' accept=".jpg, .jpeg, .png, .bmp, .gif" onChange={(e) => captureFile(e, dispatch)} />
         <br /><br />
         <button type="submit" className="btn btn-primary btn-block btn-lg">Upload</button>
 
@@ -121,8 +109,7 @@ function mapStateToProps(state) {
     postDescription: postDescriptionSelector(state),
     postLink: postLinkSelector(state),
     account: accountSelector(state),
-    cryptogram: cryptogramSelector(state),
-    contractUpdating: contractUpdatingSelector(state)
+    cryptogram: cryptogramSelector(state)
   }
 }
 

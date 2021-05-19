@@ -3,29 +3,25 @@
  * 'type' refers to the case, and the value (if there is one) is passed to the action argument of the reducer function
  */
 
-//WEB3
+/*****************Load Accounts, Contract, Contract Data*****************/
 export function web3Loaded(connection){
 	return {
 		type: 'WEB3_LOADED',
 		connection //== connection: connection
 	}
 }
-
 export function web3AccountLoaded(account){
 	return {
 		type: 'WEB3_ACCOUNT_LOADED',
 		account
 	}
 }
-
 export function cryptogramLoaded(contract){ 
     return {
         type: 'CRYPTOGRAM_LOADED', 
         contract
     }
 }
-
-
 export function postLoaded(post){
 	console.log("postLoaded action, id: ", post.id)
 	return{
@@ -33,16 +29,12 @@ export function postLoaded(post){
 		post
 	}
 }
-
 export function commentLoaded(comment){
 	return{
 		type: 'COMMENT_LOADED',
 		comment
 	}
 }
-
-
-
 export function userLoaded(user){
 	return{
 		type: 'USER_LOADED',
@@ -50,6 +42,45 @@ export function userLoaded(user){
 	}
 }
 
+export function userAlreadyExists(){
+	return{
+		type: 'USER_EXISTS'
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * Something is still fuckey with this, multiple events are being heard, and it is loading duplicate posts/comments as a result
+export function contractUpdating(message){
+	return{
+		type: 'CONTRACT_UPDATING',
+		message
+	}
+}
+ */
+
+/*****************Upload Handler*****************/
 export function fileCaptured(file){
 	return{
 		type: 'FILE_CAPTURED',
@@ -80,10 +111,40 @@ export function commentTextChanged(commentText){
 		commentText
 	}
 }
-export function contractUpdating(message){
+export function clearForm(){
 	return{
-		type: 'CONTRACT_UPDATING',
-		message
+		type: 'CLEAR_FORM'
+	}
+}
+
+export function userNameChanged(userName){
+	return{
+		type: 'USERNAME_CHANGED',
+		userName
+	}
+}
+export function statusChanged(status){
+	return{
+		type: 'STATUS_CHANGED',
+		status
+	}
+}
+export function locationChanged(location){
+	return{
+		type: 'LOCATION_CHANGED',
+		location
+	}
+}
+export function contactChanged(contact){
+	return{
+		type: 'CONTACT_CHANGED',
+		contact
+	}
+}
+export function occupationChanged(occupation){
+	return{
+		type: 'OCCUPATION_CHANGED',
+		occupation
 	}
 }
 
