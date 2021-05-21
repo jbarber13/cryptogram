@@ -28,7 +28,7 @@ class App extends Component {
   //CHECK NETWORK AND ACCOUNT IN META MASK
   async loadBlockchainData(dispatch) {
    // if(this.props.eventHeard){console.log("EVENT HEARD IN STATE!!!!", this.props.eventHeard)}
-   console.log("loadBlockchainData in APP called")
+   //console.log("loadBlockchainData in APP called")
 
    await loadEverything(dispatch)
     /**

@@ -71,7 +71,7 @@ const showFeed = (props) => {
                       }}
                     >
                       TIP 0.1 ETH
-                        </button>                                             
+                  </button>                                             
                 </p>
               )
             }

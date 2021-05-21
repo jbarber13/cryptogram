@@ -7,7 +7,7 @@ require('chai')
   .use(require('chai-as-promised'))
   .should()
 
-contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser, commentor]) => {
+contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser, commentor, imposter]) => {
   let cryptogram
 
   before(async () => {
@@ -554,6 +554,9 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser, comme
         })
         it('prevents an account from being updated by someone who does not own it', async () => {
           await cryptogram.updateUser("userName", newValue, { from: deployer }).should.be.rejected
+        })
+        it('prevents an account from being updated by someone who does not have a user account', async () => {
+          await cryptogram.updateUser("userName", newValue, { from: imposter }).should.be.rejected
         })
         it('reverts if the user value type is not valid', async () => {
           await cryptogram.updateUser("UserName", newValue, { from: otherUser }).should.be.rejected

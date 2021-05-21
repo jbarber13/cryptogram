@@ -6,31 +6,27 @@ pragma solidity >=0.5.0;
 //use ganache-cli --allowUnlimitedContractSize  --gasLimit 0xFFFFFFFFFFFF
 
 contract CryptoGramOld {
-    string public name =
-        "CryptoGram - decentralized image sharing social media platform";
+    string public name = "CryptoGram - decentralized image sharing social media platform";
     string public contractDescription =
         "version 2 of the original DSM - decentralized social media, many new features, and accounts are tied to the user's wallet address";
 
-
-    uint256 public imageCount = 0;
     uint256 public userCount = 0;
     uint256 public postCount = 0;
     uint256 public commentCount = 0;
-    mapping(uint256 => Image) public images;
     mapping(address => User) public users;
     mapping(uint256 => Post) public posts;
     mapping(uint256 => Comment) public comments;
 
     //keep track of deleted objects
-    mapping(uint256 => bool) public deletedImages;
     mapping(uint256 => bool) public deletedPosts;
     mapping(uint256 => bool) public deletedComments;
 
     struct Post {
         uint256 id;
-        uint256 imageID;
+        string imageHash;
         string title;
-        address author;
+        address payable author;
+        uint256 tipAmount;
         string link;
         string status;
         uint256 timeStamp;
@@ -45,22 +41,13 @@ contract CryptoGramOld {
         uint256 timeStamp;
     }
 
-    struct Image {
-        uint256 id;
-        string hash;
-        string description;
-        uint256 tipAmount;
-        address payable author;
-        uint256 timeStamp;
-    }
-
     struct User {
         address userAccount; //wallet address
         string userName;
+        string imageHash;
         string status;
         string location;
-        string phone;
-        string email;
+        string contact;
         string occupation;
         uint256 timeStamp;
     }
@@ -68,10 +55,10 @@ contract CryptoGramOld {
     event UserAdded(
         address userAccount, //wallet address
         string userName,
+        string imageHash,
         string status,
         string location,
-        string phone,
-        string email,
+        string contact,
         string occupation,
         uint256 timeStamp
     );
@@ -84,43 +71,33 @@ contract CryptoGramOld {
         uint256 timeStamp
     );
 
-    event ImageAdded(
+    event PostTipped(
         uint256 id,
-        string hash,
-        string description,
+        string title,
+        address author,
         uint256 tipAmount,
-        address payable author,
-        uint256 timeStamp
-    );
-
-    event ImageDeleted(uint256 id, uint256 timeStamp);
-
-    event ImageTipped(
-        uint256 id,
-        string hash,
-        string description,
-        uint256 tipAmount,
-        address payable author,
         uint256 timeStamp
     );
 
     event PostAdded(
         uint256 id,
-        uint256 imageID,
+        string imageHash,
         string title,
         address author,
+        uint256 tipAmount,
         string link,
         string status,
         uint256 timeStamp
     );
 
-    event PostDeleted(uint256 id, address author, uint256 timeStamp);
+    event PostDeleted(uint256 id, string title, address author, uint256 timeStamp);
 
     event CommentAdded(
         uint256 id,
         uint256 postID,
         string comment,
         address author,
+        uint256 tipAmount,
         uint256 timeStamp
     );
     event CommentTipped(
@@ -140,76 +117,40 @@ contract CryptoGramOld {
         revert();
     }
 
-   
-    function tipImageOwner(uint256 _id) public payable {
+    function tipPost(uint256 _id) public payable {
+
         //require valid ID
-        require(_id > 0 && _id <= imageCount);
-        require(!deletedImages[_id]);
+        require(_id > 0 && _id <= postCount);
+        require(!deletedPosts[_id]);
 
-        //get image
-        Image memory _image = images[_id];
+        //get post
+        Post memory _post = posts[_id];
+        //get author
+        address payable _author = _post.author;
 
-        //get image author
-        address payable _author = _image.author;
-
-        //send to author
+        //send tip to author
         address(_author).transfer(msg.value);
 
-        //update tip amount and put back into mapping
-        _image.tipAmount = _image.tipAmount + msg.value;
-        images[_id] = _image;
+        //update tip amount and mapping
+        _post.tipAmount = _post.tipAmount + msg.value;
+        posts[_id] = _post;
 
-        //emit event
-        emit ImageTipped(
+        emit PostTipped(
             _id,
-            _image.hash,
-            _image.description,
-            _image.tipAmount,
+            _post.title,
             _author,
+            _post.tipAmount, 
             now
         );
-    }
 
-    //internal function
-    function _uploadImage(
-        string memory _hash,
-        string memory _desc,
-        address payable _author
-    ) internal {
-        //require a hash to be included
-        require(bytes(_hash).length > 0);
-
-        //require a description to be included
-        require(bytes(_desc).length > 0);
-
-        //increment image ID
-        imageCount++;
-
-        //add image hash to mapping
-        images[imageCount] = Image(imageCount, _hash, _desc, 0, _author, now);
-
-        //emit event
-        emit ImageAdded(imageCount, _hash, _desc, 0, _author, now);
-    }
-
-    //internal function
-    function _deleteImage(uint256 _id) internal {
-        //require valid ID and image has not already been deleted
-        require(_id > 0 && _id <= imageCount);
-        require(!deletedImages[_id]);
-
-        //delete image from mapping and emit event
-        delete (images[_id]);
-        deletedImages[_id] = true;
-        emit ImageDeleted(_id, now);
     }
 
     function addUser(
         string memory _userName,
+        string memory _imageHash,
         string memory _status,
         string memory _location,
-        string memory _phone,
-        string memory _email,
+        string memory _contact,
         string memory _occupation
     ) public {
         //require user address to exist
@@ -217,10 +158,7 @@ contract CryptoGramOld {
 
         //require all fields to be populated
         require(bytes(_userName).length > 0);
-        require(bytes(_status).length > 0);
-        require(bytes(_location).length > 0);
-        require(bytes(_email).length > 0);
-        require(bytes(_occupation).length > 0);
+        
 
         //increment count of users
         userCount++;
@@ -229,10 +167,10 @@ contract CryptoGramOld {
         users[msg.sender] = User(
             msg.sender,
             _userName,
+            _imageHash,
             _status,
             _location,
-            _phone,
-            _email,
+            _contact,
             _occupation,
             now
         );
@@ -241,10 +179,10 @@ contract CryptoGramOld {
         emit UserAdded(
             msg.sender,
             _userName,
+            _imageHash,
             _status,
             _location,
-            _phone,
-            _email,
+            _contact,
             _occupation,
             now
         );
@@ -264,43 +202,34 @@ contract CryptoGramOld {
         emit UserDeleted(msg.sender, now);
     }
 
+    //hash should be 0 if no image is present
     function makePost(
         string memory _hash,
         string memory _desc,
         string memory _title,
-        string memory _link,
-        bool includesImage
+        string memory _link
     ) public {
         require(bytes(_title).length > 0);
-        require(bytes(_link).length > 0);
         require(msg.sender != address(0x0));
-
-        //default imageID if there is no inluded
-        uint256 _imageID = 0;
-
-        if (includesImage || !(bytes(_hash).length > 0)) {
-            //add image hash to mapping
-            _uploadImage(_hash, _desc, msg.sender);
-            _imageID = imageCount;
-        }
 
         postCount++;
 
         posts[postCount] = Post(
             postCount,
-            _imageID,
+            _hash,
             _title,
             msg.sender,
+            0,
             _link,
             _desc,
             now
         );
-
         emit PostAdded(
             postCount,
-            imageCount,
+            _hash,
             _title,
             msg.sender,
+            0,
             _link,
             _desc,
             now
@@ -315,22 +244,19 @@ contract CryptoGramOld {
         require(_postID > 0 && _postID <= postCount);
         require(!deletedPosts[_postID]);
 
+        //get post, title, and author
         Post memory _post = posts[_postID];
         address _author = _post.author;
+        string memory _title = _post.title;
         //check if image author matches message sender - only delete your own comments
         require(msg.sender == _author);
 
-        //get imageID to delete
-        uint256 _imageID = _post.imageID;
-        if (_imageID != 0) {
-            _deleteImage(_imageID);
-        }
-
-        delete (posts[_postID]);
         deletedPosts[_postID] = true;
+        delete (posts[_postID]);
 
         //emit event
-        emit PostDeleted(_postID, _author, now);
+        emit PostDeleted(_postID, _title, _author, now);
+
     }
 
     function comment(uint256 _postID, string memory _comment) public {
@@ -349,7 +275,7 @@ contract CryptoGramOld {
         );
 
         //emit event
-        emit CommentAdded(commentCount, _postID, _comment, msg.sender, now);
+        emit CommentAdded(commentCount, _postID, _comment, msg.sender, 0, now);
     }
 
     function tipComment(uint256 _commentID) public payable {
@@ -403,8 +329,9 @@ contract CryptoGramOld {
     }
 
     function updateUser(string memory _type, string memory _value) public {
-        //require user address to exist
+        //require user address to be valid, and for user account to already to exist
         require(msg.sender != address(0x0));
+        require(bytes(users[msg.sender].userName).length > 0);
 
         //get user
         User memory _user = users[msg.sender];
@@ -417,14 +344,14 @@ contract CryptoGramOld {
             //update value and put back into mapping
             _user.userName = _value;
             users[msg.sender] = _user;
+        }else if (keccak256(bytes(_type)) == keccak256(bytes("imageHash"))) {
+            _user.imageHash = _value;
+            users[msg.sender] = _user;
         } else if (keccak256(bytes(_type)) == keccak256(bytes("location"))) {
             _user.location = _value;
             users[msg.sender] = _user;
-        } else if (keccak256(bytes(_type)) == keccak256(bytes("phone"))) {
-            _user.phone = _value;
-            users[msg.sender] = _user;
-        } else if (keccak256(bytes(_type)) == keccak256(bytes("email"))) {
-            _user.email = _value;
+        } else if (keccak256(bytes(_type)) == keccak256(bytes("contact"))) {
+            _user.contact = _value;
             users[msg.sender] = _user;
         } else if (keccak256(bytes(_type)) == keccak256(bytes("occupation"))) {
             _user.occupation = _value;
@@ -434,6 +361,4 @@ contract CryptoGramOld {
         }
         emit UserUpdated(msg.sender, _type, _value, now);
     }
-
-    
 }
