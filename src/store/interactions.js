@@ -8,7 +8,8 @@ import {
   postLoaded,
   commentLoaded,
   clearForm,
-  userAlreadyExists
+  userAlreadyExists,
+  userAccountLoaded
 } from './actions'
 import CryptoGram from '../abis/CryptoGram.json'
 
@@ -18,17 +19,20 @@ export const loadEverything = async (dispatch) => {
 
   const web3 = await _loadWeb3(dispatch)
   const networkId = await web3.eth.net.getId()
-  await _loadAccount(web3, dispatch)
+  const account = await _loadAccount(web3, dispatch)
   const cryptogram = await _loadCryptogram(web3, networkId, dispatch)
   if (!cryptogram) {
     window.alert('Exchange smart contract not detected on the current network. Please select another network with Metamask.')
     return
   }
-  console.log("loadEverything called")
 
-  await _loadPosts(cryptogram, dispatch)
-  await _loadComments(cryptogram, dispatch)
-  await _loadUsers(cryptogram, dispatch)
+  const allPosts = await _loadPosts(cryptogram, dispatch)
+  const allComments = await _loadComments(cryptogram, dispatch)
+  const allUsers = await _loadUsers(cryptogram, dispatch)
+
+  _loadUser(account, allUsers, dispatch, cryptogram)
+  //console.log("loadEverything called", allPosts)
+
 }
 
 const _loadWeb3 = async (dispatch) => {
@@ -75,17 +79,17 @@ const _loadPosts = async (cryptogram, dispatch) => {
   const posts = postStream.map((event) => event.returnValues)
   const postCount = await cryptogram.methods.postCount().call()
   
-  console.log("_loadPosts called ")
+  //console.log("_loadPosts called ")
 
 
   const loadPost = async id => {
-    console.log("loadPost called")
+    //console.log("loadPost called")
 
     dispatch(postLoaded(await cryptogram.methods.posts(id).call()))
   }
   posts.map(post => loadPost(post.id))
 
-
+  return posts
 } 
 
 const _loadComments = async (cryptogram, dispatch) => {
@@ -131,17 +135,35 @@ const _loadUsers = async (cryptogram, dispatch) => {
   const loadUser = async userAccount => {
     dispatch(userLoaded(await cryptogram.methods.users(userAccount).call()))
   }
-
   users.map(user => loadUser(user.userAccount))
+  return users
 }
 
-export const userExists = (account, allUsers, dispatch) => {
-  let exists = false
+
+
+//if the user account has been made already, loads the user info into state
+const _loadUser = async (account, allUsers, dispatch, cryptogram) => {
   allUsers.map(user => {
-    if(user.userAccount == account){exists = true}
-  })
-  if(exists){dispatch(userAlreadyExists())}
+    if(user.userAccount == account){
+      dispatch(userAccountLoaded(user))
+    }
+  })  
 }
+
+export const updateUser = (dispatch, cryptogram, account, type, value) => {
+  console.log("account: ", account)
+  console.log("type: ", type)
+  console.log("value: ", value)
+
+  cryptogram.methods.updateUser(type, value.toString()).send({ from: account })
+    .on('transactionHash', (hash) => {
+      console.log("Upload transaction hash: ", hash)
+      //dispatch(contractUpdating("makePost"))
+    })
+
+}
+
+
 
 export const captureFile = (event, dispatch) => {
     event.preventDefault()
@@ -263,7 +285,7 @@ export const tipComment = async (dispatch, account, cryptogram, id, tipAmount,) 
 
 //listen for events emitted from contract and update component in real time
 export const subscribeToEvents = async (cryptogram, dispatch) => {
-  console.log("subscribeToEvents called")
+  //console.log("subscribeToEvents called")
 
   let eventHeard = 0
 
@@ -290,4 +312,10 @@ export const subscribeToEvents = async (cryptogram, dispatch) => {
     console.log("CommentTipped Event Heard", event.returnValues)
     if(error){console.error(error)}
   })
+  cryptogram.events.UserUpdated({}, (error, event) => {
+    loadEverything(dispatch)
+    console.log("UserUpdated Event Heard", event.returnValues)
+    if(error){console.error(error)}
+  })
+  
 }

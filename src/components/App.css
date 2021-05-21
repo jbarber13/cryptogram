@@ -106,3 +106,23 @@ html, body {
 .description-input{
   resize:both;
 }
+
+
+/*********************Profile Page*********************/
+.profile-picture{
+  width: 10rem;
+  height: 10rem;
+  border-radius: 50%;
+}
+.profile-info{
+  position: absolute;
+  left: 20%;
+  width: 30%;  
+}
+.infoImage{
+  max-width: 1.5rem;
+  float: left;
+}
+.edit-user-value{
+  right: 1000%;
+}

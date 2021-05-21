@@ -1,13 +1,12 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import {
-  subscribeToEvents,
-  userExists
+  subscribeToEvents  
 } from '../store/interactions'
-import { cryptogramSelector, allUsersSelector, accountSelector, userExistsSelector } from '../store/selectors';
+import { cryptogramSelector, allUsersSelector, accountSelector, userAccountLoadedSelector } from '../store/selectors';
 import SharePost from './SharePost'
 import ImageFeed from './ImageFeed'
-import Account from './Account'
+import MyAccount from './MyAccount'
 import CreateUser from './CreateUser'
 
 class Main extends Component {
@@ -17,18 +16,20 @@ class Main extends Component {
   async loadBlockchainData(props) {
 
     const { dispatch, cryptogram } = props
-    console.log("loadBlockchainData in MAIN called")
+    //console.log("loadBlockchainData in MAIN called")
     await subscribeToEvents(cryptogram, dispatch)
     //subscribe to events
   }//loadBlockchainData
 
   render() {
-    userExists(this.props.account, this.props.allUsers, this.props.dispatch)
     return (
       <div id="header" className="bg-dark">
-        {this.props.userFound ?
-          <Account /> : <CreateUser />
+        {this.props.userAccountLoaded ?
+          <MyAccount /> : <CreateUser />        
         }
+        <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+         <ImageFeed /> 
+         <SharePost />
       </div>
     );
   }
@@ -39,7 +40,7 @@ function mapStateToProps(state) {
     cryptogram,
     account: accountSelector(state),
     allUsers: allUsersSelector(state),
-    userFound: userExistsSelector(state)
+    userAccountLoaded: userAccountLoadedSelector(state)
 
   }
 }

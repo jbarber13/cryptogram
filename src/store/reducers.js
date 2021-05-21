@@ -33,9 +33,10 @@ function cryptogram(state = {}, action) {
         ...state, 
         allUsers: [...state.allUsers, action.user]
       }
-
-    case 'USER_EXISTS': 
-      return{...state, userExists: true}
+    case 'USER_ACCOUNT_LOADED':
+      return{...state, userAccount: action.account, userAccountLoaded: true}
+    case 'USER_UPADATE_VALUE_CHANGED':
+      return{...state, userUpdateValue: action.value}
 
 
 

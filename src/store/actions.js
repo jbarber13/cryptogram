@@ -47,6 +47,20 @@ export function userAlreadyExists(){
 		type: 'USER_EXISTS'
 	}
 }
+export function userAccountLoaded(account){
+	//console.log("userAccountLoaded")
+	return{
+		type: 'USER_ACCOUNT_LOADED',
+		account
+	}
+}
+export function userUpdateValueChanged(value){
+	return{
+		type: 'USER_UPADATE_VALUE_CHANGED',
+		value
+	}
+}
+
 
 
 

@@ -19,10 +19,14 @@ export const cryptogramSelector = createSelector(cryptogram, c => c)
 const allUsers = state => get(state, 'cryptogram.allUsers', [])
 export const allUsersSelector = createSelector(allUsers, u => u )
 
-const userExists = state => get(state, 'cryptogram.userExists', false)
-export const userExistsSelector = createSelector(userExists, ue => ue)
+const userAccountLoaded = state => get(state, 'cryptogram.userAccountLoaded', false)
+export const userAccountLoadedSelector = createSelector(userAccountLoaded, ue => ue)
 
+const user = state => get(state, 'cryptogram.userAccount', false)
+export const userSelector = createSelector(user, u => u)
 
+const userUpdateValue = state => get(state, 'cryptogram.userUpdateValue', "")
+export const userUpdateValueSelector = createSelector(userUpdateValue, uuv => uuv)
 
 const allPosts = state => get(state, 'cryptogram.allPosts', [])
 export const allPostSelector = createSelector(
