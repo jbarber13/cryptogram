@@ -77,16 +77,6 @@ const initiateUser = () => {
                         placeholder="Where are you located? "
                     />
                     <br></br>
-
-                    <input
-                        name="contact"
-                        type="text"
-                        onChange={(e) => dispatch(contactChanged(e.target.value))}
-                        className="form-control"
-                        placeholder="Contact info: phone, email, etc...."
-                    />
-
-                    <br></br>
                   
                     <input
                         name="occupation"

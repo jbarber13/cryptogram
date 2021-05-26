@@ -2,6 +2,8 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import Collapsible from 'react-collapsible';
 
+
+
 import {
     userNameChanged,
     statusChanged,
@@ -12,53 +14,88 @@ import {
 import {
     cryptogramSelector,
     userSelector,
-    userUpdateValueSelector
+    userUpdateValueSelector,
+    fileSelector
 } from '../store/selectors'
-import { updateUser } from '../store/interactions'
+import {
+    setUserName,
+    setImageHash,
+    setBio,
+    setLocation,
+    setOccupation,
+    captureFile
+} from '../store/interactions'
 import CreateUser from './CreateUser'
 import Work from '../images/workIcon.jpg'
 import Home from '../images/home.png'
 import Contact from '../images/contact.png'
+import Edit from '../images/edit.png'
+import SharePost from './SharePost'
+import MyPostFeed from './MyPostFeed'
 
 
 const showUserInfo = (props) => {
 
-    const { dispatch, cryptogram, user, userUpdateValue} = props
+    const { dispatch, cryptogram, user, userUpdateValue, file } = props
     function getImageURL() {
         let hash
         hash = user.imageHash
         return `https://ipfs.infura.io/ipfs/${hash}`
     }
-    function editUserValue(type){
+
+    function renderUserInfo() {
         return (
-            <div>
-              <br></br>
-              <form onSubmit={(event) => {
-                event.preventDefault()
-               updateUser(dispatch, cryptogram, user.userAccount, type, userUpdateValue)
-              }} >      
-                <div className="form-group mr-sm-2">
-                  <textarea
-                    rows="4"
-                    cols="50"
-                    onChange={(e) => dispatch(userUpdateValueChanged(e.target.value))}
-                    className="form-control"
-                    placeholder="Whats the new thing...?"
-                  >
-                  </textarea>
-                </div>
-                <button type="submit" className="btn btn-primary btn-block btn-lg">Submit {type}</button>
-      
-              </form>
+            <div className="w-80 pb-5 ">
+                <img className="profile-picture" src={getImageURL()} alt="profile-picture" />
+                <small className="cursor-pointer">
+                    <Collapsible className="edit-user-value" trigger="Edit" triggerWhenOpen="Collapse">
+                        <div className="m-auto w-25">
+                            <br></br>
+                            <form onSubmit={(event) => {
+                                event.preventDefault()
+                                prepImageHash()
+                            }} >
+                                <div className="form-group mr-sm-2">
+                                    <span>Choose a new profile picture </span> <input className="btn btn-secondary" type='file' accept=".jpg, .jpeg, .png, .bmp, .gif" onChange={(e) => captureFile(e, dispatch)} />
+                                </div>
+                                <button type="submit" className="btn btn-primary btn-block btn-lg">Submit</button>
+                            </form>
+                        </div>
+                    </Collapsible>
+                </small>
+                <h1 className="centered-user-info text-wrap">{user.bio}</h1>
+                <small className="cursor-pointer">
+                    <Collapsible className="edit-user-value" trigger="Edit" triggerWhenOpen="Collapse">
+                        <div className="m-auto w-25">
+                            <br></br>
+                            <form onSubmit={(event) => {
+                                event.preventDefault()
+                                setBio(dispatch, cryptogram, user.userAccount, userUpdateValue)
+                            }} >
+                                <div className="form-group mr-sm-2">
+                                    <textarea
+                                        rows="4"
+                                        cols="50"
+                                        onChange={(e) => dispatch(userUpdateValueChanged(e.target.value))}
+                                        className="form-control"
+                                        placeholder="Whats the new thing...?"
+                                    >
+                                    </textarea>
+                                </div>
+                                <button type="submit" className="btn btn-primary btn-block btn-lg">Submit</button>
+                            </form>
+                        </div>
+                    </Collapsible>
+                </small>
             </div>
-          )
-    }
+        )
+    }//renderUserInfo
 
     function renderProfileInfo() {
         return (
-            <div className="profile-info">
-                <div className="card mb-4"  >
-                    <div className="card-header bg-primary ">
+            <div>
+                <div className="card mb-4 position-top"  >
+                    <div className="card-header bg-info ">
                         <h2 className="text-light">Info</h2>
                     </div>
                     <ul id="imageList" className="list-group list-group-flush ">
@@ -66,25 +103,57 @@ const showUserInfo = (props) => {
                             <img className="infoImage" src={Work} alt="occupation"></img>
                             <span className="float-left pl-4">Occupation: {user.occupation}</span>
                             <br />
-                            <Collapsible className="edit-user-value" trigger="Edit">
-                                {editUserValue("occupation")}
-                            </Collapsible>
+                            <small className="edit">
+                                <Collapsible className="edit-user-value" trigger="Edit" triggerWhenOpen="Collapse">
+                                    <div>
+                                        <br></br>
+                                        <form onSubmit={(event) => {
+                                            event.preventDefault()
+                                            setOccupation(dispatch, cryptogram, user.userAccount, userUpdateValue)
+                                        }} >
+                                            <div className="form-group mr-sm-2">
+                                                <textarea
+                                                    rows="4"
+                                                    cols="50"
+                                                    onChange={(e) => dispatch(userUpdateValueChanged(e.target.value))}
+                                                    className="form-control"
+                                                    placeholder="Whats the new thing...?"
+                                                >
+                                                </textarea>
+                                            </div>
+                                            <button type="submit" className="btn btn-primary btn-block btn-lg">Submit</button>
+                                        </form>
+                                    </div>
+                                </Collapsible>
+                            </small>
                         </li>
                         <li className="list-group-item bg-secondary">
                             <img className="infoImage" src={Home} alt="location"></img>
                             <span className="float-left pl-4">Lives in: {user.location}</span>
                             <br />
-                            <Collapsible className="edit-user-value" trigger="Edit">
-                                {editUserValue("location")}
-                            </Collapsible>
-                        </li>
-                        <li className="list-group-item bg-secondary">
-                            <img className="infoImage" src={Contact} alt="contact"></img>
-                            <span className="float-left pl-4">Contact Information: {user.contact}</span>
-                            <br />
-                            <Collapsible className="edit-user-value" trigger="Edit">
-                                {editUserValue("contact")}
-                            </Collapsible>
+                            <small className="edit">
+                                <Collapsible className="edit-user-value" trigger="Edit" triggerWhenOpen="Collapse">
+                                    <div>
+                                        <br></br>
+                                        <form onSubmit={(event) => {
+                                            event.preventDefault()
+                                            setLocation(dispatch, cryptogram, user.userAccount, userUpdateValue)
+                                        }} >
+                                            <div className="form-group mr-sm-2">
+                                                <textarea
+                                                    rows="4"
+                                                    cols="50"
+                                                    onChange={(e) => dispatch(userUpdateValueChanged(e.target.value))}
+                                                    className="form-control"
+                                                    placeholder="Whats the new thing...?"
+                                                >
+                                                </textarea>
+                                            </div>
+                                            <button type="submit" className="btn btn-primary btn-block btn-lg">Submit</button>
+                                        </form>
+                                    </div>
+                                </Collapsible>
+                            </small>
                         </li>
                     </ul>
                 </div>
@@ -92,15 +161,40 @@ const showUserInfo = (props) => {
         )
     }//renderProfileInfo
 
-
+    function prepImageHash() {
+        const ipfsClient = require('ipfs-http-client')
+        const ipfs = ipfsClient({ host: 'ipfs.infura.io', port: 5001, protocol: 'https' })
+        //view image: https://ipfs.infura.io/ipfs/<image hash>     
+        //add to IPFS
+        ipfs.add(file, (error, result) => {
+            //console.log('IPFS Result', result)
+            if (error) {
+                console.error(error)
+                console.log("An error may have been thrown if there was no image detected, this is expected")
+            }
+            setImageHash(dispatch, cryptogram, user.userAccount, result)
+        })
+    }
     return (
-        <div className="profile">
-            <br />
-            <img className="profile-picture" src={getImageURL()} alt="profile-picture" />
-            <h2>{user.userName}</h2>
-            <p>{user.status}</p>
-            <br />
-            {renderProfileInfo()}
+        <div className="w-75 h-100">
+            <div className="">
+                {renderUserInfo()}
+            </div>
+                        
+            <div className="row g-3 pt-0">                
+                <div className="col m-auto w-50 float-left">    
+                <p></p>            
+                    {renderProfileInfo()}
+                </div>
+                <div className="col m-auto w-50 float-right">
+                    <SharePost />
+                </div>
+            </div>
+            <div className="pt-5">
+                <MyPostFeed />
+            </div>
+            
+
         </div>
     )
 }//showUserInfo
@@ -108,14 +202,12 @@ const showUserInfo = (props) => {
 
 class MyAccount extends Component {
     render() {
-        console.log("User Test: userAccount location: should not be 'Cryptoverse'", this.props.user.location)
-        return (
-            <div className="component" id="sharePost">
-                <div className="sharePost">
+        //console.log("User Test: userAccount location: should not be 'Cryptoverse'", this.props.user.location)
+        return (            
+                <div className="myAccount bg-dark text-light h-100">
                     {showUserInfo(this.props)}
                 </div>
-                <br /><br /><br /><br />
-            </div>
+            
         );
     }
 }
@@ -124,7 +216,8 @@ function mapStateToProps(state) {
     return {
         user: userSelector(state),
         cryptogram: cryptogramSelector(state),
-        userUpdateValue: userUpdateValueSelector(state)
+        userUpdateValue: userUpdateValueSelector(state),
+        file: fileSelector(state),
     }
 }
 

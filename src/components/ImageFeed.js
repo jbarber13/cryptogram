@@ -77,9 +77,10 @@ const showFeed = (props) => {
             }
           })}
         </div>
-        <Collapsible trigger="Add a comment" triggerWhenOpen="Collapse">
+        <Collapsible className="cursor-pointer" trigger="Add a comment" triggerWhenOpen="Collapse">
           {composeComment(post)}
         </Collapsible>
+        
       </div>
     )
   }
@@ -136,7 +137,6 @@ const showFeed = (props) => {
                   <small className="text-muted"><br />Posted on: {moment.unix(post.timeStamp).format('M/D/Y')} at: {moment.unix(post.timeStamp).format('h:mm:ss a')}</small>
 
                 </div>
-                <ul id="imageList" className="list-group list-group-flush ">
                   <li className="list-group-item bg-secondary">
                     <p class="text-center"><img className="uploadedImage" src={getImageURL(post)} alt="" /></p>
                     <p className="text-light border-info card-body">{post.status}</p>
@@ -160,12 +160,13 @@ const showFeed = (props) => {
                         </button>
                   </li>
                   <li>
-                    <Collapsible trigger="Expand Comment Section" triggerWhenOpen="Collapse Comments">
-                      <br></br>
-                      {renderComments(post)}
-                    </Collapsible>
+                      <div className="text-dark text-left">
+                        <Collapsible className="cursor-pointer text-center p-1" trigger="Expand Comment Section" triggerWhenOpen="Collapse Comments">
+                          <br></br>
+                          {renderComments(post)}
+                        </Collapsible>                        
+                      </div>
                   </li>
-                </ul>
               </div>
             </div>
           )
@@ -182,8 +183,8 @@ const showFeed = (props) => {
 class ImageFeed extends Component {
   render() {
     return (
-      <div className="imageFeed" id="imageFeed">
-        <br /><br /><br /><br /><br /><br />
+      <div className="imageFeed pt-5" id="imageFeed">
+        <br /><br />
         {
         showFeed(this.props) 
         }

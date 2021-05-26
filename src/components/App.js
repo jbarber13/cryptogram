@@ -54,7 +54,6 @@ class App extends Component {
     return (
       <div id="header" className="bg-dark">
         <Navbar />
-
         {this.props.cryptogramLoaded ? 
         <Main /> : <Loading />
         }

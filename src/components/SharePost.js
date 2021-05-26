@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 
 import Loading from './Loading'
 
-import {  postTitleChanged, postDescriptionChanged, postLinkChanged} from '../store/actions'
+import { postTitleChanged, postDescriptionChanged, postLinkChanged } from '../store/actions'
 import {
   fileSelector,
   postTitleSelector,
@@ -13,7 +13,7 @@ import {
   cryptogramSelector,
   fileUploadedSelector
 } from '../store/selectors'
-import { makePost, captureFile} from '../store/interactions'
+import { makePost, captureFile } from '../store/interactions'
 
 const ipfsClient = require('ipfs-http-client')
 const ipfs = ipfsClient({ host: 'ipfs.infura.io', port: 5001, protocol: 'https' })
@@ -24,39 +24,41 @@ const ipfs = ipfsClient({ host: 'ipfs.infura.io', port: 5001, protocol: 'https' 
 const showForm = (props) => {
   const { dispatch, file, postTitle, postDescription, postLink, account, cryptogram } = props
 
- 
+
   const initiatePost = () => {
     //view image: https://ipfs.infura.io/ipfs/<image hash> 
-    
+
     //add to IPFS
-    ipfs.add(file, (error, result) => {      
+    ipfs.add(file, (error, result) => {
       //console.log('IPFS Result', result)
       if (error) {
-        console.error(error)        
+        console.error(error)
         console.log("An error may have been thrown if there was no image detected, this is expected")
       }
       makePost(dispatch, cryptogram, account, result, postDescription, postTitle, postLink)
-    })    
+    })
 
   }
 
 
 
   return (
-    <div>
-      <p>&nbsp;</p>
-      <h3>Make a New Post</h3>
-      <form onSubmit={(event) => {
+    <div className="card mb-4 bg-secondary">
+      <div className="card-header bg-info ">
+        <h3>Make a New Post</h3>
+      </div>
+      <br />
+      <form className="p-2" onSubmit={(event) => {
         event.preventDefault()
         initiatePost()
       }} >
         <input
-            name="PostTitle"
-            type="text"
-            onChange={(e) => dispatch(postTitleChanged(e.target.value))}
-            className="form-control"
-            placeholder="Post Title"
-            required />
+          name="PostTitle"
+          type="text"
+          onChange={(e) => dispatch(postTitleChanged(e.target.value))}
+          className="form-control"
+          placeholder="Post Title"
+          required />
         <br />
         <div className="form-group mr-sm-2">
           <textarea
@@ -65,9 +67,9 @@ const showForm = (props) => {
             onChange={(e) => dispatch(postDescriptionChanged(e.target.value))}
             className="form-control"
             placeholder="Whats on your mind...?"
-            >            
+          >
           </textarea>
-          
+
           <br></br>
           <input
             name="Link"
@@ -75,14 +77,12 @@ const showForm = (props) => {
             onChange={(e) => dispatch(postLinkChanged(e.target.value))}
             className="form-control"
             placeholder="Add a link URL (optional)"
-             />
+          />
         </div>
-        <input className="btn btn-secondary" type='file' accept=".jpg, .jpeg, .png, .bmp, .gif" onChange={(e) => captureFile(e, dispatch)} />
+        <input className="btn btn-primary" type='file' accept=".jpg, .jpeg, .png, .bmp, .gif" onChange={(e) => captureFile(e, dispatch)} />
         <br /><br />
         <button type="submit" className="btn btn-primary btn-block btn-lg">Upload</button>
-
       </form>
-      <p>&nbsp;</p>
     </div>
   )
 }
@@ -91,11 +91,13 @@ class SharePost extends Component {
   render() {
 
     return (
-      <div className="component" id="sharePost">
-        <div className="sharePost">
-          {showForm(this.props)}          
-        </div>
-      </div>
+      
+        
+          <div className="card mb-4 bg-secondary"  >
+            {showForm(this.props)}
+          </div>          
+        
+     
     );
   }
 }

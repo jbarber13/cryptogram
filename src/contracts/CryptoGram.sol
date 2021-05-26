@@ -11,7 +11,7 @@ contract CryptoGram {
     string public contractDescription =
         "version 2 of the original DSM - decentralized social media, many new features, and accounts are tied to the user's wallet address";
 
-
+    
     uint256 public postCount = 0;
     uint256 public commentCount = 0;
     mapping(address => User) public users;
@@ -74,6 +74,8 @@ contract CryptoGram {
 
     event PostTipped(
         uint256 id,
+        string title,
+        address author,
         uint256 tipAmount,
         uint256 timeStamp
     );
@@ -89,10 +91,7 @@ contract CryptoGram {
         uint256 timeStamp
     );
 
-    event PostDeleted(
-        uint256 id,
-        uint256 timeStamp
-    );
+    event PostDeleted(uint256 id, string title, address author, uint256 timeStamp);
 
     event CommentAdded(
         uint256 id,
@@ -104,10 +103,13 @@ contract CryptoGram {
     );
     event CommentTipped(
         uint256 id,
+        uint256 postID,
+        string comment,
+        address author,
         uint256 tipAmount,
         uint256 timeStamp
     );
-    event CommentDeleted(uint256 id, uint256 timeStamp);
+    event CommentDeleted(uint256 id, address author, uint256 timeStamp);
 
     /******************FUNCTIONS*************************/
 
@@ -134,7 +136,13 @@ contract CryptoGram {
         _post.tipAmount = _post.tipAmount + msg.value;
         posts[_id] = _post;
 
-        emit PostTipped(_id, _post.tipAmount, now);
+        emit PostTipped(
+            _id,
+            _post.title,
+            _author,
+            _post.tipAmount, 
+            now
+        );
     }
 
     function addUser(
@@ -144,8 +152,11 @@ contract CryptoGram {
         string memory _location,
         string memory _occupation
     ) public {
-        
+        //require user address to exist
+        require(msg.sender != address(0x0));
 
+        //require all fields to be populated
+        require(bytes(_userName).length > 0);
 
         //add user to mapping
         users[msg.sender] = User(
@@ -212,20 +223,25 @@ contract CryptoGram {
     }
 
     function deletePost(uint256 _postID) public {
+         //require user address to exist
+        require(msg.sender != address(0x0));
+
         //require valid post ID
         require(_postID > 0 && _postID <= postCount);
-        require(!deletedPosts[_postID]);
-        //get post and author
+        require(!deletedPosts[_postID], "Post has already been deleted");
+
+        //get post, title, and author
         Post memory _post = posts[_postID];
         address _author = _post.author;
+        string memory _title = _post.title;
         //check if image author matches message sender - only delete your own comments
-        require(msg.sender == _author);
+        require(msg.sender == _author, "A post may only be deleted by its author");
 
-        delete (posts[_postID]);
         deletedPosts[_postID] = true;
+        delete (posts[_postID]);
 
         //emit event
-        emit PostDeleted(_postID, now);
+        emit PostDeleted(_postID, _title, _author, now);
     }
 
     function comment(uint256 _postID, string memory _comment) public {
@@ -255,6 +271,10 @@ contract CryptoGram {
         Comment memory _comment = comments[_commentID];
         //get comment data
         address payable _author = _comment.author;
+        uint256 _postID = _comment.postID;
+        string memory _commentString = _comment.comment;
+
+
         //send to author
         address(_author).transfer(msg.value);
         //update tip amount and put back into mapping
@@ -263,7 +283,10 @@ contract CryptoGram {
         //emit event
         emit CommentTipped(
             _comment.id,
-            _comment.tipAmount,
+            _postID,
+            _commentString,
+            _comment.author,
+            _comment.tipAmount,            
             now
         );
     }
@@ -278,14 +301,14 @@ contract CryptoGram {
         address _author = _comment.author;
 
         //check if image author matches message sender - only delete your own comments
-        require(msg.sender == _author);
+        require(msg.sender == _author, "A comment may only be deleted by its author");
 
         delete (comments[_commentID]);
         deletedComments[_commentID] = true;
 
 
         //emit event
-        emit CommentDeleted(_commentID, now);
+        emit CommentDeleted(_commentID, _author, now);
     }
 
     /******************SETTERS***********************/
@@ -293,7 +316,6 @@ contract CryptoGram {
         //require user address to be valid, and for user account to already to exist, and value to be significant
         require(msg.sender != address(0x0));
         require(bytes(users[msg.sender].userName).length > 0);
-        require(bytes(_value).length > 0);
 
 
         //get user
@@ -310,7 +332,6 @@ contract CryptoGram {
         //require user address to be valid, and for user account to already to exist, and value to be significant
         require(msg.sender != address(0x0));
         require(bytes(users[msg.sender].userName).length > 0);
-        require(bytes(_value).length > 0);
         //get user
         User memory _user = users[msg.sender];
 
@@ -325,7 +346,6 @@ contract CryptoGram {
         //require user address to be valid, and for user account to already to exist, and value to be significant
         require(msg.sender != address(0x0));
         require(bytes(users[msg.sender].userName).length > 0);
-        require(bytes(_value).length > 0);
 
         //get user
         User memory _user = users[msg.sender];
@@ -341,7 +361,6 @@ contract CryptoGram {
         //require user address to be valid, and for user account to already to exist, and value to be significant
         require(msg.sender != address(0x0));
         require(bytes(users[msg.sender].userName).length > 0);
-        require(bytes(_value).length > 0);
 
         //get user
         User memory _user = users[msg.sender];
@@ -356,7 +375,6 @@ contract CryptoGram {
         //require user address to be valid, and for user account to already to exist, and value to be significant
         require(msg.sender != address(0x0));
         require(bytes(users[msg.sender].userName).length > 0);
-        require(bytes(_value).length > 0);
 
         //get user
         User memory _user = users[msg.sender];

@@ -12,6 +12,8 @@
 html, body {
   scroll-behavior:smooth;
   height: 100%;
+  background-color: #343a40;
+  color: #f8f9fa;
 }
 .customNav{
   padding:5rem;
@@ -93,7 +95,7 @@ html, body {
   background-color: #343a40;
   color: #f8f9fa;
   height: 100vh;
-  position: relative;    
+  position: relative; 
 }
 
 .typed-text{
@@ -109,20 +111,64 @@ html, body {
 
 
 /*********************Profile Page*********************/
+/**
+
+asdfasdf
+*/
+.myAccount{
+  
+  display: flex;
+  /*Put in absolute center of page*/
+  position: absolute;
+  top:20%;
+  left:0;
+  right:0;
+  bottom:0;   
+
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;  
+}
+.username-bio{
+  text-align:center;
+  align-items:center;
+  white-space: nowrap;
+  padding-bottom:5%;
+  float:center;
+
+}
+.centered-user-info{
+  display:inline;  
+  float:center;
+  
+
+}
+.cursor-pointer{
+  cursor:pointer;
+}
+
+.edit-user-value{
+  display:inline;
+  cursor:pointer;
+  padding-left:1%;
+}
+.edit{
+  display: inline;
+  text-align:right;
+  float:right;
+  cursor: pointer;
+}
+.profile{
+  width:80%; 
+}
 .profile-picture{
   width: 10rem;
   height: 10rem;
   border-radius: 50%;
 }
-.profile-info{
-  position: absolute;
-  left: 20%;
-  width: 30%;  
-}
 .infoImage{
   max-width: 1.5rem;
   float: left;
 }
-.edit-user-value{
-  right: 1000%;
-}
+

@@ -34,6 +34,31 @@ export const allPostSelector = createSelector(
     ap => ap    
 )
 
+const myPosts = state => {
+    const posts = allPosts(state)
+    const account = user(state)
+    return(
+        posts.map((post) =>{
+            post = decorateMyPost(post, account)
+            if(post != undefined){
+                return post
+            }            
+        })
+    )
+}
+const decorateMyPost = (post, account) =>{
+    
+    if(post != undefined){
+        if(post.author === account[0]){
+            return {...post}
+        }
+    }   
+}
+export const myPostSelector = createSelector(
+    myPosts, 
+    mp => mp
+)
+
 const allComments = state => get(state, 'cryptogram.allComments', [])
 export const allCommentsSelector = createSelector(
     allComments, 

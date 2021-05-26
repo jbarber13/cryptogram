@@ -143,44 +143,18 @@ const _loadUsers = async (cryptogram, dispatch) => {
 
 //if the user account has been made already, loads the user info into state
 const _loadUser = async (account, allUsers, dispatch, cryptogram) => {
+  const loadUserAccount = async userAccount => {
+    dispatch(userAccountLoaded(await cryptogram.methods.users(userAccount).call()))
+  }
   allUsers.map(user => {
     if(user.userAccount == account){
-      dispatch(userAccountLoaded(user))
+      loadUserAccount(user.userAccount)
     }
   })  
 }
-
-export const updateUser = (dispatch, cryptogram, account, type, value) => {
-  console.log("account: ", account)
-  console.log("type: ", type)
-  console.log("value: ", value)
-
-  cryptogram.methods.updateUser(type, value.toString()).send({ from: account })
-    .on('transactionHash', (hash) => {
-      console.log("Upload transaction hash: ", hash)
-      //dispatch(contractUpdating("makePost"))
-    })
-
-}
-
-
-
-export const captureFile = (event, dispatch) => {
-    event.preventDefault()
-    const file = event.target.files[0]
-    const reader = new window.FileReader()
-    reader.readAsArrayBuffer(file)
-
-    reader.onloadend = () => {
-      //this.setState({ buffer: Buffer(reader.result) })
-      console.log('file', Buffer(reader.result))
-      dispatch(fileCaptured(Buffer(reader.result)))
-    }
-}
-
-export const makeUser = async (dispatch, cryptogram, account, userName, result, status, location, contact, occupation) => {
+export const makeUser = async (dispatch, cryptogram, account, userName, result, bio, location, contact, occupation) => {
   let imageHash = "No Image Present"
-  let _status = ""
+  let _bio = ""
   let _location = ""
   let _contact = ""
   let _occupation = ""
@@ -193,35 +167,66 @@ export const makeUser = async (dispatch, cryptogram, account, userName, result, 
   }
 
   //check if optional fields were populated
-  if (status.toString() === "[object Object]") {
+  if (bio.toString() === "[object Object]") {
     console.log("No status Detected")
   } else {
-    _status = status
+    _bio = bio
   }
   if (location.toString() === "[object Object]") {
     console.log("No location Detected")
   } else {
     _location = location
   }
-  if (contact.toString() === "[object Object]") {
-    console.log("No contact Detected")
-  } else {
-    _contact = contact
-  }
   if (occupation.toString() === "[object Object]") {
     console.log("No occupation Detected")
   } else {
     _occupation = occupation
   }
-  cryptogram.methods.addUser(userName, imageHash, _status, _location, _contact, _occupation).send({ from: account })
+  cryptogram.methods.addUser(userName, imageHash, _bio, _location, _occupation).send({ from: account })
     .on('transactionHash', (hash) => {
       console.log("Upload transaction hash: ", hash)
       dispatch(clearForm())
       //dispatch(contractUpdating("makePost"))
     })
-
 }
-
+export const setUserName = async (dispatch, cryptogram, account, value) => {
+  cryptogram.methods.setUserName(value).send({ from: account })
+  .on('transactionHash', (hash) => {
+    console.log("Transaction hash: ", hash)
+    //dispatch(contractUpdating("makePost"))
+  })
+}
+export const setImageHash = async (dispatch, cryptogram, account, value) => {
+  let hash = value[0].hash  
+  cryptogram.methods.setImageHash(hash).send({ from: account })
+  .on('transactionHash', (hash) => {
+    console.log("Transaction hash: ", hash)
+    //dispatch(contractUpdating("makePost"))
+  })
+   
+}
+export const setBio = async (dispatch, cryptogram, account, value) => {
+  cryptogram.methods.setBio(value).send({ from: account })
+  .on('transactionHash', (hash) => {
+    console.log("Transaction hash: ", hash)
+    //dispatch(contractUpdating("makePost"))
+  })
+}
+export const setLocation = async (dispatch, cryptogram, account, value) => {
+  cryptogram.methods.setLocation(value).send({ from: account })
+  .on('transactionHash', (hash) => {
+    console.log("Transaction hash: ", hash)
+    //dispatch(contractUpdating("makePost"))
+  })
+}
+export const setOccupation = async (dispatch, cryptogram, account, value) => { 
+  cryptogram.methods.setOccupation(value).send({ from: account })
+  .on('transactionHash', (hash) => {
+    console.log("Transaction hash: ", hash)
+    //dispatch(contractUpdating("makePost"))
+  })
+  
+}
 
 export const makePost = async (dispatch, cryptogram, account, result, description, title, link) => {
   let hash = "No Image Present"
@@ -282,6 +287,18 @@ export const tipComment = async (dispatch, account, cryptogram, id, tipAmount,) 
     })
 }
 
+export const captureFile = (event, dispatch) => {
+  event.preventDefault()
+  const file = event.target.files[0]
+  const reader = new window.FileReader()
+  reader.readAsArrayBuffer(file)
+
+  reader.onloadend = () => {
+    //this.setState({ buffer: Buffer(reader.result) })
+    console.log('file', Buffer(reader.result))
+    dispatch(fileCaptured(Buffer(reader.result)))
+  }
+}
 
 //listen for events emitted from contract and update component in real time
 export const subscribeToEvents = async (cryptogram, dispatch) => {

@@ -30,7 +30,7 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser, comme
   })
 
   describe('Contract Functions', async () => {
-    let result, userCount, postCount, desc, hash, title, link, makePostResult
+    let result, postCount, desc, hash, title, link, makePostResult
     hash = "makePost Image Hash"
     desc = "makePost Image Description"
     title = "makePost Title"
@@ -54,7 +54,7 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser, comme
           assert.equal(post.status, desc, 'status is correct')
           post.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
         })
-        
+
         it('emits a PostAdded event', async () => {
           const log = makePostResult.logs[0]//PostAdded - happens after the image added event, in the logs at [0]
           log.event.should.eq('PostAdded')
@@ -109,12 +109,12 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser, comme
 
 
           tipAmount = new web3.utils.BN(tipAmount)
-          const expectedBalance = oldAuthorBalance.add(tipAmount)    
+          const expectedBalance = oldAuthorBalance.add(tipAmount)
 
           assert.equal(newAuthorBalance.toString(), expectedBalance.toString())
           assert.notEqual(newAuthorBalance, oldAuthorBalance)
         })
-        
+
       })
       describe('Failure', async () => {
         it('prevents an invalid post ID from being tipped', async () => {
@@ -128,24 +128,21 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser, comme
       let userName, status, location, phone, email, occupation
       userName = "otherUser"
       imageHash = "profile picture hash"
-      status = "first user added"
+      bio = "first user added"
       location = "Earth"
-      contact = "contact info" 
+      contact = "contact info"
       occupation = "lucrative posistion at GNB"
       before(async () => {
-        result = await cryptogram.addUser(userName, imageHash, status, location, contact, occupation, { from: otherUser })
-        userCount = await cryptogram.userCount()
+        result = await cryptogram.addUser(userName, imageHash, bio, location, occupation, { from: otherUser })
       })
       describe('Success', async () => {
         it('adds user account name to mapping', async () => {
-          assert.equal(userCount, 1)
           const testUser = await cryptogram.users(otherUser)
           assert.equal(testUser.userAccount.toString(), otherUser.toString(), 'User Account is correct')
           assert.equal(testUser.userName, userName, 'userName is correct')
           assert.equal(testUser.imageHash, imageHash, 'imageHash is correct')
-          assert.equal(testUser.status, status, 'status is correct')
+          assert.equal(testUser.bio, bio, 'bio is correct')
           assert.equal(testUser.location, location, 'location is correct')
-          assert.equal(testUser.contact, contact, 'contact is correct')
           assert.equal(testUser.occupation, occupation, 'occupation is correct')
           testUser.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
         })
@@ -156,9 +153,8 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser, comme
           assert.equal(event.userAccount.toString(), otherUser.toString(), 'User Account is correct')
           assert.equal(event.userName, userName, 'userName is correct')
           assert.equal(event.imageHash, imageHash, 'imageHash is correct')
-          assert.equal(event.status, status, 'status is correct')
+          assert.equal(event.bio, bio, 'bio is correct')
           assert.equal(event.location, location, 'location is correct')
-          assert.equal(event.contact, contact, 'contact is correct')
           assert.equal(event.occupation, occupation, 'occupation is correct')
           event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
         })
@@ -170,7 +166,7 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser, comme
         })
         //require all feilds to have data
         it('prevents a user without a username from being added to the mapping', async () => {
-          await cryptogram.addUser('', status, location, phone, email, occupation, { from: 0x0 }).should.be.rejected
+          await cryptogram.addUser('', status, location, phone, email, occupation, { from: imposter }).should.be.rejected
         })
       })
     })//Add User
@@ -179,31 +175,26 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser, comme
       //addUser(string memory _userName, string memory _status, string memory _location, string memory _phone, string memory _email, string memory _occupation)
       userName = "user to delete"
       imageHash = "imageHash to delete"
-      status = "status to delete"
+      bio = "bio to delete"
       location = "location to delete"
       contact = "contact to delete"
       email = "email to delete"
       occupation = "occupation to delete"
       before(async () => {
-        result = await cryptogram.addUser(userName, imageHash, status, location, contact, occupation, { from: deletedUser })
-        userCount = await cryptogram.userCount()
+        result = await cryptogram.addUser(userName, imageHash, bio, location, occupation, { from: deletedUser })
       })
       describe('Success', async () => {
         it('deletes user account name from mapping and decrements user count', async () => {
-          assert.equal(userCount, 2)
 
           result = await cryptogram.deleteUser({ from: deletedUser })
-          userCount = await cryptogram.userCount()
-          assert.equal(userCount, 1)
 
           const DL = await cryptogram.users(deletedUser)
 
           assert.equal(DL.userAccount.toString(), (0x0), 'User Account is correct')
           assert.equal(DL.userName, '', 'userName is correct')
           assert.equal(DL.imageHash, '', 'imageHash is correct')
-          assert.equal(DL.status, '', 'status is correct')
+          assert.equal(DL.bio, '', 'bio is correct')
           assert.equal(DL.location, '', 'location is correct')
-          assert.equal(DL.contact, '', 'contact is correct')
           assert.equal(DL.occupation, '', 'occupation is correct')
           DL.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
 
@@ -406,8 +397,6 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser, comme
         //delete post and update control postCount
         deletePostResult = await cryptogram.deletePost(postCount, { from: author })
         lastPost = await cryptogram.posts(postCount)
-
-
       })
       describe('Success', async () => {
         it('deletes post from mapping', async () => {
@@ -447,134 +436,119 @@ contract('CryptoGram', ([deployer, author, tipper, otherUser, deletedUser, comme
       })
     })//Delete Post  
 
-
-    describe('UpdateUser function to set various user attributes', async () => {
-      let user, newValue
+    describe('Setter Functions', async () => {
+      let user, newUserName, newHash, newBio, newLocation, newOccupation
       before(async () => {
         user = await cryptogram.users(otherUser)
       })
       describe('Setting the userName', async () => {
         before(async () => {
-          newValue = "updated userName"
-          user = await cryptogram.updateUser("userName", newValue, { from: otherUser })
+          newUserName = "updated userName"
+          user = await cryptogram.setUserName(newUserName, { from: otherUser })
         })
-          it('updates the userName value', async () => {
-            const updatedUser = await cryptogram.users(otherUser)
-            assert.equal(updatedUser.userName, newValue, 'newValue is correct')
-          })
-          it('emits a UserUpdated event', async () => {
-            const log = user.logs[0]
-            log.event.should.eq('UserUpdated')
-            const event = log.args
-            assert.equal(event.userAccount.toString(), otherUser.toString(), 'User Account is correct')
-            assert.equal(event.valueChanged.toString(), "userName", 'Value Changed is correct')
-            assert.equal(event.newValue.toString(), newValue, 'New Value is correct')
-            event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
-          })
-      })//setUserName
-      describe('Setting the imageHash for the profile picture', async () => {
-        before(async () => {
-          newValue = "updated imageHash"
-          user = await cryptogram.updateUser("imageHash", newValue, { from: otherUser })
-        })
-          it('updates the userName value', async () => {
-            const updatedUser = await cryptogram.users(otherUser)
-            assert.equal(updatedUser.imageHash, newValue, 'newValue is correct')
-          })
-          it('emits a UserUpdated event', async () => {
-            const log = user.logs[0]
-            log.event.should.eq('UserUpdated')
-            const event = log.args
-            assert.equal(event.userAccount.toString(), otherUser.toString(), 'User Account is correct')
-            assert.equal(event.valueChanged.toString(), "imageHash", 'Value Changed is correct')
-            assert.equal(event.newValue.toString(), newValue, 'New Value is correct')
-            event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
-          })
-      })//setImageHash
-      describe('Setting the location', async () => {
-        before(async () => {
-          newValue = "updated location"
-          user = await cryptogram.updateUser("location", newValue, { from: otherUser })
-        })
-          it('updates the locaiton value', async () => {
-            const updatedUser = await cryptogram.users(otherUser)
-            assert.equal(updatedUser.location, newValue, 'newValue is correct')
-          })
-          it('emits a UserUpdated event', async () => {
-            const log = user.logs[0]
-            log.event.should.eq('UserUpdated')
-            const event = log.args
-            assert.equal(event.userAccount.toString(), otherUser.toString(), 'User Account is correct')
-            assert.equal(event.valueChanged.toString(), "location", 'Value Changed is correct')
-            assert.equal(event.newValue.toString(), newValue, 'New Value is correct')
-            event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
-          })
-      })//setLocation
-      describe('Setting the Contact info', async () => {
-        before(async () => {
-          newValue = "updated Contact info"
-          user = await cryptogram.updateUser("contact", newValue, { from: otherUser })
-        })
-          it('updates the contact value', async () => {
-            const updatedUser = await cryptogram.users(otherUser)
-            assert.equal(updatedUser.contact, newValue, 'newValue is correct')
-          })
-          it('emits a UserUpdated event', async () => {
-            const log = user.logs[0]
-            log.event.should.eq('UserUpdated')
-            const event = log.args
-            assert.equal(event.userAccount.toString(), otherUser.toString(), 'User Account is correct')
-            assert.equal(event.valueChanged.toString(), "contact", 'Value Changed is correct')
-            assert.equal(event.newValue.toString(), newValue, 'New Value is correct')
-            event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
-          })
-      })//setPhone
-      describe('Setting the occupation', async () => {
-        before(async () => {
-          newValue = "updated occupation"
-          user = await cryptogram.updateUser("occupation", newValue, { from: otherUser })
-        })
-          it('updates the occupation value', async () => {
-            const updatedUser = await cryptogram.users(otherUser)
-            assert.equal(updatedUser.occupation, newValue, 'newValue is correct')
-          })
-          it('emits a UserUpdated event', async () => {
-            const log = user.logs[0]
-            log.event.should.eq('UserUpdated')
-            const event = log.args
-            assert.equal(event.userAccount.toString(), otherUser.toString(), 'User Account is correct')
-            assert.equal(event.valueChanged.toString(), "occupation", 'Value Changed is correct')
-            assert.equal(event.newValue.toString(), newValue, 'New Value is correct')
-            event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
-          })
-      })//setOccupation
-      describe('Failure', async () => {
-        it('prevents an invalid address from executing the function', async () => {
-          await cryptogram.updateUser("userName", newValue, { from: 0x0 }).should.be.rejected
-        })
-        it('prevents an account from being updated by someone who does not own it', async () => {
-          await cryptogram.updateUser("userName", newValue, { from: deployer }).should.be.rejected
-        })
-        it('prevents an account from being updated by someone who does not have a user account', async () => {
-          await cryptogram.updateUser("userName", newValue, { from: imposter }).should.be.rejected
-        })
-        it('reverts if the user value type is not valid', async () => {
-          await cryptogram.updateUser("UserName", newValue, { from: otherUser }).should.be.rejected
-          await cryptogram.updateUser("someValue", newValue, { from: otherUser }).should.be.rejected
+        it('emits a UserUpdated event', async () => {
+          const log = user.logs[0]
+          log.event.should.eq('UserUpdated')
+          const event = log.args
+          assert.equal(event.userAccount.toString(), otherUser.toString(), 'User Account is correct')
+          assert.equal(event.valueChanged.toString(), "userName", 'Value Changed is correct')
+          assert.equal(event.newValue.toString(), newUserName, 'New Value is correct')
+          event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
         })
       })
-    })/**********SETTERS BLOCK***********/
+      describe('Setting the imageHash', async () => {
+        before(async () => {
+          newHash = "updated image hash"
+          user = await cryptogram.setImageHash(newHash, { from: otherUser })
+        })
+        it('emits a UserUpdated event', async () => {
+          const log = user.logs[0]
+          log.event.should.eq('UserUpdated')
+          const event = log.args
+          assert.equal(event.userAccount.toString(), otherUser.toString(), 'User Account is correct')
+          assert.equal(event.valueChanged.toString(), "imageHash", 'Value Changed is correct')
+          assert.equal(event.newValue.toString(), newHash, 'New Value is correct')
+          event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
+        })
+      })//imageHash
+      describe('Setting the bio', async () => {
+        before(async () => {
+          newBio = "updated bio"
+          user = await cryptogram.setBio(newBio, { from: otherUser })
+        })
+        it('emits a UserUpdated event', async () => {
+          const log = user.logs[0]
+          log.event.should.eq('UserUpdated')
+          const event = log.args
+          assert.equal(event.userAccount.toString(), otherUser.toString(), 'User Account is correct')
+          assert.equal(event.valueChanged.toString(), "bio", 'Value Changed is correct')
+          assert.equal(event.newValue.toString(), newBio, 'New Value is correct')
+          event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
+        })
+      })//bio
+      describe('Setting the location', async () => {
+        before(async () => {
+          newLocation = "updated location"
+          user = await cryptogram.setLocation(newLocation, { from: otherUser })
 
+        })
+        it('emits a UserUpdated event', async () => {
+          const log = user.logs[0]
+          log.event.should.eq('UserUpdated')
+          const event = log.args
+          assert.equal(event.userAccount.toString(), otherUser.toString(), 'User Account is correct')
+          assert.equal(event.valueChanged.toString(), "location", 'Value Changed is correct')
+          assert.equal(event.newValue.toString(), newLocation, 'New Value is correct')
+          event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
+        })
+      })//location
+      describe('Setting the occupation', async () => {
+        before(async () => {
 
-
-
-
-
-
+          newOccupation = "updated occupation"
+          user = await cryptogram.setOccupation(newOccupation, { from: otherUser })
+        })
+        it('emits a UserUpdated event', async () => {
+          const log = user.logs[0]
+          log.event.should.eq('UserUpdated')
+          const event = log.args
+          assert.equal(event.userAccount.toString(), otherUser.toString(), 'User Account is correct')
+          assert.equal(event.valueChanged.toString(), "occupation", 'Value Changed is correct')
+          assert.equal(event.newValue.toString(), newOccupation, 'New Value is correct')
+          event.timeStamp.toString().length.should.be.at.least(1, 'timestamp is present')
+        })
+      })//occupation
+      describe('Verrifing the new values', async () => {
+        before(async () => {
+          user = await cryptogram.users(otherUser)
+        })
+        it('ending values of otherUser is correct', async () => {
+          assert.equal(user.userAccount.toString(), otherUser.toString(), 'User Account is correct')
+          assert.equal(user.userName.toString(), newUserName, "userName is correct")
+          assert.equal(user.imageHash.toString(), newHash, "imageHash is correct")
+          assert.equal(user.bio.toString(), newBio, "bio is correct")
+          assert.equal(user.location.toString(), newLocation, "location is correct")
+          assert.equal(user.occupation.toString(), newOccupation, "occupation is correct")
+        })
+      })//endValues
+      describe('Failure', async () => {
+        it('prevents a post from being updated by a user that does not have a user account already', async () => {
+          await cryptogram.setUserName("failureValue", { from: imposter }).should.be.rejected
+          await cryptogram.setImageHash("failureValue", { from: imposter }).should.be.rejected
+          await cryptogram.setBio("failureValue", { from: imposter }).should.be.rejected
+          await cryptogram.setLocation("failureValue", { from: imposter }).should.be.rejected
+          await cryptogram.setOccupation("failureValue", { from: imposter }).should.be.rejected 
+        })
+        it('prevents a user from being updated by blank address', async () => {
+          await cryptogram.setUserName("failureValue", { from: 0x0 }).should.be.rejected
+          await cryptogram.setImageHash("failureValue", { from: 0x0 }).should.be.rejected
+          await cryptogram.setBio("failureValue", { from: 0x0 }).should.be.rejected
+          await cryptogram.setLocation("failureValue", { from: 0x0 }).should.be.rejected
+          await cryptogram.setOccupation("failureValue", { from: 0x0 }).should.be.rejected
+        })        
+      })//failure
+    })//Setter Functions
   })//CONTRACT FUNCTIONS
-
-
-
 })//CONTRACT
 
 

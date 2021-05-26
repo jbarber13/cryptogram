@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { Switch, Route } from 'react-router-dom';
+
 import {
   subscribeToEvents  
 } from '../store/interactions'
@@ -8,6 +10,7 @@ import SharePost from './SharePost'
 import ImageFeed from './ImageFeed'
 import MyAccount from './MyAccount'
 import CreateUser from './CreateUser'
+import Loading from './Loading'
 
 class Main extends Component {
   componentWillMount() {
@@ -23,13 +26,15 @@ class Main extends Component {
 
   render() {
     return (
-      <div id="header" className="bg-dark">
-        {this.props.userAccountLoaded ?
-          <MyAccount /> : <CreateUser />        
-        }
-        <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
-         <ImageFeed /> 
-         <SharePost />
+      <div id="header" className="bg-dark h-100">
+        <Switch>
+          <Route exact path='/' component={ImageFeed}></Route>
+          <Route exact path='/SharePost' component={SharePost}></Route>
+          <Route exact path='/CreateUser' component={CreateUser}></Route>
+          <Route exact path='/MyAccount' component={MyAccount}></Route>
+          <Route exact path='/Loading' component={Loading}></Route>
+        </Switch>  
+           
       </div>
     );
   }
