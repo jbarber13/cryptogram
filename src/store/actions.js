@@ -23,7 +23,7 @@ export function cryptogramLoaded(contract){
     }
 }
 export function postLoaded(post){
-	console.log("postLoaded action, id: ", post.id)
+	//console.log("postLoaded action, id: ", post.id)
 	return{
 		type: 'POST_LOADED',
 		post

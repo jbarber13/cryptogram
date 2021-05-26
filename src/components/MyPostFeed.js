@@ -10,7 +10,7 @@ import Main from './Main'
 import { Switch, Route, Link } from 'react-router-dom';
 import { commentTextChanged } from '../store/actions'
 import {
-  allPostSelector,
+  myPostSelector,
   cryptogramSelector,
   web3Selector,
   accountSelector,
@@ -26,7 +26,7 @@ import Loading from './Loading'
 //portrait logo: QmUhWdN2ZMoNjxtTywNWJPVqn9TRYgxnNyUhiDa8nAzWtg
 
 const showFeed = (props) => {
-  const { dispatch, account, cryptogram, web3, allPosts, allPostsLoaded, allComments, commentText } = props
+  const { dispatch, account, cryptogram, web3, myPosts, allPostsLoaded, allComments, commentText } = props
 
   function getImageURL(post) {
     let hash
@@ -44,7 +44,7 @@ const showFeed = (props) => {
       output
     );
   }
-  function renderComments(post) {    
+  function renderComments(post) {
     return (
       <div>
         <div>
@@ -61,17 +61,17 @@ const showFeed = (props) => {
                     src={`data:image/png;base64,${new Identicon(comment.author, 30).toString()}`}
                   /><small className="text-muted">{comment.formattedTimeStamp} TIPS: {web3.utils.fromWei(comment.tipAmount.toString(), 'Ether')} ETH</small>
                   <br />
-                  {comment.comment} 
+                  {comment.comment}
                   <button
-                      className="btn btn-link btn-sm float-right pt-0"
-                      name={comment.id}
-                      onClick={(event) => {
-                        let tipAmount = web3.utils.toWei('0.1', 'Ether')
-                        tipComment(dispatch, account, cryptogram, event.target.name, tipAmount)
-                      }}
-                    >
-                      TIP 0.1 ETH
-                  </button>                                             
+                    className="btn btn-link btn-sm float-right pt-0"
+                    name={comment.id}
+                    onClick={(event) => {
+                      let tipAmount = web3.utils.toWei('0.1', 'Ether')
+                      tipComment(dispatch, account, cryptogram, event.target.name, tipAmount)
+                    }}
+                  >
+                    TIP 0.1 ETH
+                    </button>
                 </p>
               )
             }
@@ -80,14 +80,12 @@ const showFeed = (props) => {
         <Collapsible className="cursor-pointer" trigger="Add a comment" triggerWhenOpen="Collapse">
           {composeComment(post)}
         </Collapsible>
-        
       </div>
     )
   }
   function composeComment(post) {
     return (
       <div>
-        <br></br>
         <form onSubmit={(event) => {
           event.preventDefault()
           addComment(post)
@@ -118,58 +116,64 @@ const showFeed = (props) => {
   return (
     <div className="container-fluid">
       {
-        allPosts.map((post, key) => {
-          return (
-            <div className="ImageFeedImage">
-              <div className="card mb-4 " key={key} >
-                <div className="card-header">
-                  <h1 className="text-muted">{post.title.toString()}</h1>
-                  <img
-                    className='mr-2'
-                    width='30'
-                    height='30'
-                    alt="#"
-                    src={`data:image/png;base64,${new Identicon(post.author, 30).toString()}`}
-                  />
+        myPosts.map((post, key) => {
+          if (post != undefined) {
+            return (
+              <div className="ImageFeedImage">
+                <div className="card mb-4 " key={key} >
+                  <div className="card-header">
+                    <h1 className="text-muted">{post.title.toString()}</h1>
+                    <img
+                      className='mr-2'
+                      width='30'
+                      height='30'
+                      alt="#"
+                      src={`data:image/png;base64,${new Identicon(post.author, 30).toString()}`}
+                    />
 
 
-                  <small className="text-muted">{post.author}</small>
-                  <small className="text-muted"><br />Posted on: {moment.unix(post.timeStamp).format('M/D/Y')} at: {moment.unix(post.timeStamp).format('h:mm:ss a')}</small>
+                    <small className="text-muted">{post.author}</small>
+                    <small className="text-muted"><br />Posted on: {moment.unix(post.timeStamp).format('M/D/Y')} at: {moment.unix(post.timeStamp).format('h:mm:ss a')}</small>
 
-                </div>
-                  <li className="list-group-item bg-secondary">
-                    <p class="text-center"><img className="uploadedImage" src={getImageURL(post)} alt="" /></p>
-                    <p className="text-light border-info card-body">{post.status}</p>
-                    {showLink(post)}
-                  </li>
-                  <li key={key} className="list-group-item py-2">
-                    <small className="float-left mt-1 text-muted ">
-                      TIPS: {web3.utils.fromWei(post.tipAmount.toString(), 'Ether')} ETH
-                        </small>
+                  </div>
+                  <ul id="imageList" className="list-group list-group-flush ">
+                    <li className="list-group-item bg-secondary">
+                      <p class="text-center"><img className="uploadedImage" src={getImageURL(post)} alt="" /></p>
+                      <p className="text-light border-info card-body">{post.status}</p>
+                      {showLink(post)}
+                    </li>
+                    <li key={key} className="list-group-item py-2">
+                      <small className="float-left mt-1 text-muted ">
+                        TIPS: {web3.utils.fromWei(post.tipAmount.toString(), 'Ether')} ETH
+                                </small>
 
-                    <button
-                      className="btn btn-link btn-sm float-right pt-0"
-                      name={post.id}
-                      onClick={(event) => {
-                        let tipAmount = web3.utils.toWei('0.1', 'Ether')
+                      <button
+                        className="btn btn-link btn-sm float-right pt-0"
+                        name={post.id}
+                        onClick={(event) => {
+                          let tipAmount = web3.utils.toWei('0.1', 'Ether')
 
-                        tipPost(dispatch, account, cryptogram, event.target.name, tipAmount)
-                      }}
-                    >
-                      TIP 0.1 ETH
-                        </button>
-                  </li>
-                  <li>
+                          tipPost(dispatch, account, cryptogram, event.target.name, tipAmount)
+                        }}
+                      >
+                        TIP 0.1 ETH
+                                </button>
+                    </li>                   
+                      
                       <div className="text-dark text-left">
                         <Collapsible className="cursor-pointer text-center p-1" trigger="Expand Comment Section" triggerWhenOpen="Collapse Comments">
                           <br></br>
                           {renderComments(post)}
                         </Collapsible>                        
                       </div>
-                  </li>
+
+                    
+                  </ul>
+                </div>
               </div>
-            </div>
-          )
+            )
+          }
+
         })
       }
     </div>
@@ -183,10 +187,9 @@ const showFeed = (props) => {
 class ImageFeed extends Component {
   render() {
     return (
-      <div className="imageFeed pt-5" id="imageFeed">
-        <br /><br />
+      <div className="" id="imageFeed">
         {
-        showFeed(this.props) 
+          showFeed(this.props)
         }
 
       </div>
@@ -196,7 +199,7 @@ class ImageFeed extends Component {
 
 function mapStateToProps(state) {
   return {
-    allPosts: allPostSelector(state),
+    myPosts: myPostSelector(state),
     web3: web3Selector(state),
     account: accountSelector(state),
     cryptogram: cryptogramSelector(state),

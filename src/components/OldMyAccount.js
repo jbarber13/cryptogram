@@ -1,8 +1,11 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import Collapsible from 'react-collapsible';
-
-
+import {
+    CollapsibleComponent,
+    CollapsibleHead,
+    CollapsibleContent
+} from "react-collapsible-component";
 
 import {
     userNameChanged,
@@ -31,7 +34,6 @@ import Home from '../images/home.png'
 import Contact from '../images/contact.png'
 import Edit from '../images/edit.png'
 import SharePost from './SharePost'
-import MyPostFeed from './MyPostFeed'
 
 
 const showUserInfo = (props) => {
@@ -45,24 +47,33 @@ const showUserInfo = (props) => {
 
     function renderUserInfo() {
         return (
-            <div className="w-80 pb-5 ">
-                <img className="profile-picture" src={getImageURL()} alt="profile-picture" />
+            <div className="username-bio">
+                <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+                <h1 className="centered-user-info text-wrap">{user.userName}</h1>
                 <small className="cursor-pointer">
                     <Collapsible className="edit-user-value" trigger="Edit" triggerWhenOpen="Collapse">
                         <div className="m-auto w-25">
                             <br></br>
                             <form onSubmit={(event) => {
                                 event.preventDefault()
-                                prepImageHash()
+                                setUserName(dispatch, cryptogram, user.userAccount, userUpdateValue)
                             }} >
                                 <div className="form-group mr-sm-2">
-                                    <span>Choose a new profile picture </span> <input className="btn btn-secondary" type='file' accept=".jpg, .jpeg, .png, .bmp, .gif" onChange={(e) => captureFile(e, dispatch)} />
+                                    <textarea
+                                        rows="4"
+                                        cols="50"
+                                        onChange={(e) => dispatch(userUpdateValueChanged(e.target.value))}
+                                        className="form-control"
+                                        placeholder="Whats the new thing...?"
+                                    >
+                                    </textarea>
                                 </div>
                                 <button type="submit" className="btn btn-primary btn-block btn-lg">Submit</button>
                             </form>
                         </div>
                     </Collapsible>
                 </small>
+                <br /><br /><br />
                 <h1 className="centered-user-info text-wrap">{user.bio}</h1>
                 <small className="cursor-pointer">
                     <Collapsible className="edit-user-value" trigger="Edit" triggerWhenOpen="Collapse">
@@ -87,6 +98,11 @@ const showUserInfo = (props) => {
                         </div>
                     </Collapsible>
                 </small>
+
+
+                <div>
+                    <p></p>
+                </div>
             </div>
         )
     }//renderUserInfo
@@ -94,7 +110,7 @@ const showUserInfo = (props) => {
     function renderProfileInfo() {
         return (
             <div>
-                <div className="card mb-4 position-top"  >
+                <div className="card mb-4"  >
                     <div className="card-header bg-info ">
                         <h2 className="text-light">Info</h2>
                     </div>
@@ -176,38 +192,58 @@ const showUserInfo = (props) => {
         })
     }
     return (
-        <div className="w-75 h-100">
-            <div className="">
-                {renderUserInfo()}
-            </div>
-                        
-            <div className="row g-3 pt-0">                
-                <div className="col m-auto w-50 float-left">    
-                <p></p>            
-                    {renderProfileInfo()}
+        <div className="profile">
+            <br />
+            <img className="profile-picture" src={getImageURL()} alt="profile-picture" />
+            <small className="cursor-pointer">
+                <Collapsible className="edit-user-value" trigger="Edit" triggerWhenOpen="Collapse">
+                    <div className="m-auto w-25">
+                        <br></br>
+                        <form onSubmit={(event) => {
+                            event.preventDefault()
+                            prepImageHash()
+                        }} >
+                            <div className="form-group mr-sm-2">
+                                <span>Choose a new profile picture </span> <input className="btn btn-secondary" type='file' accept=".jpg, .jpeg, .png, .bmp, .gif" onChange={(e) => captureFile(e, dispatch)} />
+                            </div>
+                            <button type="submit" className="btn btn-primary btn-block btn-lg">Submit</button>
+                        </form>
+                    </div>
+                </Collapsible>
+            </small>
+            {renderUserInfo()}
+            <br />
+            <div className="row g-3">
+                <div className="col m-auto w-50 float-left">
+                    <div>
+                        {renderProfileInfo()}
+                    </div>                    
+                    
                 </div>
                 <div className="col m-auto w-50 float-right">
-                    <SharePost />
+                    <div className="bg-info cursor-pointer card mb-4">
+                    <Collapsible  trigger="Make a new post" triggerWhenOpen="Collapse">
+                        <SharePost />
+                    </Collapsible>
+                    </div>
                 </div>
             </div>
-            <div className="pt-5">
-                <MyPostFeed />
-            </div>
             
-
         </div>
     )
 }//showUserInfo
 
 
-class MyAccount extends Component {
+class OldMyAccount extends Component {
     render() {
         //console.log("User Test: userAccount location: should not be 'Cryptoverse'", this.props.user.location)
-        return (            
-                <div className="myAccount bg-dark text-light h-100">
+        return (
+            <div className="component" id="myAccount">
+                <div className="myAccount">
                     {showUserInfo(this.props)}
                 </div>
-            
+                <br /><br /><br /><br />
+            </div>
         );
     }
 }
@@ -221,4 +257,4 @@ function mapStateToProps(state) {
     }
 }
 
-export default connect(mapStateToProps)(MyAccount)
+export default connect(mapStateToProps)(OldMyAccount)

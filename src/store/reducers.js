@@ -17,7 +17,7 @@ function cryptogram(state = {}, action) {
       return { ...state, loaded: true, contract: action.contract, allPosts: [], allComments: [], allUsers: [], message: "loaded" }    
     case 'POST_LOADED'://append each new post to state array, initialized when CRYPTOGRAM_LOADED
       if(state.loaded){
-        console.log("case: POST_LOADED, id: ", action.post.id)
+        //console.log("case: POST_LOADED, id: ", action.post.id)
         return {
           ...state,
           allPosts: [...state.allPosts, action.post]//Unhandled Rejection (TypeError): Invalid attempt to spread non-iterable instance unless you initialize the array when cryptogram loads

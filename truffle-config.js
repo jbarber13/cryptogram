@@ -52,4 +52,5 @@ module.exports = {
     }
   },
   plugins: ["truffle-contract-size"]
+  //compile first, then run: truffle run contract-size
 }

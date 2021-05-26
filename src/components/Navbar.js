@@ -3,7 +3,7 @@ import Identicon from 'identicon.js';
 import photo from '../images/photo.png'
 import { connect } from 'react-redux'
 import {accountSelector} from '../store/selectors'
-import { Switch, Route } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 
 
@@ -15,7 +15,7 @@ class Navbar extends Component {
 
   render() {
     return (
-      <nav className="navbar navbar-expand-lg navbar-dark bg-primary bg-primary fixed-top">
+      <nav className="navbar navbar-expand-lg navbar-dark bg-info fixed-top">
         <a
           className="navbar-brand"
           href="https://www.jake-barber.com/#cryptogram"
@@ -30,16 +30,27 @@ class Navbar extends Component {
         </button>
         <div className="collapse navbar-collapse" id="navbarText">
           <ul className="navbar-nav mr-auto">
-          <li className="nav-item">
-              <a className="nav-link" href="#" >Front Page</a>
+            <li className="nav-item">
+              <Link to="/">
+                <button variant="outlined">
+                  Front Page
+                </button>
+              </Link>
             </li>
             <li className="nav-item">
-              <a className="nav-link" href="#">New Post</a>
+            <Link to="/SharePost">
+                <button variant="outlined">
+                  New Post
+                </button>
+              </Link>
             </li>
             <li className="nav-item">
-              <a className="nav-link" href="#">Account</a>
-            </li>
-            
+              <Link to="/MyAccount">
+                <button variant="outlined">
+                  Account
+                </button>
+              </Link>
+            </li>            
           </ul>
           <span className="navbar-text">
           <a
