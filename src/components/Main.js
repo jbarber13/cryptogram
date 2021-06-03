@@ -1,14 +1,15 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { Switch, Route } from 'react-router-dom';
+import { Switch, Route, Router } from 'react-router-dom';
 
 import {
-  subscribeToEvents  
+  subscribeToEvents
 } from '../store/interactions'
-import { cryptogramSelector, allUsersSelector, accountSelector, userAccountLoadedSelector } from '../store/selectors';
+import { cryptogramSelector, allUsersSelector, accountSelector } from '../store/selectors';
 import SharePost from './SharePost'
 import ImageFeed from './ImageFeed'
 import MyAccount from './MyAccount'
+import UserPage from './UserPage'
 import CreateUser from './CreateUser'
 import Loading from './Loading'
 
@@ -28,13 +29,16 @@ class Main extends Component {
     return (
       <div id="header" className="bg-dark h-100">
         <Switch>
-          <Route exact path='/' component={ImageFeed}></Route>
-          <Route exact path='/SharePost' component={SharePost}></Route>
-          <Route exact path='/CreateUser' component={CreateUser}></Route>
-          <Route exact path='/MyAccount' component={MyAccount}></Route>
-          <Route exact path='/Loading' component={Loading}></Route>
-        </Switch>  
-           
+
+            <Route exact path='/' component={ImageFeed}></Route>
+            <Route exact path='/SharePost' component={SharePost}></Route>
+            <Route exact path='/CreateUser' component={CreateUser}></Route>
+            <Route exact path='/MyAccount' component={MyAccount}></Route>
+            <Route exact path='/UserPage' component={UserPage}></Route>
+            <Route exact path='/Loading' component={Loading}></Route>
+
+        </Switch>
+
       </div>
     );
   }
@@ -45,7 +49,6 @@ function mapStateToProps(state) {
     cryptogram,
     account: accountSelector(state),
     allUsers: allUsersSelector(state),
-    userAccountLoaded: userAccountLoadedSelector(state)
 
   }
 }

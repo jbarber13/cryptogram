@@ -22,12 +22,16 @@ function cryptogram(state = {}, action) {
           ...state,
           allPosts: [...state.allPosts, action.post]//Unhandled Rejection (TypeError): Invalid attempt to spread non-iterable instance unless you initialize the array when cryptogram loads
         }
-      }    
+      }
+    case 'DELETED_POSTS_LOADED':
+      return {...state, deletedPosts: action.deletedPosts}    
     case 'COMMENT_LOADED':
       return {
         ...state,
         allComments: [...state.allComments, action.comment]
       }
+    case 'DELETED_COMMENTS_LOADED':
+      return {...state, deletedComments: action.deletedComments}
     case 'USER_LOADED': 
       return {
         ...state, 
@@ -37,19 +41,12 @@ function cryptogram(state = {}, action) {
       return{...state, userAccount: action.account, userAccountLoaded: true}
     case 'USER_UPADATE_VALUE_CHANGED':
       return{...state, userUpdateValue: action.value}
-
-
-
-
-
-
-
-
-
-
-
-
-
+    case 'DELETED_USERS_LOADED':
+      return{...state, deletedUsers: action.deletedUsers}
+    case 'USER_SELECTED':
+      return{...state, userSelected: action.userSelected}
+    case 'CONTRACT_UPDATING':
+      return{...state, loaded: false}
 
 
 

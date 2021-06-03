@@ -5,10 +5,10 @@ import { connect } from 'react-redux'
 import './App.css';
 import { Switch, Route, Link } from 'react-router-dom';
 import {
-  
+
   loadEverything
 } from '../store/interactions'
-import { cryptogramLoadedSelector, contractUpdatingSelector, allPostsLoadedSelector, eventHeardSelector  } from '../store/selectors'
+import { cryptogramLoadedSelector, contractUpdatingSelector, allPostsLoadedSelector, eventHeardSelector } from '../store/selectors'
 import Navbar from './Navbar'
 import Main from './Main';
 import Loading from './Loading'
@@ -20,17 +20,17 @@ import CreateUser from './CreateUser'
 class App extends Component {
 
   componentWillMount() {
-    
-    if(!this.props.eventHeard){
+
+    if (!this.props.eventHeard) {
       this.loadBlockchainData(this.props.dispatch)
     }
   }
   //CHECK NETWORK AND ACCOUNT IN META MASK
   async loadBlockchainData(dispatch) {
-   // if(this.props.eventHeard){console.log("EVENT HEARD IN STATE!!!!", this.props.eventHeard)}
-   //console.log("loadBlockchainData in APP called")
+    // if(this.props.eventHeard){console.log("EVENT HEARD IN STATE!!!!", this.props.eventHeard)}
+    //console.log("loadBlockchainData in APP called")
 
-   await loadEverything(dispatch)
+    await loadEverything(dispatch)
     /**
      const web3 = await loadWeb3(dispatch)
     const networkId = await web3.eth.net.getId()
@@ -48,17 +48,23 @@ class App extends Component {
      */
 
 
-        
+
   }//loadBlockchainData  
-   render() {
+  render() {
     return (
       <div id="header" className="bg-dark">
         <Navbar />
-        {this.props.cryptogramLoaded ? 
-        <Main /> : <Loading />
+        {this.props.cryptogramLoaded ?
+          <Main /> : <Loading />
         }
+        <footer>
+          <div class="text-center p-3 pb-5">
+            <small className="text-muted">
+              This app was created by Jake Barber for testing and proof-of-concept purposes only, more information can be found on my <a className="text-light" href="https://www.jake-barber.com" target="_blank">website</a>.
+          </small>
+          </div>
+        </footer>
 
-       
       </div>
     );
   }
@@ -72,7 +78,7 @@ function mapStateToProps(state) {
 
   return {
     //account: accountSelector(state)//enable selector for testing via console log
-    cryptogramLoaded: cryptogramLoadedSelector(state)    
+    cryptogramLoaded: cryptogramLoadedSelector(state)
   }
 }
 

@@ -42,7 +42,6 @@ const initiateUser = () => {
 
     return (
         <div>
-            <p>&nbsp;</p>
             <h3>Create a User Account</h3>
             <form onSubmit={(event) => {
                 event.preventDefault()
@@ -107,7 +106,7 @@ class CreateUser extends Component {
 
         return (
             <div className="component" id="sharePost">
-                <div className="sharePost">
+                <div>
                     {showForm(this.props)}
                 </div>
             </div>

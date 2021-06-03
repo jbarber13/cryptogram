@@ -29,16 +29,34 @@ export function postLoaded(post){
 		post
 	}
 }
+export function deletedPostsLoaded(deletedPosts){
+	return{
+		type: 'DELETED_POSTS_LOADED',
+		deletedPosts
+	}
+}
 export function commentLoaded(comment){
 	return{
 		type: 'COMMENT_LOADED',
 		comment
 	}
 }
+export function deletedCommentsLoaded(deletedComments){
+	return{
+		type: 'DELETED_COMMENTS_LOADED',
+		deletedComments
+	}
+}
 export function userLoaded(user){
 	return{
 		type: 'USER_LOADED',
 		user
+	}
+}
+export function deletedUsersLoaded(deletedUsers){
+	return{
+		type: 'DELETED_USERS_LOADED',
+		deletedUsers
 	}
 }
 
@@ -60,6 +78,12 @@ export function userUpdateValueChanged(value){
 		value
 	}
 }
+export function userSelected(userSelected){
+	return{
+		type: 'USER_SELECTED',
+		userSelected
+	}
+}
 
 
 
@@ -84,15 +108,15 @@ export function userUpdateValueChanged(value){
 
 
 
-/**
- * Something is still fuckey with this, multiple events are being heard, and it is loading duplicate posts/comments as a result
+
+//Something is still fuckey with this, multiple events are being heard, and it is loading duplicate posts/comments as a result
 export function contractUpdating(message){
 	return{
 		type: 'CONTRACT_UPDATING',
 		message
 	}
 }
- */
+ 
 
 /*****************Upload Handler*****************/
 export function fileCaptured(file){

@@ -10,8 +10,9 @@ import Main from './Main'
 import { Switch, Route, Link } from 'react-router-dom';
 import { commentTextChanged } from '../store/actions'
 import {
-  myPostSelector,
-  myAccountSelector,
+  
+  allPostSelector,
+  userSelectedSelector,
   cryptogramSelector,
   web3Selector,
   accountSelector,
@@ -27,7 +28,7 @@ import Loading from './Loading'
 //portrait logo: QmUhWdN2ZMoNjxtTywNWJPVqn9TRYgxnNyUhiDa8nAzWtg
 
 const showFeed = (props) => {
-  const { dispatch, account, cryptogram, web3, myPosts, myAccount, allComments, commentText } = props
+  const { dispatch, account, cryptogram, web3, allPosts, user, allComments, commentText } = props
 
   function getImageURL(post) {
     let hash
@@ -108,20 +109,7 @@ const showFeed = (props) => {
       </div>
     )
   }
-  function deletePostButton(post) {
-    return (
-      <div>
-        <form onSubmit={(event) => {
-          event.preventDefault()
-          deletePost(dispatch, cryptogram, account, post.id)
-        }} >
 
-          <button type="submit" className="btn btn-link btn-sm float-right pt-0">Delete This Post</button>
-
-        </form>
-      </div>
-    )
-  }
 
 
   const addComment = (post) => {
@@ -130,55 +118,57 @@ const showFeed = (props) => {
 
 
 
+
+
+
   return (
     <div className="container-fluid">
       {
-        myPosts.map((post, key) => {
-          if (post != undefined && post.id != 0x0) {
-            return (
-              <div className="ImageFeedImage">
-                <div className="card mb-4 " key={key} >
-                  <div className="card-header">
-                    <h1 className="text-muted">{post.title.toString()}</h1>
-                    <img
-                      className='mr-2 rounded-circle'
-                      width='30'
-                      height='30'
-                      alt="#"
-                      src={`https://ipfs.infura.io/ipfs/${myAccount.imageHash}`}
-                    />
-                    <small className="text-muted">{myAccount.userName}</small>
-                    <small className="text-muted"><br />Posted on: {moment.unix(post.timeStamp).format('M/D/Y')} at: {moment.unix(post.timeStamp).format('h:mm:ss a')}</small>
-
-                  </div>
-                  <ul id="imageList" className="list-group list-group-flush ">
-                    <li className="list-group-item bg-secondary">
-                      <p class="text-center"><img className="uploadedImage" src={getImageURL(post)} alt="" /></p>
-                      <p className="text-light border-info card-body">{post.status}</p>
-                      {showLink(post)}
-                    </li>
-                    <li key={key} className="list-group-item py-2">
-                      <small className="float-left mt-1 text-muted ">
-                        TIPS: {web3.utils.fromWei(post.tipAmount.toString(), 'Ether')} ETH
-                                </small>
-                      {deletePostButton(post)}
-
-                    </li>
-
-                    <div className="text-dark text-left">
-                      <Collapsible className="cursor-pointer text-center p-1" trigger="Expand Comment Section" triggerWhenOpen="Collapse Comments">
-                        <br></br>
-                        {renderComments(post)}
-                      </Collapsible>
+        allPosts.map((post, key) => {
+          if (post != undefined && post.id != 0x0) { //confirm post has not been deleted
+            if (post.author === user.userAccount) { //only show posts from selected user
+              return (
+                <div className="ImageFeedImage">
+                  <div className="card mb-4 " key={key} >
+                    <div className="card-header">
+                      <h1 className="text-muted">{post.title.toString()}</h1>
+                      <img
+                        className='mr-2 rounded-circle'
+                        width='30'
+                        height='30'
+                        alt="#"
+                        src={`https://ipfs.infura.io/ipfs/${user.imageHash}`}
+                      />
+                      <small className="text-muted">{user.userName}</small>
+                      <small className="text-muted"><br />Posted on: {moment.unix(post.timeStamp).format('M/D/Y')} at: {moment.unix(post.timeStamp).format('h:mm:ss a')}</small>
+                    
                     </div>
+                    <ul id="imageList" className="list-group list-group-flush ">
+                      <li className="list-group-item bg-secondary">
+                        <p class="text-center"><img className="uploadedImage" src={getImageURL(post)} alt="" /></p>
+                        <p className="text-light border-info card-body">{post.status}</p>
+                        {showLink(post)}
+                      </li>
+                      <li key={key} className="list-group-item py-2">
+                        <small className="float-left mt-1 text-muted ">
+                          TIPS: {web3.utils.fromWei(post.tipAmount.toString(), 'Ether')} ETH
+                                  </small>
 
 
-                  </ul>
+                      </li>
+
+                      <div className="text-dark text-left">
+                        <Collapsible className="cursor-pointer text-center p-1" trigger="Expand Comment Section" triggerWhenOpen="Collapse Comments">
+                          <br></br>
+                          {renderComments(post)}
+                        </Collapsible>
+                      </div>
+                    </ul>
+                  </div>
                 </div>
-              </div>
-            )
+              )
+            }
           }
-
         })
       }
     </div>
@@ -189,14 +179,21 @@ const showFeed = (props) => {
 
 
 
-class MyPostFeed extends Component {
+class UserPostFeed extends Component {
   render() {
     return (
       <div className="p-4" id="imageFeed">
         {
-          showFeed(this.props)
+          showFeed(this.props)          
         }
-        
+        <footer>
+            <div class="text-center p-3 pb-5">
+                <small className="text-muted">
+                    This app was created by Jake Barber for testing and proof-of-concept purposes only, more information can be found on my <a className="text-light" href="https://www.jake-barber.com" target="_blank">website</a>.
+                </small>
+            </div>
+        </footer>
+
       </div>
     );
   }
@@ -204,8 +201,8 @@ class MyPostFeed extends Component {
 
 function mapStateToProps(state) {
   return {
-    myPosts: myPostSelector(state),
-    myAccount: myAccountSelector(state),
+    user: userSelectedSelector(state),
+    allPosts: allPostSelector(state),
     web3: web3Selector(state),
     account: accountSelector(state),
     cryptogram: cryptogramSelector(state),
@@ -214,4 +211,4 @@ function mapStateToProps(state) {
   }
 }
 
-export default connect(mapStateToProps)(MyPostFeed)
+export default connect(mapStateToProps)(UserPostFeed)
