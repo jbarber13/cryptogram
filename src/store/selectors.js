@@ -19,8 +19,21 @@ export const cryptogramSelector = createSelector(cryptogram, c => c)
 const allUsers = state => get(state, 'cryptogram.allUsers', [])
 export const allUsersSelector = createSelector(allUsers, u => u )
 
+const allUserIDs = state => {
+    const au = allUsers(state)
+    return(
+        au.map((user) => {
+            return user.userAccount
+        })
+    )
+}
+export const allUserIDSelector = createSelector(allUserIDs, aui => aui)
+
 const userAccountLoaded = state => get(state, 'cryptogram.userAccountLoaded', false)
 export const userAccountLoadedSelector = createSelector(userAccountLoaded, ue => ue)
+
+const myAccount = state => get(state, 'cryptogram.userAccount', false)
+export const myAccountSelector = createSelector(myAccount, ma => ma)
 
 const user = state => get(state, 'cryptogram.userAccount', false)
 export const userSelector = createSelector(user, u => u)
@@ -28,11 +41,45 @@ export const userSelector = createSelector(user, u => u)
 const userUpdateValue = state => get(state, 'cryptogram.userUpdateValue', "")
 export const userUpdateValueSelector = createSelector(userUpdateValue, uuv => uuv)
 
+const userSelected = state => get(state, 'cryptogram.userSelected', false)
+export const userSelectedSelector = createSelector(userSelected, us => us)
+
+
+
+
 const allPosts = state => get(state, 'cryptogram.allPosts', [])
 export const allPostSelector = createSelector(
     allPosts, 
-    ap => ap    
+    (posts) => {
+        //sort by tipAmount
+        posts = posts.sort((a,b) => b.tipAmount - a.tipAmount)
+        return posts
+    }    
 )
+
+const allPosters = state => {
+    const ap = allPosts(state)
+    return(
+        ap.map((post) => {
+            return post.author
+        })
+    )
+}
+export const allPosterSelector = createSelector(allPosters, ap => ap)
+
+
+const deletedPosts = state => get(state, 'cryptogram.deletedPosts', [])
+export const deletedPostsSelector = createSelector(deletedPosts, dp => dp)
+
+const deletedPostIDs = state => {
+    const dp = deletedPosts(state)
+    return(
+        dp.map((post) => {
+            return post.id
+        })
+    )
+}
+export const deletedPostIDSelector = createSelector(deletedPostIDs, dpi => dpi)
 
 const myPosts = state => {
     const posts = allPosts(state)
@@ -65,6 +112,42 @@ export const allCommentsSelector = createSelector(
     (comments) => {
         //console.log("AllComments: ", comments)
         comments = decorateAllComments(comments)
+        comments = comments.sort((a,b) => b.tipAmount - a.tipAmount)
+        return comments
+    }
+)
+
+const myComments = state => {
+    const comments = allComments(state)
+    const account = user(state)
+    return(
+        comments.map((comment) =>{
+            //console.log("My Comments Mapping: ", comment)
+            comment = decorateMyComment(comment, account)
+            if(comment != undefined){
+                return comment
+            }            
+        })
+    )
+}
+const decorateMyComment = (comment, account) =>{
+    
+    if(comment != undefined){
+        if(comment.author === account[0]){
+            return({
+                ...comment,        
+                formattedTimeStamp: moment.unix(comment.timeStamp).format('h:mm:ss a M/D/Y') //hours mins seconds AM/PM Month/Day/Year -- https://momentjs.com/
+            })
+        }
+    }   
+}
+export const myCommentSelector = createSelector(
+    myComments, 
+
+    (comments) => {
+        //sort by tipAmount
+        comments = comments.sort((a,b) => b.tipAmount - a.tipAmount)
+
         return comments
     }
 )
@@ -72,7 +155,6 @@ export const allCommentsSelector = createSelector(
 const decorateAllComments = (comments) => {
     return(
         comments.map((comment) => {
-            //console.log("decorateAllComments: ", comment.postID)
             comment = decorateComment(comment)
             return comment
         })

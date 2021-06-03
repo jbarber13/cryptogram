@@ -15,7 +15,9 @@ import {
     cryptogramSelector,
     userSelector,
     userUpdateValueSelector,
-    fileSelector
+    fileSelector,
+    userAccountLoadedSelector,
+
 } from '../store/selectors'
 import {
     setUserName,
@@ -23,14 +25,15 @@ import {
     setBio,
     setLocation,
     setOccupation,
-    captureFile
+    captureFile,
+    deleteUser
 } from '../store/interactions'
 import CreateUser from './CreateUser'
 import Work from '../images/workIcon.jpg'
 import Home from '../images/home.png'
 import Contact from '../images/contact.png'
 import Edit from '../images/edit.png'
-import SharePost from './SharePost'
+import MyComments from './MyComments'
 import MyPostFeed from './MyPostFeed'
 
 
@@ -63,7 +66,32 @@ const showUserInfo = (props) => {
                         </div>
                     </Collapsible>
                 </small>
-                <h1 className="centered-user-info text-wrap">{user.bio}</h1>
+                <h1 className="centered-user-info text-wrap">{user.userName}</h1>
+                <small className="cursor-pointer">
+                    <Collapsible className="edit-user-value" trigger="Edit" triggerWhenOpen="Collapse">
+                        <div className="m-auto w-25">
+                            <br></br>
+                            <form onSubmit={(event) => {
+                                event.preventDefault()
+                                setUserName(dispatch, cryptogram, user.userAccount, userUpdateValue)
+                            }} >
+                                <div className="form-group mr-sm-2">
+                                    <textarea
+                                        rows="4"
+                                        cols="50"
+                                        onChange={(e) => dispatch(userUpdateValueChanged(e.target.value))}
+                                        className="form-control"
+                                        placeholder="Whats the new thing...?"
+                                    >
+                                    </textarea>
+                                </div>
+                                <button type="submit" className="btn btn-primary btn-block btn-lg">Submit</button>
+                            </form>
+                        </div>
+                    </Collapsible>
+                </small>
+                <br />
+                <h3 className="centered-user-info text-wrap">{user.bio}</h3>
                 <small className="cursor-pointer">
                     <Collapsible className="edit-user-value" trigger="Edit" triggerWhenOpen="Collapse">
                         <div className="m-auto w-25">
@@ -177,23 +205,47 @@ const showUserInfo = (props) => {
     }
     return (
         <div className="w-75 h-100">
+            <a
+                className="text-light"
+                href={`https://rinkeby.etherscan.io/address/${user.userAccount}`}
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                Your Account: {user.userAccount}
+
+            </a>
             <div className="">
                 {renderUserInfo()}
             </div>
-                        
-            <div className="row g-3 pt-0">                
-                <div className="col m-auto w-50 float-left">    
-                <p></p>            
+
+            <div className="row g-3 pt-0">
+                <div className="col m-auto w-50 float-left">
                     {renderProfileInfo()}
                 </div>
                 <div className="col m-auto w-50 float-right">
-                    <SharePost />
+                    <MyComments />
                 </div>
             </div>
             <div className="pt-5">
+                <h1>My Post History</h1>
                 <MyPostFeed />
             </div>
-            
+            <form
+                className="p-5"
+                onSubmit={(event) => {
+                    event.preventDefault()
+                    deleteUser(dispatch, cryptogram, user.userAccount)
+                }} >
+                <button type="submit" className="btn btn-danger btn-sml  ">Delete Account</button>
+            </form>
+
+            <footer>
+                <div class="text-center p-3 pb-5">
+                    <small className="text-muted">
+                        This app was created by Jake Barber for testing and proof-of-concept purposes only, more information can be found on my <a className="text-light" href="https://www.jake-barber.com" target="_blank">website</a>.
+                    </small>
+                </div>
+            </footer>
 
         </div>
     )
@@ -203,11 +255,13 @@ const showUserInfo = (props) => {
 class MyAccount extends Component {
     render() {
         //console.log("User Test: userAccount location: should not be 'Cryptoverse'", this.props.user.location)
-        return (            
-                <div className="myAccount bg-dark text-light h-100">
-                    {showUserInfo(this.props)}
-                </div>
-            
+        return (
+            <div className="myAccount bg-dark text-light h-100">
+
+                {this.props.userAccountLoaded ? showUserInfo(this.props) : <CreateUser />}
+
+            </div>
+
         );
     }
 }
@@ -218,6 +272,7 @@ function mapStateToProps(state) {
         cryptogram: cryptogramSelector(state),
         userUpdateValue: userUpdateValueSelector(state),
         file: fileSelector(state),
+        userAccountLoaded: userAccountLoadedSelector(state)
     }
 }
 

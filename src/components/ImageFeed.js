@@ -1,23 +1,25 @@
-import React, { Component } from 'react';
+import React, { Component } from 'react'
 import { connect } from 'react-redux'
-
-import Collapsible from 'react-collapsible';
+import Collapsible from 'react-collapsible'
+import { Link } from 'react-router-dom';
 
 import Identicon from 'identicon.js';
 import moment from 'moment'
-import Main from './Main'
 
-import { Switch, Route, Link } from 'react-router-dom';
-import { commentTextChanged } from '../store/actions'
+import { commentTextChanged, userSelected } from '../store/actions'
 import {
   allPostSelector,
+  allUsersSelector,
+  allPosterSelector,
+  allUserIDSelector,
   cryptogramSelector,
   web3Selector,
   accountSelector,
   allCommentsSelector,
-  commentTextSelector
+  commentTextSelector,
+
 } from '../store/selectors'
-import { tipPost, tipComment, makeComment } from '../store/interactions'
+import { tipPost, tipComment, makeComment, getPostHeader, getCommentHeader } from '../store/interactions'
 import Loading from './Loading'
 
 
@@ -26,7 +28,9 @@ import Loading from './Loading'
 //portrait logo: QmUhWdN2ZMoNjxtTywNWJPVqn9TRYgxnNyUhiDa8nAzWtg
 
 const showFeed = (props) => {
-  const { dispatch, account, cryptogram, web3, allPosts, allPostsLoaded, allComments, commentText } = props
+  const { dispatch, account, cryptogram, web3, allPosts, allUsers, allComments, allPosters, allUserIDs, commentText } = props
+
+
 
   function getImageURL(post) {
     let hash
@@ -37,32 +41,30 @@ const showFeed = (props) => {
   //only shows link if there is one
   function showLink(post) {
     let output = ""
-    if (post.link != "") {
+    if (post.link !== "") {
       output = <a className="text-link" href={post.link.toString()} target="#_blank">Attached Link</a>
     }
     return (
       output
     );
   }
-  function renderComments(post) {    
+  function renderComments(post) {
     return (
       <div>
         <div>
           {allComments.map((comment) => {
             //only show comments for the correct post
-            if (comment.postID == post.id) {
+            if (comment.postID === post.id) {
               return (
-                <p className="p-2" key={comment.id}>
-                  <img
-                    className='mr-2'
-                    width='30'
-                    height='30'
-                    alt="#"
-                    src={`data:image/png;base64,${new Identicon(comment.author, 30).toString()}`}
-                  /><small className="text-muted">{comment.formattedTimeStamp} TIPS: {web3.utils.fromWei(comment.tipAmount.toString(), 'Ether')} ETH</small>
-                  <br />
-                  {comment.comment} 
-                  <button
+                <div className="card mb-4">
+
+
+                  <p className="p-2" key={comment.id}>
+                    {
+                      getCommentHeader(comment, web3, allUsers, allUserIDs)
+                    }
+                    {comment.comment}
+                    <button
                       className="btn btn-link btn-sm float-right pt-0"
                       name={comment.id}
                       onClick={(event) => {
@@ -71,8 +73,9 @@ const showFeed = (props) => {
                       }}
                     >
                       TIP 0.1 ETH
-                  </button>                                             
-                </p>
+                  </button>
+                  </p>
+                </div>
               )
             }
           })}
@@ -80,7 +83,7 @@ const showFeed = (props) => {
         <Collapsible className="cursor-pointer" trigger="Add a comment" triggerWhenOpen="Collapse">
           {composeComment(post)}
         </Collapsible>
-        
+
       </div>
     )
   }
@@ -109,34 +112,39 @@ const showFeed = (props) => {
       </div>
     )
   }
-
   const addComment = (post) => {
     makeComment(dispatch, account, cryptogram, post.id, commentText)
   }
 
-
+  //get the full user object and dispatch to state so UserPage can render it correctly
+  const dispatchUser = (author) => {
+    allUsers.map((u) => {
+      if (u.userAccount === author) {
+        dispatch(userSelected(u))
+      }
+    })
+  }
   return (
     <div className="container-fluid">
       {
         allPosts.map((post, key) => {
-          return (
-            <div className="ImageFeedImage">
-              <div className="card mb-4 " key={key} >
-                <div className="card-header">
+          if (post.id != 0x0 && post != undefined) {
+            return (
+              <div
+                className="ImageFeedImage"
+              >
+                <div className="card mb-4" key={key} >
                   <h1 className="text-muted">{post.title.toString()}</h1>
-                  <img
-                    className='mr-2'
-                    width='30'
-                    height='30'
-                    alt="#"
-                    src={`data:image/png;base64,${new Identicon(post.author, 30).toString()}`}
-                  />
-
-
-                  <small className="text-muted">{post.author}</small>
-                  <small className="text-muted"><br />Posted on: {moment.unix(post.timeStamp).format('M/D/Y')} at: {moment.unix(post.timeStamp).format('h:mm:ss a')}</small>
-
-                </div>
+                  {getPostHeader(post, allUsers, allUserIDs)}
+                  <form
+                    onSubmit={(event) => {
+                      event.preventDefault()
+                      dispatchUser(post.author)
+                      props.history.push('./UserPage')
+                    }}
+                  >
+                    <button type="submit" className="btn btn-info btn-sml">View Account</button>
+                  </form>
                   <li className="list-group-item bg-secondary">
                     <p class="text-center"><img className="uploadedImage" src={getImageURL(post)} alt="" /></p>
                     <p className="text-light border-info card-body">{post.status}</p>
@@ -145,8 +153,7 @@ const showFeed = (props) => {
                   <li key={key} className="list-group-item py-2">
                     <small className="float-left mt-1 text-muted ">
                       TIPS: {web3.utils.fromWei(post.tipAmount.toString(), 'Ether')} ETH
-                        </small>
-
+                    </small>
                     <button
                       className="btn btn-link btn-sm float-right pt-0"
                       name={post.id}
@@ -157,38 +164,39 @@ const showFeed = (props) => {
                       }}
                     >
                       TIP 0.1 ETH
-                        </button>
+                    </button>
                   </li>
                   <li>
-                      <div className="text-dark text-left">
-                        <Collapsible className="cursor-pointer text-center p-1" trigger="Expand Comment Section" triggerWhenOpen="Collapse Comments">
-                          <br></br>
-                          {renderComments(post)}
-                        </Collapsible>                        
-                      </div>
+                    <div className="text-dark text-left">
+                      <Collapsible className="cursor-pointer text-center" trigger="Expand Comment Section" triggerWhenOpen="Collapse Comments">
+                        <br></br>
+                        {renderComments(post)}
+                      </Collapsible>
+                    </div>
                   </li>
+                </div>
               </div>
-            </div>
-          )
+            )
+          }
         })
       }
     </div>
-  )
-}
+  )//show feed return
+}//show feed
 
 
 
 
 
 class ImageFeed extends Component {
+
   render() {
     return (
       <div className="imageFeed pt-5" id="imageFeed">
         <br /><br />
         {
-        showFeed(this.props) 
+          showFeed(this.props)
         }
-
       </div>
     );
   }
@@ -197,6 +205,9 @@ class ImageFeed extends Component {
 function mapStateToProps(state) {
   return {
     allPosts: allPostSelector(state),
+    allUsers: allUsersSelector(state),
+    allPosters: allPosterSelector(state),
+    allUserIDs: allUserIDSelector(state),
     web3: web3Selector(state),
     account: accountSelector(state),
     cryptogram: cryptogramSelector(state),

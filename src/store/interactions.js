@@ -1,4 +1,10 @@
 import Web3 from 'web3'
+import React, { Component } from 'react';
+import { connect } from 'react-redux'
+import moment from 'moment'
+
+
+
 import {
   web3Loaded,
   web3AccountLoaded,
@@ -6,12 +12,18 @@ import {
   userLoaded,
   fileCaptured,
   postLoaded,
+  deletedPostsLoaded,
   commentLoaded,
+  deletedCommentsLoaded,
   clearForm,
-  userAlreadyExists,
-  userAccountLoaded
+  contractUpdating,
+  userAccountLoaded,
+  deletedUsersLoaded,
+  userSelected
 } from './actions'
 import CryptoGram from '../abis/CryptoGram.json'
+import Identicon from 'identicon.js';
+
 
 
 //TODO: need to clear state when loading contract to avoid old data being dumped into new posts when made back to back
@@ -27,10 +39,15 @@ export const loadEverything = async (dispatch) => {
   }
 
   const allPosts = await _loadPosts(cryptogram, dispatch)
+  _loadDeletedPosts(cryptogram, dispatch)
   const allComments = await _loadComments(cryptogram, dispatch)
+  _loadDeletedComments(cryptogram, dispatch)
   const allUsers = await _loadUsers(cryptogram, dispatch)
 
+
   _loadUser(account, allUsers, dispatch, cryptogram)
+  _loadDeletedUsers(cryptogram, dispatch)
+
   //console.log("loadEverything called", allPosts)
 
 }
@@ -75,10 +92,9 @@ const _loadCryptogram = async (web3, networkId, dispatch) => {
 //next TODO: try a new kind of loop maybe..
 //if that doesn't work, maybe try to load all posts from event stream, then loop through state array to update each one (using .map()) with the most recent info viay .call()
 const _loadPosts = async (cryptogram, dispatch) => {
-  const postStream = await cryptogram.getPastEvents('PostAdded', {fromBlock: 0, toBlock: 'latest'})
+  const postStream = await cryptogram.getPastEvents('PostAdded', { fromBlock: 0, toBlock: 'latest' })
   const posts = postStream.map((event) => event.returnValues)
-  const postCount = await cryptogram.methods.postCount().call()
-  
+
   //console.log("_loadPosts called ")
 
 
@@ -90,16 +106,58 @@ const _loadPosts = async (cryptogram, dispatch) => {
   posts.map(post => loadPost(post.id))
 
   return posts
-} 
+}
+const _loadDeletedPosts = async (cryptogram, dispatch) => {
+  const postStream = await cryptogram.getPastEvents('PostDeleted', { fromBlock: 0, toBlock: 'latest' })
+  const posts = postStream.map((event) => event.returnValues)
+  dispatch(deletedPostsLoaded(posts))
+}
 
 const _loadComments = async (cryptogram, dispatch) => {
-  const commentStream = await cryptogram.getPastEvents('CommentAdded', {fromBlock: 0, toBlock: 'latest'})
+  const commentStream = await cryptogram.getPastEvents('CommentAdded', { fromBlock: 0, toBlock: 'latest' })
   const comments = commentStream.map((event) => event.returnValues)
 
   const loadComment = async id => {
     dispatch(commentLoaded(await cryptogram.methods.comments(id).call()))
   }
   comments.map(comment => loadComment(comment.id))
+}
+const _loadDeletedComments = async (cryptogram, dispatch) => {
+  const commentStream = await cryptogram.getPastEvents('CommentDeleted', { fromBlock: 0, toBlock: 'latest' })
+  const comments = commentStream.map((event) => event.returnValues)
+  dispatch(deletedCommentsLoaded(comments))
+}
+const _loadUsers = async (cryptogram, dispatch) => {
+  const userStream = await cryptogram.getPastEvents('UserAdded', { fromBlock: 0, toBlock: 'latest' })//entire chain history
+  const users = userStream.map((event) => event.returnValues)
+
+  const loadUser = async userAccount => {
+    dispatch(userLoaded(await cryptogram.methods.users(userAccount).call()))
+  }
+  users.map(user => loadUser(user.userAccount))
+  return users
+}
+const _loadDeletedUsers = async (cryptogram, dispatch) => {
+  const userStream = await cryptogram.getPastEvents('UserDeleted', { fromBlock: 0, toBlock: 'latest' })
+  const users = userStream.map((event) => event.returnValues)
+  dispatch(deletedUsersLoaded(users))
+}
+//if the user account has been made already, loads the user info into state
+const _loadUser = async (account, allUsers, dispatch, cryptogram) => {
+  const loadUserAccount = async userAccount => {
+    let user = await cryptogram.methods.users(userAccount).call()
+
+    //check if user account has been deleted
+    if (user.timeStamp !== "0") {
+      dispatch(userAccountLoaded(user))
+    }
+  }
+  allUsers.map(user => {
+    if (user.userAccount === account) {
+      loadUserAccount(user.userAccount)
+
+    }
+  })
 }
 
 /**
@@ -128,30 +186,9 @@ const _loadComments = async (cryptogram, dispatch) => {
 }
  */
 
-const _loadUsers = async (cryptogram, dispatch) => {
-  const userStream = await cryptogram.getPastEvents('UserAdded', { fromBlock: 0, toBlock: 'latest' })//entire chain history
-  const users = userStream.map((event) => event.returnValues)
-  
-  const loadUser = async userAccount => {
-    dispatch(userLoaded(await cryptogram.methods.users(userAccount).call()))
-  }
-  users.map(user => loadUser(user.userAccount))
-  return users
-}
 
 
 
-//if the user account has been made already, loads the user info into state
-const _loadUser = async (account, allUsers, dispatch, cryptogram) => {
-  const loadUserAccount = async userAccount => {
-    dispatch(userAccountLoaded(await cryptogram.methods.users(userAccount).call()))
-  }
-  allUsers.map(user => {
-    if(user.userAccount == account){
-      loadUserAccount(user.userAccount)
-    }
-  })  
-}
 export const makeUser = async (dispatch, cryptogram, account, userName, result, bio, location, contact, occupation) => {
   let imageHash = "No Image Present"
   let _bio = ""
@@ -186,46 +223,36 @@ export const makeUser = async (dispatch, cryptogram, account, userName, result, 
     .on('transactionHash', (hash) => {
       console.log("Upload transaction hash: ", hash)
       dispatch(clearForm())
-      //dispatch(contractUpdating("makePost"))
+      dispatch(contractUpdating("makePost"))
     })
 }
-export const setUserName = async (dispatch, cryptogram, account, value) => {
-  cryptogram.methods.setUserName(value).send({ from: account })
-  .on('transactionHash', (hash) => {
-    console.log("Transaction hash: ", hash)
-    //dispatch(contractUpdating("makePost"))
-  })
+
+export const deleteUser = async (dispatch, cryptogram, account) => {
+
+  cryptogram.methods.deleteUser().send({ from: account })
+    .on('transactionHash', (hash) => {
+      console.log("Transaction hash: ", hash)
+      dispatch(contractUpdating("makePost"))
+    })
+
+
+
 }
-export const setImageHash = async (dispatch, cryptogram, account, value) => {
-  let hash = value[0].hash  
-  cryptogram.methods.setImageHash(hash).send({ from: account })
-  .on('transactionHash', (hash) => {
-    console.log("Transaction hash: ", hash)
-    //dispatch(contractUpdating("makePost"))
-  })
-   
+
+export const deletePost = async (dispatch, cryptogram, account, postID) => {
+  cryptogram.methods.deletePost(postID).send({ from: account })
+    .on('transactionHash', (hash) => {
+      console.log("Transaction hash: ", hash)
+      dispatch(contractUpdating("makePost"))
+    })
 }
-export const setBio = async (dispatch, cryptogram, account, value) => {
-  cryptogram.methods.setBio(value).send({ from: account })
-  .on('transactionHash', (hash) => {
-    console.log("Transaction hash: ", hash)
-    //dispatch(contractUpdating("makePost"))
-  })
-}
-export const setLocation = async (dispatch, cryptogram, account, value) => {
-  cryptogram.methods.setLocation(value).send({ from: account })
-  .on('transactionHash', (hash) => {
-    console.log("Transaction hash: ", hash)
-    //dispatch(contractUpdating("makePost"))
-  })
-}
-export const setOccupation = async (dispatch, cryptogram, account, value) => { 
-  cryptogram.methods.setOccupation(value).send({ from: account })
-  .on('transactionHash', (hash) => {
-    console.log("Transaction hash: ", hash)
-    //dispatch(contractUpdating("makePost"))
-  })
-  
+
+export const deleteComment = async (dispatch, cryptogram, account, commentID) => {
+  cryptogram.methods.deleteComment(commentID).send({ from: account })
+    .on('transactionHash', (hash) => {
+      console.log("Transaction hash: ", hash)
+      dispatch(contractUpdating("makePost"))
+    })
 }
 
 export const makePost = async (dispatch, cryptogram, account, result, description, title, link) => {
@@ -256,7 +283,7 @@ export const makePost = async (dispatch, cryptogram, account, result, descriptio
     .on('transactionHash', (hash) => {
       console.log("Upload transaction hash: ", hash)
       dispatch(clearForm())
-      //dispatch(contractUpdating("makePost"))
+      dispatch(contractUpdating("makePost"))
     })
 }
 export const tipPost = async (dispatch, account, cryptogram, id, tipAmount,) => {
@@ -265,7 +292,7 @@ export const tipPost = async (dispatch, account, cryptogram, id, tipAmount,) => 
   cryptogram.methods.tipPost(id).send({ from: account, value: tipAmount })
     .on('transactionHash', (hash) => {
       console.log("tipPost Transaction Hash: ", hash)
-      //dispatch(contractUpdating("tipPost"))
+      dispatch(contractUpdating("tipPost"))
     })
 }
 
@@ -274,7 +301,7 @@ export const makeComment = async (dispatch, account, cryptogram, postID, comment
   cryptogram.methods.comment(postID, comment,).send({ from: account })
     .on('transactionHash', (hash) => {
       console.log("Comment transaction hash: ", hash)
-      //dispatch(contractUpdating("comment"))
+      dispatch(contractUpdating("comment"))
     })
 }
 
@@ -283,7 +310,7 @@ export const tipComment = async (dispatch, account, cryptogram, id, tipAmount,) 
   cryptogram.methods.tipComment(id).send({ from: account, value: tipAmount })
     .on('transactionHash', (hash) => {
       console.log("tipComment Transaction Hash: ", hash)
-      //dispatch(contractUpdating("tipComment"))
+      dispatch(contractUpdating("tipComment"))
     })
 }
 
@@ -300,39 +327,184 @@ export const captureFile = (event, dispatch) => {
   }
 }
 
+export const getPostHeader = (post, allUsers, allUserIDs) => {
+  let user, userFound
+  if (allUserIDs.includes(post.author)) {
+    getUser(post.author)
+  }
+  function getUser(userAccount) {
+    allUsers.map((u) => {
+      if (u.userAccount === userAccount) {
+        user = u
+        userFound = true
+      }
+    })
+  }
+  if (userFound) {
+    return (
+      <div className="card-header">
+        <img
+          className='mr-2 rounded-circle'
+          width='30'
+          height='30'
+          alt="#"
+          src={`https://ipfs.infura.io/ipfs/${user.imageHash}`}
+        />
+        <small className="text-muted">{user.userName}</small>
+        <small className="text-muted"><br />Posted on: {moment.unix(post.timeStamp).format('M/D/Y')} at: {moment.unix(post.timeStamp).format('h:mm:ss a')}</small>
+      </div>
+    )
+  }
+
+  return (
+    <div className="card-header">
+      <img
+        className='mr-2'
+        width='30'
+        height='30'
+        alt="#"
+        src={`data:image/png;base64,${new Identicon(post.author, 30).toString()}`}
+      />
+      <small className="text-muted">{post.author}</small>
+      <small className="text-muted"><br />Posted on: {moment.unix(post.timeStamp).format('M/D/Y')} at: {moment.unix(post.timeStamp).format('h:mm:ss a')}</small>
+    </div>
+  )
+}
+
+export const getCommentHeader = (comment, web3, allUsers, allUserIDs) => {
+  let user, userFound
+  if (allUserIDs.includes(comment.author)) {
+    getUser(comment.author)
+  }
+  function getUser(userAccount) {
+    allUsers.map((u) => {
+      if (u.userAccount === userAccount) {
+        user = u
+        userFound = true
+      }
+    })
+  }
+  if (userFound) {
+    return (
+      <div className="card-header">
+        <img
+          className='mr-2 rounded-circle'
+          width='30'
+          height='30'
+          alt="#"
+          src={`https://ipfs.infura.io/ipfs/${user.imageHash}`}
+        />
+        <small className="text-muted">{user.userName}&nbsp;{comment.formattedTimeStamp} TIPS: {web3.utils.fromWei(comment.tipAmount.toString(), 'Ether')} ETH</small>
+        <br />
+      </div>
+    )
+  }
+
+
+  return (
+    <div className="card-header">
+      <a
+        href={`https://rinkeby.etherscan.io/address/${comment.author}`}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <img
+          className='mr-2'
+          data-toggle="tooltip"
+          data-placement="bottom"
+          title={`Account Address: ${comment.author}`}
+          width='30'
+          height='30'
+          alt="#"
+          src={`data:image/png;base64,${new Identicon(comment.author, 30).toString()}`}
+        />
+      </a>
+      <small className="text-muted">{comment.formattedTimeStamp} TIPS: {web3.utils.fromWei(comment.tipAmount.toString(), 'Ether')} ETH</small>
+      <br />
+    </div>
+  )
+}
+
+
+
+/********************SET STUFF**********************/
+export const setUserName = async (dispatch, cryptogram, account, value) => {
+  cryptogram.methods.setUserName(value).send({ from: account })
+    .on('transactionHash', (hash) => {
+      console.log("Transaction hash: ", hash)
+      dispatch(contractUpdating("makePost"))
+    })
+}
+export const setImageHash = async (dispatch, cryptogram, account, value) => {
+  let hash = value[0].hash
+  cryptogram.methods.setImageHash(hash).send({ from: account })
+    .on('transactionHash', (hash) => {
+      console.log("Transaction hash: ", hash)
+      dispatch(contractUpdating("makePost"))
+    })
+
+}
+export const setBio = async (dispatch, cryptogram, account, value) => {
+  cryptogram.methods.setBio(value).send({ from: account })
+    .on('transactionHash', (hash) => {
+      console.log("Transaction hash: ", hash)
+      dispatch(contractUpdating("makePost"))
+    })
+}
+export const setLocation = async (dispatch, cryptogram, account, value) => {
+  cryptogram.methods.setLocation(value).send({ from: account })
+    .on('transactionHash', (hash) => {
+      console.log("Transaction hash: ", hash)
+      dispatch(contractUpdating("makePost"))
+    })
+}
+export const setOccupation = async (dispatch, cryptogram, account, value) => {
+  cryptogram.methods.setOccupation(value).send({ from: account })
+    .on('transactionHash', (hash) => {
+      console.log("Transaction hash: ", hash)
+      dispatch(contractUpdating("makePost"))
+    })
+}
+
+
+
+
+
+
+
+
+/********************subscribeToEvents**********************/
+
 //listen for events emitted from contract and update component in real time
 export const subscribeToEvents = async (cryptogram, dispatch) => {
   //console.log("subscribeToEvents called")
 
-  let eventHeard = 0
 
   cryptogram.events.PostAdded({}, (error, event) => {
     loadEverything(dispatch)
     console.log("PostAdded Event Heard", event.returnValues)
-    if(error){console.error(error)}
+    if (error) { console.error(error) }
   })
   cryptogram.events.CommentAdded({}, (error, event) => {
     loadEverything(dispatch)
     console.log("CommentAdded Event Heard", event.returnValues)
-    if(error){console.error(error)}
+    if (error) { console.error(error) }
   })
-  cryptogram.events.PostTipped({fromBlock: 'latest', toBlock: 'latest'}, (error, event) => {
-    loadEverything(dispatch)
-    console.log("eventHeard called count: ", eventHeard)
-    eventHeard++
+  cryptogram.events.PostTipped({ fromBlock: 'latest', toBlock: 'latest' }, (error, event) => {
+    loadEverything(dispatch)    
     //loadEverything(dispatch)
     console.log("PostTipped Event Heard", event.returnValues)
-    if(error){console.error(error)}
+    if (error) { console.error(error) }
   })
   cryptogram.events.CommentTipped({}, (error, event) => {
     loadEverything(dispatch)
     console.log("CommentTipped Event Heard", event.returnValues)
-    if(error){console.error(error)}
+    if (error) { console.error(error) }
   })
   cryptogram.events.UserUpdated({}, (error, event) => {
     loadEverything(dispatch)
     console.log("UserUpdated Event Heard", event.returnValues)
-    if(error){console.error(error)}
+    if (error) { console.error(error) }
   })
-  
+
 }

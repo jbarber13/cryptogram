@@ -11,13 +11,14 @@ import { Switch, Route, Link } from 'react-router-dom';
 import { commentTextChanged } from '../store/actions'
 import {
   myPostSelector,
+  myAccountSelector,
   cryptogramSelector,
   web3Selector,
   accountSelector,
   allCommentsSelector,
   commentTextSelector
 } from '../store/selectors'
-import { tipPost, tipComment, makeComment } from '../store/interactions'
+import { tipComment, makeComment, deletePost } from '../store/interactions'
 import Loading from './Loading'
 
 
@@ -26,7 +27,7 @@ import Loading from './Loading'
 //portrait logo: QmUhWdN2ZMoNjxtTywNWJPVqn9TRYgxnNyUhiDa8nAzWtg
 
 const showFeed = (props) => {
-  const { dispatch, account, cryptogram, web3, myPosts, allPostsLoaded, allComments, commentText } = props
+  const { dispatch, account, cryptogram, web3, myPosts, myAccount, allComments, commentText } = props
 
   function getImageURL(post) {
     let hash
@@ -107,32 +108,46 @@ const showFeed = (props) => {
       </div>
     )
   }
+  function deletePostButton(post) {
+    return (
+      <div>
+        <form onSubmit={(event) => {
+          event.preventDefault()
+          deletePost(dispatch, cryptogram, account, post.id)
+        }} >
+
+          <button type="submit" className="btn btn-link btn-sm float-right pt-0">Delete This Post</button>
+
+        </form>
+      </div>
+    )
+  }
+
 
   const addComment = (post) => {
     makeComment(dispatch, account, cryptogram, post.id, commentText)
   }
 
 
+
   return (
     <div className="container-fluid">
       {
         myPosts.map((post, key) => {
-          if (post != undefined) {
+          if (post != undefined && post.id != 0x0) {
             return (
               <div className="ImageFeedImage">
                 <div className="card mb-4 " key={key} >
                   <div className="card-header">
                     <h1 className="text-muted">{post.title.toString()}</h1>
                     <img
-                      className='mr-2'
+                      className='mr-2 rounded-circle'
                       width='30'
                       height='30'
                       alt="#"
-                      src={`data:image/png;base64,${new Identicon(post.author, 30).toString()}`}
+                      src={`https://ipfs.infura.io/ipfs/${myAccount.imageHash}`}
                     />
-
-
-                    <small className="text-muted">{post.author}</small>
+                    <small className="text-muted">{myAccount.userName}</small>
                     <small className="text-muted"><br />Posted on: {moment.unix(post.timeStamp).format('M/D/Y')} at: {moment.unix(post.timeStamp).format('h:mm:ss a')}</small>
 
                   </div>
@@ -146,28 +161,18 @@ const showFeed = (props) => {
                       <small className="float-left mt-1 text-muted ">
                         TIPS: {web3.utils.fromWei(post.tipAmount.toString(), 'Ether')} ETH
                                 </small>
+                      {deletePostButton(post)}
 
-                      <button
-                        className="btn btn-link btn-sm float-right pt-0"
-                        name={post.id}
-                        onClick={(event) => {
-                          let tipAmount = web3.utils.toWei('0.1', 'Ether')
+                    </li>
 
-                          tipPost(dispatch, account, cryptogram, event.target.name, tipAmount)
-                        }}
-                      >
-                        TIP 0.1 ETH
-                                </button>
-                    </li>                   
-                      
-                      <div className="text-dark text-left">
-                        <Collapsible className="cursor-pointer text-center p-1" trigger="Expand Comment Section" triggerWhenOpen="Collapse Comments">
-                          <br></br>
-                          {renderComments(post)}
-                        </Collapsible>                        
-                      </div>
+                    <div className="text-dark text-left">
+                      <Collapsible className="cursor-pointer text-center p-1" trigger="Expand Comment Section" triggerWhenOpen="Collapse Comments">
+                        <br></br>
+                        {renderComments(post)}
+                      </Collapsible>
+                    </div>
 
-                    
+
                   </ul>
                 </div>
               </div>
@@ -184,14 +189,14 @@ const showFeed = (props) => {
 
 
 
-class ImageFeed extends Component {
+class MyPostFeed extends Component {
   render() {
     return (
-      <div className="" id="imageFeed">
+      <div className="p-4" id="imageFeed">
         {
           showFeed(this.props)
         }
-
+        
       </div>
     );
   }
@@ -200,6 +205,7 @@ class ImageFeed extends Component {
 function mapStateToProps(state) {
   return {
     myPosts: myPostSelector(state),
+    myAccount: myAccountSelector(state),
     web3: web3Selector(state),
     account: accountSelector(state),
     cryptogram: cryptogramSelector(state),
@@ -208,4 +214,4 @@ function mapStateToProps(state) {
   }
 }
 
-export default connect(mapStateToProps)(ImageFeed)
+export default connect(mapStateToProps)(MyPostFeed)

@@ -92,11 +92,12 @@ class SharePost extends Component {
 
     return (
       
-        
-          <div className="card mb-4 bg-secondary"  >
+        <div className="pt-5 p-5 w-50 m-auto">
+          <br /><br /><br /><br /><br />
+          <div className="card mb-4 bg-secondary m-auto "  >
             {showForm(this.props)}
           </div>          
-        
+        </div>
      
     );
   }
