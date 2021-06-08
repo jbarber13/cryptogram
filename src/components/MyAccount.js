@@ -3,7 +3,6 @@ import { connect } from 'react-redux'
 import Collapsible from 'react-collapsible';
 
 
-
 import {
     userNameChanged,
     statusChanged,
@@ -17,7 +16,7 @@ import {
     userUpdateValueSelector,
     fileSelector,
     userAccountLoadedSelector,
-
+    userAccountUpdatingSelector
 } from '../store/selectors'
 import {
     setUserName,
@@ -39,7 +38,7 @@ import MyPostFeed from './MyPostFeed'
 
 const showUserInfo = (props) => {
 
-    const { dispatch, cryptogram, user, userUpdateValue, file } = props
+    const { dispatch, cryptogram, user, userUpdateValue, file, userAccountUpdating } = props
     function getImageURL() {
         let hash
         hash = user.imageHash
@@ -48,73 +47,105 @@ const showUserInfo = (props) => {
 
     function renderUserInfo() {
         return (
-            <div className="w-80 pb-5 ">
+            <div className="profile-picture-username-bio w-80 mt-3 mb-5">
                 <img className="profile-picture" src={getImageURL()} alt="profile-picture" />
-                <small className="cursor-pointer">
-                    <Collapsible className="edit-user-value" trigger="Edit" triggerWhenOpen="Collapse">
-                        <div className="m-auto w-25">
-                            <br></br>
-                            <form onSubmit={(event) => {
-                                event.preventDefault()
-                                prepImageHash()
-                            }} >
-                                <div className="form-group mr-sm-2">
-                                    <span>Choose a new profile picture </span> <input className="btn btn-secondary" type='file' accept=".jpg, .jpeg, .png, .bmp, .gif" onChange={(e) => captureFile(e, dispatch)} />
-                                </div>
-                                <button type="submit" className="btn btn-primary btn-block btn-lg">Submit</button>
-                            </form>
-                        </div>
-                    </Collapsible>
-                </small>
-                <h1 className="centered-user-info text-wrap">{user.userName}</h1>
-                <small className="cursor-pointer">
-                    <Collapsible className="edit-user-value" trigger="Edit" triggerWhenOpen="Collapse">
-                        <div className="m-auto w-25">
-                            <br></br>
-                            <form onSubmit={(event) => {
-                                event.preventDefault()
-                                setUserName(dispatch, cryptogram, user.userAccount, userUpdateValue)
-                            }} >
-                                <div className="form-group mr-sm-2">
-                                    <textarea
-                                        rows="4"
-                                        cols="50"
-                                        onChange={(e) => dispatch(userUpdateValueChanged(e.target.value))}
-                                        className="form-control"
-                                        placeholder="Whats the new thing...?"
-                                    >
-                                    </textarea>
-                                </div>
-                                <button type="submit" className="btn btn-primary btn-block btn-lg">Submit</button>
-                            </form>
-                        </div>
-                    </Collapsible>
-                </small>
                 <br />
-                <h3 className="centered-user-info text-wrap">{user.bio}</h3>
                 <small className="cursor-pointer">
-                    <Collapsible className="edit-user-value" trigger="Edit" triggerWhenOpen="Collapse">
-                        <div className="m-auto w-25">
-                            <br></br>
-                            <form onSubmit={(event) => {
-                                event.preventDefault()
-                                setBio(dispatch, cryptogram, user.userAccount, userUpdateValue)
-                            }} >
-                                <div className="form-group mr-sm-2">
-                                    <textarea
-                                        rows="4"
-                                        cols="50"
-                                        onChange={(e) => dispatch(userUpdateValueChanged(e.target.value))}
-                                        className="form-control"
-                                        placeholder="Whats the new thing...?"
-                                    >
-                                    </textarea>
+                    <Collapsible className="edit-user-value" trigger="Edit Profile Picture" triggerWhenOpen="Collapse">
+                        <div className="m-auto w-25 manual-span-size">
+                            <div className="card bg-secondary">
+                                <div className="card-header bg-primary ">
+                                    <span>Choose a new profile picture </span>
                                 </div>
-                                <button type="submit" className="btn btn-primary btn-block btn-lg">Submit</button>
-                            </form>
+                                <form
+                                    className="p-2"
+                                    onSubmit={(event) => {
+                                        event.preventDefault()
+                                        prepImageHash()
+                                    }} >
+                                    <div className="form-group mr-sm-2 mt-2">
+                                        <input className="btn btn-light text-muted w-100" type='file' accept=".jpg, .jpeg, .png, .bmp, .gif" onChange={(e) => captureFile(e, dispatch)} />
+                                        <button type="submit" className="btn btn-primary btn-block btn-lg w-100 mt-3">Submit</button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     </Collapsible>
                 </small>
+                <div className="mt-3" id="SetUserName">
+                    <h1
+                        className="centered-user-info text-wrap cursor-pointer mt-3 mb-5"
+                        data-toggle="tooltip"
+                        data-placement="bottom"
+                        title="Click to edit..."
+                    >
+                        <Collapsible trigger={user.userName}>
+                            <div className="m-auto w-25 manual-span-size">
+                                <div className="card bg-secondary">
+                                    <div className="card-header bg-primary ">
+                                        <span className="">Set a new User Name</span>
+                                    </div>
+                                    <form
+                                        className="p-2"
+                                        onSubmit={(event) => {
+                                            event.preventDefault()
+                                            setUserName(dispatch, cryptogram, user.userAccount, userUpdateValue)
+                                        }} >
+                                        <div className="form-group mr-sm-2 mt-2">
+                                            <textarea
+                                                rows="4"
+                                                cols="50"
+                                                onChange={(e) => dispatch(userUpdateValueChanged(e.target.value))}
+                                                className="form-control"
+                                                placeholder={user.userName}
+                                            >
+                                            </textarea>
+
+                                            <button type="submit" className="btn btn-primary btn-block btn-lg mt-3">Submit</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </Collapsible>
+                    </h1>
+                </div>
+                <div className="mt-5 mb-3" id="setBio">
+                    <h3
+                        className="cursor-pointer centered-user-info text-wrap mt-5"
+                        data-toggle="tooltip"
+                        data-placement="bottom"
+                        title="Click to edit..."
+                    >
+                        <Collapsible trigger={user.bio}>
+                            <div className="m-auto w-25 manual-span-size">
+                                <div className="card bg-secondary">
+                                    <div className="card-header bg-primary ">
+                                        <span className="">Set your new Bio...</span>
+                                    </div>
+                                    <form
+                                        className="p-2"
+                                        onSubmit={(event) => {
+                                            event.preventDefault()
+                                            setBio(dispatch, cryptogram, user.userAccount, userUpdateValue)
+                                        }} >
+                                        <div className="form-group mr-sm-2 mt-2">
+                                            <textarea
+                                                rows="4"
+                                                cols="50"
+                                                onChange={(e) => dispatch(userUpdateValueChanged(e.target.value))}
+                                                className="form-control"
+                                                placeholder={user.bio}
+                                            >
+                                            </textarea>
+
+                                            <button type="submit" className="btn btn-primary btn-block btn-lg mt-3">Submit</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </Collapsible>
+                    </h3>
+                </div>
             </div>
         )
     }//renderUserInfo
@@ -123,7 +154,7 @@ const showUserInfo = (props) => {
         return (
             <div>
                 <div className="card mb-4 position-top"  >
-                    <div className="card-header bg-info ">
+                    <div className="card-header bg-primary ">
                         <h2 className="text-light">Info</h2>
                     </div>
                     <ul id="imageList" className="list-group list-group-flush ">
@@ -145,7 +176,7 @@ const showUserInfo = (props) => {
                                                     cols="50"
                                                     onChange={(e) => dispatch(userUpdateValueChanged(e.target.value))}
                                                     className="form-control"
-                                                    placeholder="Whats the new thing...?"
+                                                    placeholder={user.occupation}
                                                 >
                                                 </textarea>
                                             </div>
@@ -173,7 +204,7 @@ const showUserInfo = (props) => {
                                                     cols="50"
                                                     onChange={(e) => dispatch(userUpdateValueChanged(e.target.value))}
                                                     className="form-control"
-                                                    placeholder="Whats the new thing...?"
+                                                    placeholder={user.location}
                                                 >
                                                 </textarea>
                                             </div>
@@ -219,14 +250,15 @@ const showUserInfo = (props) => {
             </div>
 
             <div className="row g-3 pt-0">
-                <div className="col m-auto w-50 float-left">
+                <div className="profile-box col m-auto w-50 float-left">
                     {renderProfileInfo()}
+
                 </div>
-                <div className="col m-auto w-50 float-right">
+                <div className="profile-box col m-auto w-50 float-right">
                     <MyComments />
                 </div>
             </div>
-            <div className="pt-5">
+            <div className="mt-5">
                 <h1>My Post History</h1>
                 <MyPostFeed />
             </div>
@@ -242,7 +274,7 @@ const showUserInfo = (props) => {
             <footer>
                 <div class="text-center p-3 pb-5">
                     <small className="text-muted">
-                        This app was created by Jake Barber for testing and proof-of-concept purposes only, more information can be found on my <a className="text-light" href="https://www.jake-barber.com" target="_blank">website</a>.
+                        This app is a work in progress created by Jake Barber for testing and proof-of-concept purposes only, more information can be found on my <a className="text-light" href="https://www.jake-barber.com" target="_blank">website</a>.
                     </small>
                 </div>
             </footer>
@@ -272,7 +304,8 @@ function mapStateToProps(state) {
         cryptogram: cryptogramSelector(state),
         userUpdateValue: userUpdateValueSelector(state),
         file: fileSelector(state),
-        userAccountLoaded: userAccountLoadedSelector(state)
+        userAccountLoaded: userAccountLoadedSelector(state),
+        userAccountUpdating: userAccountUpdatingSelector(state)
     }
 }
 

@@ -10,6 +10,8 @@ import Main from './Main'
 import { Switch, Route, Link } from 'react-router-dom';
 import { commentTextChanged } from '../store/actions'
 import {
+  allUsersSelector,
+  allUserIDSelector,
   myPostSelector,
   myAccountSelector,
   cryptogramSelector,
@@ -18,7 +20,7 @@ import {
   allCommentsSelector,
   commentTextSelector
 } from '../store/selectors'
-import { tipComment, makeComment, deletePost } from '../store/interactions'
+import { tipComment, makeComment, deletePost, getCommentHeader } from '../store/interactions'
 import Loading from './Loading'
 
 
@@ -27,7 +29,7 @@ import Loading from './Loading'
 //portrait logo: QmUhWdN2ZMoNjxtTywNWJPVqn9TRYgxnNyUhiDa8nAzWtg
 
 const showFeed = (props) => {
-  const { dispatch, account, cryptogram, web3, myPosts, myAccount, allComments, commentText } = props
+  const { dispatch, account, cryptogram, web3, myPosts, myAccount, allComments, commentText, allUsers, allUserIDs } = props
 
   function getImageURL(post) {
     let hash
@@ -53,34 +55,33 @@ const showFeed = (props) => {
             //only show comments for the correct post
             if (comment.postID == post.id) {
               return (
-                <p className="p-2" key={comment.id}>
-                  <img
-                    className='mr-2'
-                    width='30'
-                    height='30'
-                    alt="#"
-                    src={`data:image/png;base64,${new Identicon(comment.author, 30).toString()}`}
-                  /><small className="text-muted">{comment.formattedTimeStamp} TIPS: {web3.utils.fromWei(comment.tipAmount.toString(), 'Ether')} ETH</small>
-                  <br />
-                  {comment.comment}
-                  <button
-                    className="btn btn-link btn-sm float-right pt-0"
-                    name={comment.id}
-                    onClick={(event) => {
-                      let tipAmount = web3.utils.toWei('0.1', 'Ether')
-                      tipComment(dispatch, account, cryptogram, event.target.name, tipAmount)
-                    }}
-                  >
-                    TIP 0.1 ETH
+                <div className="card m-2 mb-4">
+
+                  <p className="p-2" key={comment.id}>
+                    {getCommentHeader(comment, web3, allUsers, allUserIDs)}
+                    {comment.comment}
+                    <button
+                      className="btn btn-link btn-sm float-right pt-0"
+                      name={comment.id}
+                      onClick={(event) => {
+                        let tipAmount = web3.utils.toWei('0.1', 'Ether')
+                        tipComment(dispatch, account, cryptogram, event.target.name, tipAmount)
+                      }}
+                    >
+                      TIP 0.1 ETH
                     </button>
-                </p>
+                  </p>
+                </div>
               )
             }
           })}
         </div>
-        <Collapsible className="cursor-pointer" trigger="Add a comment" triggerWhenOpen="Collapse">
-          {composeComment(post)}
-        </Collapsible>
+        <div className="m-2">
+          <Collapsible className="cursor-pointer" trigger="Add a comment" triggerWhenOpen="Collapse">
+            {composeComment(post)}
+          </Collapsible>
+        </div>
+
       </div>
     )
   }
@@ -116,7 +117,7 @@ const showFeed = (props) => {
           deletePost(dispatch, cryptogram, account, post.id)
         }} >
 
-          <button type="submit" className="btn btn-link btn-sm float-right pt-0">Delete This Post</button>
+          <button type="submit" className="btn btn-danger btn-sm  float-right text-right pt-0 text-light">Delete This Post</button>
 
         </form>
       </div>
@@ -160,14 +161,11 @@ const showFeed = (props) => {
                     <li key={key} className="list-group-item py-2">
                       <small className="float-left mt-1 text-muted ">
                         TIPS: {web3.utils.fromWei(post.tipAmount.toString(), 'Ether')} ETH
-                                </small>
+                      </small>
                       {deletePostButton(post)}
-
                     </li>
-
                     <div className="text-dark text-left">
-                      <Collapsible className="cursor-pointer text-center p-1" trigger="Expand Comment Section" triggerWhenOpen="Collapse Comments">
-                        <br></br>
+                      <Collapsible className="cursor-pointer text-left p-1" trigger="Expand Comment Section" triggerWhenOpen="Collapse Comments">
                         {renderComments(post)}
                       </Collapsible>
                     </div>
@@ -196,7 +194,7 @@ class MyPostFeed extends Component {
         {
           showFeed(this.props)
         }
-        
+
       </div>
     );
   }
@@ -204,6 +202,8 @@ class MyPostFeed extends Component {
 
 function mapStateToProps(state) {
   return {
+    allUsers: allUsersSelector(state),
+    allUserIDs: allUserIDSelector(state),
     myPosts: myPostSelector(state),
     myAccount: myAccountSelector(state),
     web3: web3Selector(state),

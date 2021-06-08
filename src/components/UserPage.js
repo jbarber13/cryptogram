@@ -13,7 +13,7 @@ import UserPostFeed from './UserPostFeed'
 
 const showUserInfo = (props) => {
 
-    const {user} = props
+    const { user } = props
 
     function getImageURL() {
         let hash
@@ -23,16 +23,18 @@ const showUserInfo = (props) => {
 
     function renderUserInfo() {
         return (
-            <div className="w-80 pb-5 ">
+            <div className="profile-picture-username-bio w-80 mt-3 mb-5">
                 <img className="profile-picture" src={getImageURL()} alt="profile-picture" />
                 <br />
-                <h1 className="centered-user-info text-wrap">{user.userName}</h1>                
+                <div className="mt-3">
+                    <h1 className="centered-user-info text-wrap mt-3">{user.userName}</h1>
+                </div>
                 <br />
-                <br />
-                <br />
-                <h3 className="centered-user-info text-wrap">{user.bio}</h3>
-                
-                
+                <div className="mt-3">
+                    <h3 className="centered-user-info text-wrap ">{user.bio}</h3>
+                </div>
+
+
             </div>
         )
     }//renderUserInfo
@@ -41,7 +43,7 @@ const showUserInfo = (props) => {
         return (
             <div>
                 <div className="card mb-4 position-top"  >
-                    <div className="card-header bg-info ">
+                    <div className="card-header bg-primary ">
                         <h2 className="text-light">Info</h2>
                     </div>
                     <ul id="imageList" className="list-group list-group-flush ">
@@ -49,13 +51,13 @@ const showUserInfo = (props) => {
                             <img className="infoImage" src={Work} alt="occupation"></img>
                             <span className="float-left pl-4">Occupation: {user.occupation}</span>
                             <br />
-                            
+
                         </li>
                         <li className="list-group-item bg-secondary">
                             <img className="infoImage" src={Home} alt="location"></img>
                             <span className="float-left pl-4">Lives in: {user.location}</span>
                             <br />
-                            
+
                         </li>
                     </ul>
                 </div>
@@ -63,7 +65,7 @@ const showUserInfo = (props) => {
         )
     }//renderProfileInfo
 
-    
+
     return (
         <div className="w-75 h-100">
             <a
@@ -80,10 +82,10 @@ const showUserInfo = (props) => {
             </div>
 
             <div className="row g-3 pt-0">
-                <div className="col m-auto w-50 float-left">
+                <div className="profile-box col m-auto w-50 float-left">
                     {renderProfileInfo()}
                 </div>
-                <div className="col m-auto w-50 float-right">
+                <div className="profile-box col m-auto w-50 float-right">
                     <UserComments />
                 </div>
             </div>
@@ -91,7 +93,7 @@ const showUserInfo = (props) => {
                 <h1>{user.userName}'s Post History</h1>
                 <UserPostFeed />
             </div>
-            
+
 
         </div>
     )
@@ -101,11 +103,11 @@ const showUserInfo = (props) => {
 class UserPage extends Component {
     render() {
         //redirect back to ImageFeed if user data does not exist, such as on a page refresh
-        if(!this.props.user){this.props.history.push('/')}
+        if (!this.props.user) { this.props.history.push('/') }
         return (
             <div className="myAccount bg-dark text-light h-100">
                 {showUserInfo(this.props)}
-                
+
             </div>
 
         );
@@ -116,7 +118,7 @@ function mapStateToProps(state) {
     return {
         user: userSelectedSelector(state),
         cryptogram: cryptogramSelector(state),
-       
+
 
     }
 }

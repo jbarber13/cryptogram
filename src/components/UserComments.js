@@ -5,7 +5,7 @@ import Collapsible from 'react-collapsible';
 
 import Identicon from 'identicon.js';
 import moment from 'moment'
-
+import {commentTipAmountChanged} from '../store/actions'
 import {
   userSelectedSelector,
   cryptogramSelector,
@@ -13,55 +13,99 @@ import {
   accountSelector,
   allCommentsSelector,
   commentTextSelector,
-  deletedPostIDSelector
+  deletedPostIDSelector,
+  commentTipAmountSelector
 
 } from '../store/selectors'
-import { } from '../store/interactions'
+import {tipComment } from '../store/interactions'
 import Loading from './Loading'
 
-//test IPFS hash: QmTB1GwdrgfFfPSpKpeYFuS2JidiqnLZv2uaKDzU2tkaYw
-//portrait logo: QmUhWdN2ZMoNjxtTywNWJPVqn9TRYgxnNyUhiDa8nAzWtg
+/** //this looks correct
+<div className="float-right text-right pt-0">
+        <form onSubmit={(event) => {
+          event.preventDefault()
+          let tipAmount = web3.utils.toWei(commentTipAmount, 'Ether')
+          tipComment(dispatch, account, cryptogram, comment.id, tipAmount)
+        }} >
+
+          <button type="submit" className="btn btn-primary btn-sm  float-right text-right pt-0 text-light">Tip</button>
+
+        </form>
+      </div>
+ */
 
 const showFeed = (props) => {
-  const { dispatch, account, cryptogram, web3, allComments, deletedPostIDs, user} = props
+  const { dispatch, account, cryptogram, web3, allComments, deletedPostIDs, user, commentTipAmount} = props
 
- 
-
-  function commentMapping() {
+  function tipCommentButton(comment) {
     return (
-      <>
-        {allComments.map((comment) => {
-          if (comment != null && !deletedPostIDs.includes(comment.postID)) { //check if the post associated with the comment has been deleted
-            if(comment.author === user.userAccount){//only show comments from selected user
-                return (
-                    <li className="list-group-item bg-secondary text-light">
-                      <p className="p-2 text-left" key={comment.id}>
-                        <small className="text-light">{comment.formattedTimeStamp} TIPS: {web3.utils.fromWei(comment.tipAmount.toString(), 'Ether')} ETH</small>
-                        <br />
-                        {comment.comment}
-                      </p>
-                    </li>
-                  )
-            }
-            
-          }
-
-        })}
-      </>
+      <div 
+        className="float-right text-center btn btn-primary text-light w-25 cursor-pointer"
+        data-toggle="tooltip"
+        data-placement="right"
+        title="Send a tip if you feel this comment deserves it! Comments with the most tips are shown first."
+      >
+        <Collapsible className="cursor-pointer" trigger="Tip This Comment" triggerWhenOpen="Collapse">
+          <form 
+            onSubmit={(event) => {
+            event.preventDefault()
+            let tipAmount = web3.utils.toWei(commentTipAmount, 'Ether')
+            tipComment(dispatch, account, cryptogram, comment.id, tipAmount)
+          }} >
+            <div className="form-group mr-sm-2">
+              <input 
+                type="number"
+                step="0.0001"
+                onChange={(e) => dispatch(commentTipAmountChanged(e.target.value))}
+                className="form-control"
+                placeholder="Amount"
+              >
+              </input>
+            </div>
+            <button type="submit" className="btn btn-primary btn-block btn-sml">Submit Tip</button>
+          </form>
+        </Collapsible>
+      </div>
     )
   }
 
 
+  function commentMapping() {
+    return (
+      <div className="my-comments overflow-auto">
+        <ul id="imageList" className="list-group list-group-flush ">
+        {allComments.map((comment) => {
+          if (comment != null && !deletedPostIDs.includes(comment.postID)) { //check if the post associated with the comment has been deleted
+            if (comment.author === user.userAccount) {//only show comments from selected user
+              return (
+                <li className="list-group-item bg-secondary text-light">
+                  <p className="p-2 text-left" key={comment.id}>
+                  {tipCommentButton(comment)}
+                    <small className="text-light">{comment.formattedTimeStamp} TIPS: {web3.utils.fromWei(comment.tipAmount.toString(), 'Ether')} ETH</small>
+                    <br />
+                    {comment.comment}
+                    
+                  </p>
+                </li>
+              )
+            }
+          }
+        })}
+        </ul>
+      </div>
+    )
+  }
+  
   function shoCommentHistory() {
     return (
       <div className="card mb-4 position-top"  >
-        <div className="card-header bg-info ">
+        <div className="card-header bg-primary ">
           <h2 className="text-light">{user.userName}'s Comment History</h2>
         </div>
-        <ul id="imageList" className="list-group list-group-flush ">
-          {commentMapping()}
+       
+            {commentMapping()}
 
-        </ul>
+         
       </div>
     )
   }
@@ -84,7 +128,7 @@ const showFeed = (props) => {
 class UserComments extends Component {
   render() {
     return (
-      <div className="p-4" id="imageFeed">
+      <div id="imageFeed">
         {
           showFeed(this.props)
         }
@@ -101,7 +145,8 @@ function mapStateToProps(state) {
     account: accountSelector(state),
     cryptogram: cryptogramSelector(state),
     commentText: commentTextSelector(state),
-    deletedPostIDs: deletedPostIDSelector(state)
+    deletedPostIDs: deletedPostIDSelector(state),
+    commentTipAmount:   commentTipAmountSelector(state)
   }
 }
 

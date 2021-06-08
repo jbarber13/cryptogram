@@ -60,11 +60,7 @@ export function deletedUsersLoaded(deletedUsers){
 	}
 }
 
-export function userAlreadyExists(){
-	return{
-		type: 'USER_EXISTS'
-	}
-}
+
 export function userAccountLoaded(account){
 	//console.log("userAccountLoaded")
 	return{
@@ -72,6 +68,7 @@ export function userAccountLoaded(account){
 		account
 	}
 }
+
 export function userUpdateValueChanged(value){
 	return{
 		type: 'USER_UPADATE_VALUE_CHANGED',
@@ -87,28 +84,6 @@ export function userSelected(userSelected){
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //Something is still fuckey with this, multiple events are being heard, and it is loading duplicate posts/comments as a result
 export function contractUpdating(message){
 	return{
@@ -116,6 +91,7 @@ export function contractUpdating(message){
 		message
 	}
 }
+
  
 
 /*****************Upload Handler*****************/
@@ -135,6 +111,19 @@ export function postDescriptionChanged(postDescription){
 	return{
 		type: 'POST_DESCRIPTION_CHANGED',
 		postDescription
+	}
+}
+
+export function postTipAmountChanged(postTipAmount){
+	return{
+		type: 'POST_TIP_AMOUNT_CHANGED',
+		postTipAmount
+	}
+}
+export function commentTipAmountChanged(commentTipAmount){
+	return{
+		type: 'COMMENT_TIP_AMOUNT_CHANGED',
+		commentTipAmount
 	}
 }
 export function postLinkChanged(postLink){
