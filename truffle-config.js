@@ -25,7 +25,7 @@ module.exports = {
           `https://rinkeby.infura.io/v3/${process.env.INFURA_API_KEY}`// Url to an Ethereum Node
         )
       },
-      gas: 5000000,
+      gas: 10000000,
       gasPrice: 25000000000,
       network_id: 4 //rinkeby
     },
