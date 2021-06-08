@@ -16,13 +16,12 @@ function cryptogram(state = {}, action) {
     case 'CRYPTOGRAM_LOADED':
       return { ...state, loaded: true, contract: action.contract, allPosts: [], allComments: [], allUsers: [], message: "loaded" }    
     case 'POST_LOADED'://append each new post to state array, initialized when CRYPTOGRAM_LOADED
-      if(state.loaded){
         //console.log("case: POST_LOADED, id: ", action.post.id)
         return {
           ...state,
           allPosts: [...state.allPosts, action.post]//Unhandled Rejection (TypeError): Invalid attempt to spread non-iterable instance unless you initialize the array when cryptogram loads
         }
-      }
+      
     case 'DELETED_POSTS_LOADED':
       return {...state, deletedPosts: action.deletedPosts}    
     case 'COMMENT_LOADED':
@@ -39,29 +38,13 @@ function cryptogram(state = {}, action) {
       }
     case 'USER_ACCOUNT_LOADED':
       return{...state, userAccount: action.account, userAccountLoaded: true}
-    case 'USER_UPADATE_VALUE_CHANGED':
-      return{...state, userUpdateValue: action.value}
+    case 'USER_ACCOUNT_LOADING': 
+      return {...state, userAccountUpdating: true}    
     case 'DELETED_USERS_LOADED':
       return{...state, deletedUsers: action.deletedUsers}
     case 'USER_SELECTED':
       return{...state, userSelected: action.userSelected}
-    case 'CONTRACT_UPDATING':
-      return{...state, loaded: false}
-
-
-
-
-
-    case 'EVENT_HEARD':
-        return{
-          ...state, 
-          eventHeard: action.eventHeard
-        }
-    case 'LOADING_COMPLETE':
-        return{
-          ...state,
-          eventHeard: false
-        }
+   
     //things are still breaking when the user account is switched, restarting the server fixes it...
     //for some reason, this causes duplicates to appear after the second time it is called
     /**
@@ -87,6 +70,7 @@ function uploadHandler(state = {}, action) {
       return { ...state, commentText: action.commentText }
     case 'FILE_CAPTURED':
       return { ...state, file: action.file, captured: true }
+
 /*****************Create User Account*****************/
     case 'USERNAME_CHANGED': 
       return{...state, userName: action.userName}
@@ -99,9 +83,44 @@ function uploadHandler(state = {}, action) {
     case 'OCCUPATION_CHANGED': 
       return{...state, occupation: action.occupation}
 
+/*****************Update User Account Value*****************/
+    case 'USER_UPADATE_VALUE_CHANGED':
+      return{...state, userUpdateValue: action.value}
+
+/*****************Dynamic Tip Amount*****************/
+    case 'POST_TIP_AMOUNT_CHANGED':
+      return{...state, postTipAmount: action.postTipAmount}
+    case 'COMMENT_TIP_AMOUNT_CHANGED':
+      return{...state, commentTipAmount: action.commentTipAmount}
+
+
+
+
+
+
 /*****************Clear Form from state after submit*****************/
+/**
+ {
+        ...state, 
+        postTitle:"", 
+        postDescription:"", 
+        postLink:"", 
+        commentText:"", 
+        file:"", 
+        captured: false, 
+        userName:"", 
+        status:"", 
+        location:"", 
+        contact:"", 
+        occupation:"", 
+        userUpdateValue:"",
+        postTipAmount:"",
+        commentTipAmount:""
+      }
+ */
+
     case 'CLEAR_FORM':
-      return {...state, postTitle:"", postDescription:"", postLink:"", commentText:"", file:"", captured: false, userName:"", status:"", location:"", contact:"", occupation:"", }
+      return state={}
     default:
       return state
   }

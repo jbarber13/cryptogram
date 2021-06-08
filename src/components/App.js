@@ -5,7 +5,6 @@ import { connect } from 'react-redux'
 import './App.css';
 import { Switch, Route, Link } from 'react-router-dom';
 import {
-
   loadEverything
 } from '../store/interactions'
 import { cryptogramLoadedSelector, contractUpdatingSelector, allPostsLoadedSelector, eventHeardSelector } from '../store/selectors'
@@ -31,6 +30,7 @@ class App extends Component {
     //console.log("loadBlockchainData in APP called")
 
     await loadEverything(dispatch)
+
     /**
      const web3 = await loadWeb3(dispatch)
     const networkId = await web3.eth.net.getId()
@@ -60,7 +60,7 @@ class App extends Component {
         <footer>
           <div class="text-center p-3 pb-5">
             <small className="text-muted">
-              This app was created by Jake Barber for testing and proof-of-concept purposes only, more information can be found on my <a className="text-light" href="https://www.jake-barber.com" target="_blank">website</a>.
+            This app is a work in progress created by Jake Barber for testing and proof-of-concept purposes only, more information can be found on my <a className="text-light" href="https://www.jake-barber.com" target="_blank">website</a>.
           </small>
           </div>
         </footer>

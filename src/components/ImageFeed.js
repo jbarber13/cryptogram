@@ -1,12 +1,9 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import Collapsible from 'react-collapsible'
-import { Link } from 'react-router-dom';
 
-import Identicon from 'identicon.js';
-import moment from 'moment'
 
-import { commentTextChanged, userSelected } from '../store/actions'
+import { commentTextChanged, postTipAmountChanged, commentTipAmountChanged } from '../store/actions'
 import {
   allPostSelector,
   allUsersSelector,
@@ -17,10 +14,10 @@ import {
   accountSelector,
   allCommentsSelector,
   commentTextSelector,
-
+  postTipAmountSelector,
+  commentTipAmountSelector
 } from '../store/selectors'
 import { tipPost, tipComment, makeComment, getPostHeader, getCommentHeader } from '../store/interactions'
-import Loading from './Loading'
 
 
 
@@ -28,9 +25,7 @@ import Loading from './Loading'
 //portrait logo: QmUhWdN2ZMoNjxtTywNWJPVqn9TRYgxnNyUhiDa8nAzWtg
 
 const showFeed = (props) => {
-  const { dispatch, account, cryptogram, web3, allPosts, allUsers, allComments, allPosters, allUserIDs, commentText } = props
-
-
+  const { dispatch, account, cryptogram, web3, allPosts, allUsers, allComments, postTipAmount, commentTipAmount, allUserIDs, commentText } = props
 
   function getImageURL(post) {
     let hash
@@ -48,6 +43,41 @@ const showFeed = (props) => {
       output
     );
   }
+
+  const setCommentTipAmount = (comment) => {
+    return (
+      <div
+        className="float-right text-right pt-0 text-primary"
+        data-toggle="tooltip"
+        data-placement="right"
+        title="Send a tip if you feel this comment deserves it! Comments with the most tips are shown first."
+      >
+        <Collapsible className="cursor-pointer" trigger="Tip This Comment" triggerWhenOpen="Collapse">
+          <form
+            onSubmit={(event) => {
+              event.preventDefault()
+              let tipAmount = web3.utils.toWei(commentTipAmount, 'Ether')
+              tipComment(dispatch, account, cryptogram, comment.id, tipAmount)
+            }} >
+            <div className="form-group mr-sm-2">
+              <input
+                type="number"
+                step="0.0001"
+                onChange={(e) => dispatch(commentTipAmountChanged(e.target.value))}
+                className="form-control"
+                placeholder="Amount to tip in ETH"
+              >
+              </input>
+            </div>
+            <button type="submit" className="btn btn-primary btn-block btn-sml">Submit Tip</button>
+          </form>
+        </Collapsible>
+      </div>
+    )
+  }
+
+
+
   function renderComments(post) {
     return (
       <div>
@@ -56,24 +86,13 @@ const showFeed = (props) => {
             //only show comments for the correct post
             if (comment.postID === post.id) {
               return (
-                <div className="card mb-4">
-
-
+                <div className="card m-2 mb-4">
                   <p className="p-2" key={comment.id}>
                     {
                       getCommentHeader(comment, web3, allUsers, allUserIDs)
                     }
                     {comment.comment}
-                    <button
-                      className="btn btn-link btn-sm float-right pt-0"
-                      name={comment.id}
-                      onClick={(event) => {
-                        let tipAmount = web3.utils.toWei('0.1', 'Ether')
-                        tipComment(dispatch, account, cryptogram, event.target.name, tipAmount)
-                      }}
-                    >
-                      TIP 0.1 ETH
-                  </button>
+                    {setCommentTipAmount(comment)}
                   </p>
                 </div>
               )
@@ -116,13 +135,37 @@ const showFeed = (props) => {
     makeComment(dispatch, account, cryptogram, post.id, commentText)
   }
 
-  //get the full user object and dispatch to state so UserPage can render it correctly
-  const dispatchUser = (author) => {
-    allUsers.map((u) => {
-      if (u.userAccount === author) {
-        dispatch(userSelected(u))
-      }
-    })
+  const setTipAmount = (post) => {
+    return (
+      <div
+        className="float-right text-right pt-0 text-primary"
+        data-toggle="tooltip"
+        data-placement="right"
+        title="Send a tip if you feel this post deserves it! Posts with the most tips are shown first."
+      >
+        <Collapsible className="cursor-pointer" trigger="Tip This Post" triggerWhenOpen="Collapse">
+          <form
+            onSubmit={(event) => {
+              event.preventDefault()
+              let tipAmount = web3.utils.toWei(postTipAmount, 'Ether')
+              tipPost(dispatch, account, cryptogram, post.id, tipAmount)
+            }} >
+            <div className="form-group mr-sm-2">
+              <input
+                type="number"
+                step="0.0001"
+                onChange={(e) => dispatch(postTipAmountChanged(e.target.value))}
+                className="form-control"
+                placeholder="Amount to tip in ETH"
+              >
+
+              </input>
+            </div>
+            <button type="submit" className="btn btn-primary btn-block btn-sml">Submit Tip</button>
+          </form>
+        </Collapsible>
+      </div>
+    )
   }
   return (
     <div className="container-fluid">
@@ -130,21 +173,11 @@ const showFeed = (props) => {
         allPosts.map((post, key) => {
           if (post.id != 0x0 && post != undefined) {
             return (
-              <div
-                className="ImageFeedImage"
-              >
+              <div className="ImageFeedImage">
                 <div className="card mb-4" key={key} >
-                  <h1 className="text-muted">{post.title.toString()}</h1>
-                  {getPostHeader(post, allUsers, allUserIDs)}
-                  <form
-                    onSubmit={(event) => {
-                      event.preventDefault()
-                      dispatchUser(post.author)
-                      props.history.push('./UserPage')
-                    }}
-                  >
-                    <button type="submit" className="btn btn-info btn-sml">View Account</button>
-                  </form>
+                  {getPostHeader(dispatch, props, post, allUsers, allUserIDs)}
+
+                  <ul id="imageList" className="list-group list-group-flush text-center">
                   <li className="list-group-item bg-secondary">
                     <p class="text-center"><img className="uploadedImage" src={getImageURL(post)} alt="" /></p>
                     <p className="text-light border-info card-body">{post.status}</p>
@@ -154,26 +187,16 @@ const showFeed = (props) => {
                     <small className="float-left mt-1 text-muted ">
                       TIPS: {web3.utils.fromWei(post.tipAmount.toString(), 'Ether')} ETH
                     </small>
-                    <button
-                      className="btn btn-link btn-sm float-right pt-0"
-                      name={post.id}
-                      onClick={(event) => {
-                        let tipAmount = web3.utils.toWei('0.1', 'Ether')
-
-                        tipPost(dispatch, account, cryptogram, event.target.name, tipAmount)
-                      }}
-                    >
-                      TIP 0.1 ETH
-                    </button>
+                    {setTipAmount(post)}
                   </li>
-                  <li>
+                  
                     <div className="text-dark text-left">
-                      <Collapsible className="cursor-pointer text-center" trigger="Expand Comment Section" triggerWhenOpen="Collapse Comments">
-                        <br></br>
+                      <Collapsible className="cursor-pointer text-left p-1" trigger="Expand Comment Section" triggerWhenOpen="Collapse Comments">
                         {renderComments(post)}
                       </Collapsible>
                     </div>
-                  </li>
+                  
+                  </ul>
                 </div>
               </div>
             )
@@ -192,11 +215,12 @@ class ImageFeed extends Component {
 
   render() {
     return (
-      <div className="imageFeed pt-5" id="imageFeed">
-        <br /><br />
+      <div className="pt-5" id="imageFeed">        
+        <div className="mt-5">
         {
           showFeed(this.props)
         }
+        </div>
       </div>
     );
   }
@@ -212,7 +236,9 @@ function mapStateToProps(state) {
     account: accountSelector(state),
     cryptogram: cryptogramSelector(state),
     allComments: allCommentsSelector(state),
-    commentText: commentTextSelector(state)
+    commentText: commentTextSelector(state),
+    postTipAmount: postTipAmountSelector(state),
+    commentTipAmount: commentTipAmountSelector(state)
   }
 }
 

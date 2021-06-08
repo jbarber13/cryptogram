@@ -1,6 +1,6 @@
 import { createSelector } from 'reselect'
 import moment from 'moment'
-import {get, groupBy, reject, maxBy, minBy} from 'lodash'
+import {get, groupBy, reject, maxBy, minBy, create} from 'lodash'
 
 //web3.account --> reducer.js function.value for that case
 const account = state => get(state, 'web3.account')//lodash - provides default value incase null
@@ -11,6 +11,9 @@ export const web3Selector = createSelector(web3, w => w)
 
 const cryptogramLoaded = state => get(state, 'cryptogram.loaded', false)
 export const cryptogramLoadedSelector = createSelector(cryptogramLoaded, cl => cl)
+
+const userAccountUpdating = state => get(state, 'cryptogram.userAccountUpdating', true)
+export const userAccountUpdatingSelector = createSelector(userAccountUpdating, uau => uau)
 
 
 const cryptogram = state => get(state, 'cryptogram.contract')
@@ -38,8 +41,7 @@ export const myAccountSelector = createSelector(myAccount, ma => ma)
 const user = state => get(state, 'cryptogram.userAccount', false)
 export const userSelector = createSelector(user, u => u)
 
-const userUpdateValue = state => get(state, 'cryptogram.userUpdateValue', "")
-export const userUpdateValueSelector = createSelector(userUpdateValue, uuv => uuv)
+
 
 const userSelected = state => get(state, 'cryptogram.userSelected', false)
 export const userSelectedSelector = createSelector(userSelected, us => us)
@@ -219,3 +221,12 @@ export const contactSelector = createSelector(contact, c => c)
 
 const occupation = state => get(state, 'uploadHandler.occupation', [])
 export const occupationSelector = createSelector(occupation, o => o)
+
+const userUpdateValue = state => get(state, 'uploadHandler.userUpdateValue', "")
+export const userUpdateValueSelector = createSelector(userUpdateValue, uuv => uuv)
+
+const postTipAmount = state => get(state, 'uploadHandler.postTipAmount', "0")
+export const postTipAmountSelector = createSelector(postTipAmount, pta => pta)
+
+const commentTipAmount = state => get(state, 'uploadHandler.commentTipAmount', "0")
+export const commentTipAmountSelector = createSelector(commentTipAmount, cta => cta)

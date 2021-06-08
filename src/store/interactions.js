@@ -19,7 +19,8 @@ import {
   contractUpdating,
   userAccountLoaded,
   deletedUsersLoaded,
-  userSelected
+  userSelected,
+  userAccountLoading
 } from './actions'
 import CryptoGram from '../abis/CryptoGram.json'
 import Identicon from 'identicon.js';
@@ -37,16 +38,14 @@ export const loadEverything = async (dispatch) => {
     window.alert('Exchange smart contract not detected on the current network. Please select another network with Metamask.')
     return
   }
-
-  const allPosts = await _loadPosts(cryptogram, dispatch)
-  _loadDeletedPosts(cryptogram, dispatch)
-  const allComments = await _loadComments(cryptogram, dispatch)
-  _loadDeletedComments(cryptogram, dispatch)
+  await _loadPosts(cryptogram, dispatch)
+  await _loadComments(cryptogram, dispatch)
   const allUsers = await _loadUsers(cryptogram, dispatch)
-
-
-  _loadUser(account, allUsers, dispatch, cryptogram)
-  _loadDeletedUsers(cryptogram, dispatch)
+  await _loadUser(account, allUsers, dispatch, cryptogram)
+  await _loadDeletedUsers(cryptogram, dispatch)
+  await _loadDeletedPosts(cryptogram, dispatch)
+  await _loadDeletedComments(cryptogram, dispatch)
+  
 
   //console.log("loadEverything called", allPosts)
 
@@ -326,8 +325,16 @@ export const captureFile = (event, dispatch) => {
     dispatch(fileCaptured(Buffer(reader.result)))
   }
 }
-
-export const getPostHeader = (post, allUsers, allUserIDs) => {
+//get the full user object and dispatch to state so UserPage can render it correctly
+const dispatchUser = (dispatch, author, allUsers) => {
+  console.log("dispatchUser", allUsers)
+  allUsers.map((u) => {
+    if (u.userAccount === author) {
+      dispatch(userSelected(u))
+    }
+  })
+}
+export const getPostHeader = (dispatch, props, post, allUsers, allUserIDs) => {
   let user, userFound
   if (allUserIDs.includes(post.author)) {
     getUser(post.author)
@@ -342,7 +349,9 @@ export const getPostHeader = (post, allUsers, allUserIDs) => {
   }
   if (userFound) {
     return (
-      <div className="card-header">
+      <div className="card-header text-center">
+        <h1 className="text-muted">{post.title.toString()}</h1>
+
         <img
           className='mr-2 rounded-circle'
           width='30'
@@ -352,12 +361,24 @@ export const getPostHeader = (post, allUsers, allUserIDs) => {
         />
         <small className="text-muted">{user.userName}</small>
         <small className="text-muted"><br />Posted on: {moment.unix(post.timeStamp).format('M/D/Y')} at: {moment.unix(post.timeStamp).format('h:mm:ss a')}</small>
+        <form
+          className="text-small"
+          onSubmit={(event) => {
+            event.preventDefault()
+            dispatchUser(dispatch, post.author, allUsers)
+            props.history.push('./UserPage')
+          }}
+        >
+          <button type="submit" className="btn btn-link">View Profile</button>
+        </form>
       </div>
     )
   }
 
   return (
-    <div className="card-header">
+    <div className="card-header text-center">
+      <h1 className="text-muted">{post.title.toString()}</h1>
+
       <img
         className='mr-2'
         width='30'
@@ -432,7 +453,9 @@ export const setUserName = async (dispatch, cryptogram, account, value) => {
   cryptogram.methods.setUserName(value).send({ from: account })
     .on('transactionHash', (hash) => {
       console.log("Transaction hash: ", hash)
-      dispatch(contractUpdating("makePost"))
+      dispatch(contractUpdating("setUserName"))
+      dispatch(clearForm())
+
     })
 }
 export const setImageHash = async (dispatch, cryptogram, account, value) => {
@@ -440,7 +463,9 @@ export const setImageHash = async (dispatch, cryptogram, account, value) => {
   cryptogram.methods.setImageHash(hash).send({ from: account })
     .on('transactionHash', (hash) => {
       console.log("Transaction hash: ", hash)
-      dispatch(contractUpdating("makePost"))
+      dispatch(contractUpdating("setImageHash"))
+      dispatch(clearForm())
+
     })
 
 }
@@ -448,63 +473,89 @@ export const setBio = async (dispatch, cryptogram, account, value) => {
   cryptogram.methods.setBio(value).send({ from: account })
     .on('transactionHash', (hash) => {
       console.log("Transaction hash: ", hash)
-      dispatch(contractUpdating("makePost"))
+      dispatch(contractUpdating("setBio"))
+      dispatch(clearForm())
+
     })
 }
 export const setLocation = async (dispatch, cryptogram, account, value) => {
   cryptogram.methods.setLocation(value).send({ from: account })
     .on('transactionHash', (hash) => {
       console.log("Transaction hash: ", hash)
-      dispatch(contractUpdating("makePost"))
+      dispatch(contractUpdating("setLocation"))
+      dispatch(clearForm())
+
     })
 }
 export const setOccupation = async (dispatch, cryptogram, account, value) => {
   cryptogram.methods.setOccupation(value).send({ from: account })
     .on('transactionHash', (hash) => {
       console.log("Transaction hash: ", hash)
-      dispatch(contractUpdating("makePost"))
+      dispatch(contractUpdating("setOccupation"))
+      dispatch(clearForm())
+
     })
 }
-
-
-
-
-
-
-
 
 /********************subscribeToEvents**********************/
 
 //listen for events emitted from contract and update component in real time
 export const subscribeToEvents = async (cryptogram, dispatch) => {
   //console.log("subscribeToEvents called")
+  cryptogram.events.UserAdded({}, (error, event) => {
+    loadEverything(dispatch)    
+    console.log("UserAdded Event Heard", event.returnValues)
+    if (error) { console.error(error) }
+  })
 
+  cryptogram.events.UserDeleted({}, (error, event) => {
+    loadEverything(dispatch)
+    console.log("UserDeleted Event Heard", event.returnValues)
+    if (error) { console.error(error) }
+  })
+
+  cryptogram.events.UserUpdated({}, (error, event) => {
+    loadEverything(dispatch)
+    console.log("UserUpdated Event Heard", event.returnValues)
+    if (error) { console.error(error) }
+  })
+
+  cryptogram.events.PostTipped({}, (error, event) => {
+    loadEverything(dispatch)
+    console.log("PostTipped Event Heard", event.returnValues)
+    if (error) { console.error(error) }
+  })
 
   cryptogram.events.PostAdded({}, (error, event) => {
     loadEverything(dispatch)
     console.log("PostAdded Event Heard", event.returnValues)
     if (error) { console.error(error) }
   })
+
+  cryptogram.events.PostDeleted({}, (error, event) => {
+    loadEverything(dispatch)
+    //loadEverything(dispatch)
+    console.log("PostDeleted Event Heard", event.returnValues)
+    if (error) { console.error(error) }
+  })
+
   cryptogram.events.CommentAdded({}, (error, event) => {
     loadEverything(dispatch)
     console.log("CommentAdded Event Heard", event.returnValues)
     if (error) { console.error(error) }
   })
-  cryptogram.events.PostTipped({ fromBlock: 'latest', toBlock: 'latest' }, (error, event) => {
-    loadEverything(dispatch)    
-    //loadEverything(dispatch)
-    console.log("PostTipped Event Heard", event.returnValues)
-    if (error) { console.error(error) }
-  })
+  
   cryptogram.events.CommentTipped({}, (error, event) => {
     loadEverything(dispatch)
     console.log("CommentTipped Event Heard", event.returnValues)
     if (error) { console.error(error) }
   })
-  cryptogram.events.UserUpdated({}, (error, event) => {
+
+  cryptogram.events.CommentDeleted({}, (error, event) => {
     loadEverything(dispatch)
-    console.log("UserUpdated Event Heard", event.returnValues)
+    console.log("CommentDeleted Event Heard", event.returnValues)
     if (error) { console.error(error) }
   })
+  
 
 }

@@ -16,7 +16,7 @@ import {
   deletedPostIDSelector
 
 } from '../store/selectors'
-import {deleteComment } from '../store/interactions'
+import { deleteComment } from '../store/interactions'
 import Loading from './Loading'
 
 //test IPFS hash: QmTB1GwdrgfFfPSpKpeYFuS2JidiqnLZv2uaKDzU2tkaYw
@@ -25,14 +25,15 @@ import Loading from './Loading'
 const showFeed = (props) => {
   const { dispatch, account, cryptogram, web3, allComments, myComments, deletedPostIDs } = props
 
-  function deleteCommentButton(comment){
+  function deleteCommentButton(comment) {
     return (
-      <div className="btn btn-link btn-sm float-right text-light">
-         <form onSubmit={(event) => {
+      <div className="float-right text-right pt-0 text-danger">
+        <form onSubmit={(event) => {
           event.preventDefault()
-          deleteComment(dispatch, cryptogram, account, comment.id)}} >
+          deleteComment(dispatch, cryptogram, account, comment.id)
+        }} >
 
-          <button type="submit" className="btn btn-link btn-sm float-right text-light" >Delete This Comment</button>
+          <button type="submit" className="btn btn-danger btn-sm  float-right text-right pt-0 text-light">Delete</button>
 
         </form>
       </div>
@@ -65,11 +66,14 @@ const showFeed = (props) => {
   function shoCommentHistory() {
     return (
       <div className="card mb-4 position-top"  >
-        <div className="card-header bg-info ">
+        <div className="card-header bg-primary ">
           <h2 className="text-light">My Comment History</h2>
         </div>
         <ul id="imageList" className="list-group list-group-flush ">
-          {commentMapping()}
+          <div className="my-comments overflow-auto">
+            {commentMapping()}
+
+          </div>
 
         </ul>
       </div>
@@ -94,7 +98,7 @@ const showFeed = (props) => {
 class MyComments extends Component {
   render() {
     return (
-      <div className="p-4" id="imageFeed">
+      <div id="myComments">
         {
           showFeed(this.props)
         }

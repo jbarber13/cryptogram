@@ -5,22 +5,21 @@ import Collapsible from 'react-collapsible';
 
 import Identicon from 'identicon.js';
 import moment from 'moment'
-import Main from './Main'
 
-import { Switch, Route, Link } from 'react-router-dom';
-import { commentTextChanged } from '../store/actions'
+import { commentTextChanged, postTipAmountChanged } from '../store/actions'
 import {
-  
+  allUsersSelector,
+  allUserIDSelector,
   allPostSelector,
   userSelectedSelector,
   cryptogramSelector,
   web3Selector,
   accountSelector,
   allCommentsSelector,
-  commentTextSelector
+  commentTextSelector,
+  postTipAmountSelector
 } from '../store/selectors'
-import { tipComment, makeComment, deletePost } from '../store/interactions'
-import Loading from './Loading'
+import { tipComment, makeComment, tipPost, getCommentHeader } from '../store/interactions'
 
 
 
@@ -28,7 +27,7 @@ import Loading from './Loading'
 //portrait logo: QmUhWdN2ZMoNjxtTywNWJPVqn9TRYgxnNyUhiDa8nAzWtg
 
 const showFeed = (props) => {
-  const { dispatch, account, cryptogram, web3, allPosts, user, allComments, commentText } = props
+  const { dispatch, account, cryptogram, web3, allPosts, user, allUsers, allUserIDs, allComments, commentText, postTipAmount } = props
 
   function getImageURL(post) {
     let hash
@@ -54,34 +53,32 @@ const showFeed = (props) => {
             //only show comments for the correct post
             if (comment.postID == post.id) {
               return (
-                <p className="p-2" key={comment.id}>
-                  <img
-                    className='mr-2'
-                    width='30'
-                    height='30'
-                    alt="#"
-                    src={`data:image/png;base64,${new Identicon(comment.author, 30).toString()}`}
-                  /><small className="text-muted">{comment.formattedTimeStamp} TIPS: {web3.utils.fromWei(comment.tipAmount.toString(), 'Ether')} ETH</small>
-                  <br />
-                  {comment.comment}
-                  <button
-                    className="btn btn-link btn-sm float-right pt-0"
-                    name={comment.id}
-                    onClick={(event) => {
-                      let tipAmount = web3.utils.toWei('0.1', 'Ether')
-                      tipComment(dispatch, account, cryptogram, event.target.name, tipAmount)
-                    }}
-                  >
-                    TIP 0.1 ETH
+                <div className="card m-2 mb-4">
+
+                  <p className="p-2" key={comment.id}>
+                    {getCommentHeader(comment, web3, allUsers, allUserIDs)}
+                    {comment.comment}
+                    <button
+                      className="btn btn-link btn-sm float-right pt-0"
+                      name={comment.id}
+                      onClick={(event) => {
+                        let tipAmount = web3.utils.toWei('0.1', 'Ether')
+                        tipComment(dispatch, account, cryptogram, event.target.name, tipAmount)
+                      }}
+                    >
+                      TIP 0.1 ETH
                     </button>
-                </p>
+                  </p>
+                </div>
               )
             }
           })}
         </div>
-        <Collapsible className="cursor-pointer" trigger="Add a comment" triggerWhenOpen="Collapse">
-          {composeComment(post)}
-        </Collapsible>
+        <div className="m-2">
+          <Collapsible className="cursor-pointer" trigger="Add a comment" triggerWhenOpen="Collapse">
+            {composeComment(post)}
+          </Collapsible>
+        </div>
       </div>
     )
   }
@@ -117,7 +114,37 @@ const showFeed = (props) => {
   }
 
 
-
+  const setTipAmount = (post) => {
+    return (
+      <div
+        className="float-right text-right pt-0 text-primary"
+        data-toggle="tooltip"
+        data-placement="right"
+        title="Send a tip if you feel this post deserves it! Posts with the most tips are shown first."
+      >
+        <Collapsible className="cursor-pointer" trigger="Tip This Post" triggerWhenOpen="Collapse">
+          <form
+            onSubmit={(event) => {
+              event.preventDefault()
+              let tipAmount = web3.utils.toWei(postTipAmount, 'Ether')
+              tipPost(dispatch, account, cryptogram, post.id, tipAmount)
+            }} >
+            <div className="form-group mr-sm-2">
+              <input
+                type="number"
+                step="0.0001"
+                onChange={(e) => dispatch(postTipAmountChanged(e.target.value))}
+                className="form-control"
+                placeholder="Amount to tip in ETH"
+              >
+              </input>
+            </div>
+            <button type="submit" className="btn btn-primary btn-block btn-sml">Submit Tip</button>
+          </form>
+        </Collapsible>
+      </div>
+    )
+  }
 
 
 
@@ -141,7 +168,7 @@ const showFeed = (props) => {
                       />
                       <small className="text-muted">{user.userName}</small>
                       <small className="text-muted"><br />Posted on: {moment.unix(post.timeStamp).format('M/D/Y')} at: {moment.unix(post.timeStamp).format('h:mm:ss a')}</small>
-                    
+
                     </div>
                     <ul id="imageList" className="list-group list-group-flush ">
                       <li className="list-group-item bg-secondary">
@@ -152,13 +179,13 @@ const showFeed = (props) => {
                       <li key={key} className="list-group-item py-2">
                         <small className="float-left mt-1 text-muted ">
                           TIPS: {web3.utils.fromWei(post.tipAmount.toString(), 'Ether')} ETH
-                                  </small>
-
+                        </small>
+                        {setTipAmount(post)}
 
                       </li>
 
                       <div className="text-dark text-left">
-                        <Collapsible className="cursor-pointer text-center p-1" trigger="Expand Comment Section" triggerWhenOpen="Collapse Comments">
+                        <Collapsible className="cursor-pointer text-left p-1" trigger="Expand Comment Section" triggerWhenOpen="Collapse Comments">
                           <br></br>
                           {renderComments(post)}
                         </Collapsible>
@@ -182,16 +209,16 @@ const showFeed = (props) => {
 class UserPostFeed extends Component {
   render() {
     return (
-      <div className="p-4" id="imageFeed">
+      <div className="p-5" id="imageFeed">
         {
-          showFeed(this.props)          
+          showFeed(this.props)
         }
         <footer>
-            <div class="text-center p-3 pb-5">
-                <small className="text-muted">
-                    This app was created by Jake Barber for testing and proof-of-concept purposes only, more information can be found on my <a className="text-light" href="https://www.jake-barber.com" target="_blank">website</a>.
+          <div class="text-center p-3 pb-5">
+            <small className="text-muted">
+            This app is a work in progress created by Jake Barber for testing and proof-of-concept purposes only, more information can be found on my <a className="text-light" href="https://www.jake-barber.com" target="_blank">website</a>.
                 </small>
-            </div>
+          </div>
         </footer>
 
       </div>
@@ -202,12 +229,15 @@ class UserPostFeed extends Component {
 function mapStateToProps(state) {
   return {
     user: userSelectedSelector(state),
+    allUsers: allUsersSelector(state),
+    allUserIDs: allUserIDSelector(state),
     allPosts: allPostSelector(state),
     web3: web3Selector(state),
     account: accountSelector(state),
     cryptogram: cryptogramSelector(state),
     allComments: allCommentsSelector(state),
-    commentText: commentTextSelector(state)
+    commentText: commentTextSelector(state),
+    postTipAmount: postTipAmountSelector(state)
   }
 }
 

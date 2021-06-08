@@ -43,62 +43,61 @@ const showForm = (props) => {
 
 
   return (
-    <div className="card mb-4 bg-secondary">
-      <div className="card-header bg-info ">
+    <div className="card bg-secondary">
+      <div className="card-header bg-primary ">
         <h3>Make a New Post</h3>
       </div>
-      <br />
+      
       <form className="p-2" onSubmit={(event) => {
         event.preventDefault()
         initiatePost()
       }} >
+        <div className="form-group mr-sm-2">
         <input
           name="PostTitle"
           type="text"
           onChange={(e) => dispatch(postTitleChanged(e.target.value))}
-          className="form-control"
+          className="form-control mt-3"
           placeholder="Post Title"
-          required />
-        <br />
-        <div className="form-group mr-sm-2">
+          required 
+        />        
           <textarea
             rows="4"
             cols="50"
             onChange={(e) => dispatch(postDescriptionChanged(e.target.value))}
-            className="form-control"
+            className="form-control mt-3"
             placeholder="Whats on your mind...?"
-          >
-          </textarea>
-
-          <br></br>
+          />          
           <input
             name="Link"
             type="url"
             onChange={(e) => dispatch(postLinkChanged(e.target.value))}
-            className="form-control"
+            className="form-control mt-3"
             placeholder="Add a link URL (optional)"
-          />
-        </div>
-        <input className="btn btn-primary" type='file' accept=".jpg, .jpeg, .png, .bmp, .gif" onChange={(e) => captureFile(e, dispatch)} />
-        <br /><br />
-        <button type="submit" className="btn btn-primary btn-block btn-lg">Upload</button>
+          />         
+          <input className="btn btn-light text-muted w-100 mt-3" type='file' accept=".jpg, .jpeg, .png, .bmp, .gif" onChange={(e) => captureFile(e, dispatch)} />
+                   
+          <button type="submit" className="btn btn-primary btn-block btn-lg mt-3">Upload</button>
+          </div>
       </form>
     </div>
   )
 }
 
+//          
+
 class SharePost extends Component {
-  render() {
+        render() {
 
     return (
-      
-        <div className="pt-5 p-5 w-50 m-auto">
-          <br /><br /><br /><br /><br />
-          <div className="card mb-4 bg-secondary m-auto "  >
-            {showForm(this.props)}
-          </div>          
+
+      <div className="pt-5 p-5 w-50 m-auto">
+        <br /><br /><br /><br /><br />
+        <div className="card mb-4 bg-secondary m-auto "  >
+          {showForm(this.props)}
         </div>
-     
+      </div>
+
     );
   }
 }
@@ -106,7 +105,7 @@ class SharePost extends Component {
 function mapStateToProps(state) {
 
   return {
-    file: fileSelector(state),
+        file: fileSelector(state),
     fileUploaded: fileUploadedSelector(state),
     postTitle: postTitleSelector(state),
     postDescription: postDescriptionSelector(state),

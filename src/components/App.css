@@ -15,10 +15,7 @@ html, body {
   background-color: #343a40;
   color: #f8f9fa;
 }
-.customNav{
-  padding:5rem;
-  color: black;
-}
+
 
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {
@@ -110,11 +107,31 @@ html, body {
 }
 
 
-/*********************Profile Page*********************/
-/**
 
-asdfasdf
-*/
+
+/*********************NavBar*********************/
+.navbar{
+  height:5rem;
+}
+.navbar-toggler{
+  z-index: 3;
+}
+.cryptogram-logo{
+  transform: scale(1.8);
+}
+
+.navbar-nav > li.active, .navbar-nav > li.active:focus {
+  padding: 0;
+  border-bottom: 0.18rem solid gray
+}
+
+@media(max-width: 992px){
+  .navbar{
+    height:7rem;
+  }
+}
+/*********************Profile Page*********************/
+
 .myAccount{
   
   display: flex;
@@ -138,11 +155,13 @@ asdfasdf
   float:center;
 
 }
+.manual-span-size{
+  font-size: small;
+  font-weight: lighter;
+}
 .centered-user-info{
   display:inline;  
   float:center;
-  
-
 }
 .cursor-pointer{
   cursor:pointer;
@@ -159,8 +178,12 @@ asdfasdf
   float:right;
   cursor: pointer;
 }
-.profile{
+.profile-box{
   width:80%; 
+  height: 30rem;
+}
+.my-comments{
+  max-height: 20rem;
 }
 .profile-picture{
   width: 10rem;

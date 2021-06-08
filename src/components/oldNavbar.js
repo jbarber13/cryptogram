@@ -24,13 +24,12 @@ const showNavbar = (props) => {
           target="_blank"
           rel="noopener noreferrer"
         >
+          <span>Your Account: </span><span data-toggle="tooltip" data-placement="bottom" title={`Account Address: ${account}`}>{user.userName}</span>
+
           <img
-            className="ml-3 rounded-circle "
-            width="75"
-            height="75"
-            data-toggle="tooltip"
-            data-placement="bottom"
-            title={`Account Address: ${account}`}
+            className="ml-2 rounded-circle"
+            width="40"
+            height="40"
             src={getImageURL()}
             alt="profile-picture"
           />
@@ -45,15 +44,13 @@ const showNavbar = (props) => {
           target="_blank"
           rel="noopener noreferrer"
         >
-          
+          Your Account: {account}
           { /**Identicon - only show if account exists*/
             account
               ? <img
-                width="75"
-                height="75"
-                data-toggle="tooltip"
-                data-placement="bottom"
-                title={`Account Address: ${account}`}
+                className="ml-2"
+                width="30"
+                height="30"
                 src={`data:image/png;base64, ${new Identicon(account, 30).toString()}`}
                 alt="identicon"
               />
@@ -66,28 +63,23 @@ const showNavbar = (props) => {
 
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
-
+    <nav className="navbar navbar-expand-lg navbar-dark bg-info fixed-top">
       <a
         className="navbar-brand"
         href="https://www.jake-barber.com/#cryptogram"
         target="_blank"
         rel="noopener noreferrer"
       >
-        <img src={photo} width="75" height="75" className="cryptogram-logo pl-1" alt="" />
-      </a>
-
-      <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span className="navbar-toggler-icon"></span>
-      </button>
-
-      <div className="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul className="navbar-nav w-100 list-inline mx-auto justify-content-center">
+        <img src={photo} width="75" height="75" className="d-inline-block align-top pr-1" alt="" />
+        </a>
+      
+      <div className="collapse navbar-collapse text-center " id="navbarText">
+        <ul className="navbar-nav pl-5 ">
           <li className="nav-item">
-            <Link to="/">
-              <a className="btn btn-link text-light" href="#header">Front Page</a>
+            <Link to="/">              
+                <a className="btn btn-link text-light" href="#header">Front Page</a>
             </Link>
-          </li>
+          </li>          
           <li className="nav-item">
             <Link to="/SharePost">
               <button type="button" className="btn btn-link text-light">
@@ -104,25 +96,15 @@ const showNavbar = (props) => {
           </li>
         </ul>
       </div>
-
-
-
-
-
-
-      <div className="d-flex justify-content-end">
-        <span className="navbar-text">
-          {getUserIcon()}
-        </span>
-      </div>
-
-
+      <span className="navbar-text">
+        {getUserIcon()}
+      </span>
     </nav>
   )
 }
 
 
-class Navbar extends Component {
+class oldNavbar extends Component {
   render() {
     return (
       <div>
@@ -140,4 +122,4 @@ function mapStateToProps(state) {
 
   }
 }
-export default connect(mapStateToProps)(Navbar)
+export default connect(mapStateToProps)(oldNavbar)
