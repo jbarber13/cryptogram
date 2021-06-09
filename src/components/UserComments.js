@@ -3,8 +3,7 @@ import { connect } from 'react-redux'
 
 import Collapsible from 'react-collapsible';
 
-import Identicon from 'identicon.js';
-import moment from 'moment'
+
 import {commentTipAmountChanged} from '../store/actions'
 import {
   userSelectedSelector,
@@ -18,21 +17,6 @@ import {
 
 } from '../store/selectors'
 import {tipComment } from '../store/interactions'
-import Loading from './Loading'
-
-/** //this looks correct
-<div className="float-right text-right pt-0">
-        <form onSubmit={(event) => {
-          event.preventDefault()
-          let tipAmount = web3.utils.toWei(commentTipAmount, 'Ether')
-          tipComment(dispatch, account, cryptogram, comment.id, tipAmount)
-        }} >
-
-          <button type="submit" className="btn btn-primary btn-sm  float-right text-right pt-0 text-light">Tip</button>
-
-        </form>
-      </div>
- */
 
 const showFeed = (props) => {
   const { dispatch, account, cryptogram, web3, allComments, deletedPostIDs, user, commentTipAmount} = props

@@ -1,6 +1,6 @@
 import Web3 from 'web3'
-import React, { Component } from 'react';
-import { connect } from 'react-redux'
+import React from 'react';
+
 import moment from 'moment'
 
 
@@ -14,11 +14,9 @@ import {
   postLoaded,
   deletedPostsLoaded,
   commentLoaded,
-  deletedCommentsLoaded,
   clearForm,
   contractUpdating,
   userAccountLoaded,
-  deletedUsersLoaded,
   userSelected
 } from './actions'
 import CryptoGram from '../abis/CryptoGram.json'
@@ -40,9 +38,7 @@ export const loadEverything = async (dispatch) => {
   await _loadComments(cryptogram, dispatch)
   const allUsers = await _loadUsers(cryptogram, dispatch)
   await _loadUser(account, allUsers, dispatch, cryptogram)
-  await _loadDeletedUsers(cryptogram, dispatch)
   await _loadDeletedPosts(cryptogram, dispatch)
-  await _loadDeletedComments(cryptogram, dispatch)
 
   //console.log("loadEverything called", allPosts)
 
@@ -118,11 +114,7 @@ const _loadComments = async (cryptogram, dispatch) => {
   }
   comments.map(comment => loadComment(comment.id))
 }
-const _loadDeletedComments = async (cryptogram, dispatch) => {
-  const commentStream = await cryptogram.getPastEvents('CommentDeleted', { fromBlock: 0, toBlock: 'latest' })
-  const comments = commentStream.map((event) => event.returnValues)
-  dispatch(deletedCommentsLoaded(comments))
-}
+
 const _loadUsers = async (cryptogram, dispatch) => {
   const userStream = await cryptogram.getPastEvents('UserAdded', { fromBlock: 0, toBlock: 'latest' })//entire chain history
   const users = userStream.map((event) => event.returnValues)
@@ -132,11 +124,6 @@ const _loadUsers = async (cryptogram, dispatch) => {
   }
   users.map(user => loadUser(user.userAccount))
   return users
-}
-const _loadDeletedUsers = async (cryptogram, dispatch) => {
-  const userStream = await cryptogram.getPastEvents('UserDeleted', { fromBlock: 0, toBlock: 'latest' })
-  const users = userStream.map((event) => event.returnValues)
-  dispatch(deletedUsersLoaded(users))
 }
 //if the user account has been made already, loads the user info into state
 const _loadUser = async (account, allUsers, dispatch, cryptogram) => {
@@ -189,7 +176,6 @@ export const makeUser = async (dispatch, cryptogram, account, userName, result, 
   let imageHash = "No Image Present"
   let _bio = ""
   let _location = ""
-  let _contact = ""
   let _occupation = ""
   if (result === undefined) {
     console.log("No Image Present")

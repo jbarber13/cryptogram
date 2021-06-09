@@ -5,7 +5,6 @@ import App from './components/App';
 import * as serviceWorker from './serviceWorker';
 import configureStore from './store/configureStore';
 import {Provider} from 'react-redux';
-import { Route, IndexRoute } from 'react-router';
 import { BrowserRouter } from 'react-router-dom';
 
 

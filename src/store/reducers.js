@@ -20,8 +20,7 @@ function cryptogram(state = {}, action) {
         return {
           ...state,
           allPosts: [...state.allPosts, action.post]//Unhandled Rejection (TypeError): Invalid attempt to spread non-iterable instance unless you initialize the array when cryptogram loads
-        }
-      
+        }      
     case 'DELETED_POSTS_LOADED':
       return {...state, deletedPosts: action.deletedPosts}    
     case 'COMMENT_LOADED':
@@ -29,29 +28,18 @@ function cryptogram(state = {}, action) {
         ...state,
         allComments: [...state.allComments, action.comment]
       }
-    case 'DELETED_COMMENTS_LOADED':
-      return {...state, deletedComments: action.deletedComments}
+    
     case 'USER_LOADED': 
       return {
         ...state, 
         allUsers: [...state.allUsers, action.user]
       }
     case 'USER_ACCOUNT_LOADED':
-      return{...state, userAccount: action.account, userAccountLoaded: true}
-    case 'USER_ACCOUNT_LOADING': 
-      return {...state, userAccountUpdating: true}    
-    case 'DELETED_USERS_LOADED':
-      return{...state, deletedUsers: action.deletedUsers}
+      return{...state, userAccount: action.account, userAccountLoaded: true}  
     case 'USER_SELECTED':
-      return{...state, userSelected: action.userSelected}
-   
-    //things are still breaking when the user account is switched, restarting the server fixes it...
-    //for some reason, this causes duplicates to appear after the second time it is called
-    
+      return{...state, userSelected: action.userSelected}    
      case 'CONTRACT_UPDATING':
-      return { ...state, loaded: false, message: action.message } 
-     
-       
+      return { ...state, loaded: false, message: action.message }           
     default:
       return state
   }
@@ -98,26 +86,6 @@ function uploadHandler(state = {}, action) {
 
 
 /*****************Clear Form from state after submit*****************/
-/**
- {
-        ...state, 
-        postTitle:"", 
-        postDescription:"", 
-        postLink:"", 
-        commentText:"", 
-        file:"", 
-        captured: false, 
-        userName:"", 
-        status:"", 
-        location:"", 
-        contact:"", 
-        occupation:"", 
-        userUpdateValue:"",
-        postTipAmount:"",
-        commentTipAmount:""
-      }
- */
-
     case 'CLEAR_FORM':
       return state={}
     default:

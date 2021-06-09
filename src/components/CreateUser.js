@@ -4,7 +4,6 @@ import {
     userNameChanged, 
     statusChanged, 
     locationChanged,
-    contactChanged,
     occupationChanged
 } from '../store/actions'
 import {

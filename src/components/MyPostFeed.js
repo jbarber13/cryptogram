@@ -3,11 +3,8 @@ import { connect } from 'react-redux'
 
 import Collapsible from 'react-collapsible';
 
-import Identicon from 'identicon.js';
 import moment from 'moment'
-import Main from './Main'
 
-import { Switch, Route, Link } from 'react-router-dom';
 import { commentTextChanged } from '../store/actions'
 import {
   allUsersSelector,
@@ -21,12 +18,7 @@ import {
   commentTextSelector
 } from '../store/selectors'
 import { tipComment, makeComment, deletePost, getCommentHeader } from '../store/interactions'
-import Loading from './Loading'
 
-
-
-//test IPFS hash: QmTB1GwdrgfFfPSpKpeYFuS2JidiqnLZv2uaKDzU2tkaYw
-//portrait logo: QmUhWdN2ZMoNjxtTywNWJPVqn9TRYgxnNyUhiDa8nAzWtg
 
 const showFeed = (props) => {
   const { dispatch, account, cryptogram, web3, myPosts, myAccount, allComments, commentText, allUsers, allUserIDs } = props

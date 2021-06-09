@@ -4,10 +4,6 @@ import Collapsible from 'react-collapsible';
 
 
 import {
-    userNameChanged,
-    statusChanged,
-    locationChanged,
-    contactChanged,
     userUpdateValueChanged
 } from '../store/actions'
 import {
@@ -15,8 +11,7 @@ import {
     userSelector,
     userUpdateValueSelector,
     fileSelector,
-    userAccountLoadedSelector,
-    userAccountUpdatingSelector
+    userAccountLoadedSelector
 } from '../store/selectors'
 import {
     setUserName,
@@ -30,15 +25,13 @@ import {
 import CreateUser from './CreateUser'
 import Work from '../images/workIcon.jpg'
 import Home from '../images/home.png'
-import Contact from '../images/contact.png'
-import Edit from '../images/edit.png'
 import MyComments from './MyComments'
 import MyPostFeed from './MyPostFeed'
 
 
 const showUserInfo = (props) => {
 
-    const { dispatch, cryptogram, user, userUpdateValue, file, userAccountUpdating } = props
+    const { dispatch, cryptogram, user, userUpdateValue, file} = props
     function getImageURL() {
         let hash
         hash = user.imageHash
@@ -48,7 +41,7 @@ const showUserInfo = (props) => {
     function renderUserInfo() {
         return (
             <div className="profile-picture-username-bio w-80 mt-3 mb-5">
-                <img className="profile-picture" src={getImageURL()} alt="profile-picture" />
+                <img className="profile-picture" src={getImageURL()} alt="profile" />
                 <br />
                 <small className="cursor-pointer">
                     <Collapsible className="edit-user-value" trigger="Edit Profile Picture" triggerWhenOpen="Collapse">
@@ -274,7 +267,7 @@ const showUserInfo = (props) => {
             <footer>
                 <div class="text-center p-3 pb-5">
                     <small className="text-muted">
-                        This app is a work in progress created by Jake Barber for testing and proof-of-concept purposes only, more information can be found on my <a className="text-light" href="https://www.jake-barber.com" target="_blank">website</a>.
+                        This app is a work in progress created by Jake Barber for testing and proof-of-concept purposes only, more information can be found on my <a className="text-light" href="https://www.jake-barber.com" target="_blank" rel="noopener noreferrer">website</a>.
                     </small>
                 </div>
             </footer>
@@ -305,7 +298,6 @@ function mapStateToProps(state) {
         userUpdateValue: userUpdateValueSelector(state),
         file: fileSelector(state),
         userAccountLoaded: userAccountLoadedSelector(state),
-        userAccountUpdating: userAccountUpdatingSelector(state)
     }
 }
 

@@ -3,7 +3,6 @@ import { connect } from 'react-redux'
 
 import Collapsible from 'react-collapsible';
 
-import Identicon from 'identicon.js';
 import moment from 'moment'
 
 import { commentTextChanged, postTipAmountChanged } from '../store/actions'
@@ -216,7 +215,7 @@ class UserPostFeed extends Component {
         <footer>
           <div class="text-center p-3 pb-5">
             <small className="text-muted">
-            This app is a work in progress created by Jake Barber for testing and proof-of-concept purposes only, more information can be found on my <a className="text-light" href="https://www.jake-barber.com" target="_blank">website</a>.
+            This app is a work in progress created by Jake Barber for testing and proof-of-concept purposes only, more information can be found on my <a className="text-light" href="https://www.jake-barber.com" target="_blank" rel="noopener noreferrer">website</a>.
                 </small>
           </div>
         </footer>
