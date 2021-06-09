@@ -1,8 +1,5 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux'
-
-import Loading from './Loading'
-
 import { postTitleChanged, postDescriptionChanged, postLinkChanged } from '../store/actions'
 import {
   fileSelector,

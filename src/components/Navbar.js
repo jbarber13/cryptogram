@@ -32,7 +32,7 @@ const showNavbar = (props) => {
             data-placement="bottom"
             title={`Account Address: ${account}`}
             src={getImageURL()}
-            alt="profile-picture"
+            alt="profile"
           />
 
         </a>

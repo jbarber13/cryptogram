@@ -1,6 +1,6 @@
 import { createSelector } from 'reselect'
 import moment from 'moment'
-import {get, groupBy, reject, maxBy, minBy, create} from 'lodash'
+import {get} from 'lodash'
 
 
 //web3.account --> reducer.js function.value for that case
@@ -12,10 +12,6 @@ export const web3Selector = createSelector(web3, w => w)
 
 const cryptogramLoaded = state => get(state, 'cryptogram.loaded', false)
 export const cryptogramLoadedSelector = createSelector(cryptogramLoaded, cl => cl)
-
-const userAccountUpdating = state => get(state, 'cryptogram.userAccountUpdating', true)
-export const userAccountUpdatingSelector = createSelector(userAccountUpdating, uau => uau)
-
 
 const cryptogram = state => get(state, 'cryptogram.contract')
 export const cryptogramSelector = createSelector(cryptogram, c => c) 
@@ -42,13 +38,8 @@ export const myAccountSelector = createSelector(myAccount, ma => ma)
 const user = state => get(state, 'cryptogram.userAccount', false)
 export const userSelector = createSelector(user, u => u)
 
-
-
 const userSelected = state => get(state, 'cryptogram.userSelected', false)
 export const userSelectedSelector = createSelector(userSelected, us => us)
-
-
-
 
 const allPosts = state => get(state, 'cryptogram.allPosts', [])
 export const allPostSelector = createSelector(
@@ -72,8 +63,6 @@ export const allPosterSelector = createSelector(allPosters, ap => ap)
 
 
 const deletedPosts = state => get(state, 'cryptogram.deletedPosts', [])
-export const deletedPostsSelector = createSelector(deletedPosts, dp => dp)
-
 const deletedPostIDs = state => {
     const dp = deletedPosts(state)
     return(
@@ -171,24 +160,6 @@ const decorateComment = (comment) => {
         formattedTimeStamp: moment.unix(comment.timeStamp).format('h:mm:ss a M/D/Y') //hours mins seconds AM/PM Month/Day/Year -- https://momentjs.com/
     })
 }
-
-
-
-
-
-
-
-
-
-
-/**
-const contractUpdating = state => get(state, 'cryptogram.loaded', true)
-export const contractUpdatingSelector = createSelector(contractUpdating, cu => cu)
- */
-
-
-
-
 
 /*******************************UPLOAD HANDLER**********************************/
 const postTitle = state => get(state, 'uploadHandler.postTitle', {})

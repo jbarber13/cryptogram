@@ -24,7 +24,7 @@ const showUserInfo = (props) => {
     function renderUserInfo() {
         return (
             <div className="profile-picture-username-bio w-80 mt-3 mb-5">
-                <img className="profile-picture" src={getImageURL()} alt="profile-picture" />
+                <img className="profile-picture" src={getImageURL()} alt="profile" />
                 <br />
                 <div className="mt-3">
                     <h1 className="centered-user-info text-wrap mt-3">{user.userName}</h1>
