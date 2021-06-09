@@ -20,7 +20,8 @@ import {
   userAccountLoaded,
   deletedUsersLoaded,
   userSelected,
-  userAccountLoading
+  loading,
+  loaded
 } from './actions'
 import CryptoGram from '../abis/CryptoGram.json'
 import Identicon from 'identicon.js';
@@ -29,13 +30,13 @@ import Identicon from 'identicon.js';
 
 //TODO: need to clear state when loading contract to avoid old data being dumped into new posts when made back to back
 export const loadEverything = async (dispatch) => {
-
+  dispatch(loading())
   const web3 = await _loadWeb3(dispatch)
   const networkId = await web3.eth.net.getId()
   const account = await _loadAccount(web3, dispatch)
   const cryptogram = await _loadCryptogram(web3, networkId, dispatch)
   if (!cryptogram) {
-    window.alert('Exchange smart contract not detected on the current network. Please select another network with Metamask.')
+    window.alert('Exchange smart contract not detected on the current network. Please switch your MetaMask network to Rinkeby and then refresh the page.')
     return
   }
   await _loadPosts(cryptogram, dispatch)
@@ -45,8 +46,9 @@ export const loadEverything = async (dispatch) => {
   await _loadDeletedUsers(cryptogram, dispatch)
   await _loadDeletedPosts(cryptogram, dispatch)
   await _loadDeletedComments(cryptogram, dispatch)
-  
 
+  dispatch(loaded())
+  return true
   //console.log("loadEverything called", allPosts)
 
 }
@@ -499,63 +501,104 @@ export const setOccupation = async (dispatch, cryptogram, account, value) => {
 
 /********************subscribeToEvents**********************/
 
+
 //listen for events emitted from contract and update component in real time
 export const subscribeToEvents = async (cryptogram, dispatch) => {
-  //console.log("subscribeToEvents called")
+  let eventHeard = false
+
   cryptogram.events.UserAdded({}, (error, event) => {
-    loadEverything(dispatch)    
+    if (!eventHeard) {
+      loadEverything(dispatch)
+    }
+    eventHeard = true
     console.log("UserAdded Event Heard", event.returnValues)
     if (error) { console.error(error) }
   })
 
   cryptogram.events.UserDeleted({}, (error, event) => {
-    loadEverything(dispatch)
+    if (!eventHeard) {
+      loadEverything(dispatch)
+    }
+    eventHeard = true
     console.log("UserDeleted Event Heard", event.returnValues)
     if (error) { console.error(error) }
   })
 
   cryptogram.events.UserUpdated({}, (error, event) => {
-    loadEverything(dispatch)
+    if (!eventHeard) {
+      loadEverything(dispatch)
+    }
+    eventHeard = true
     console.log("UserUpdated Event Heard", event.returnValues)
     if (error) { console.error(error) }
   })
-
+  /**
+   function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+   sleep(3000)
+        .then(() => {
+          if(!eventHeard){
+            loadEverything(dispatch) 
+          }         
+        })
+        .then(() => {
+          eventHeard = true
+        })
+   */
   cryptogram.events.PostTipped({}, (error, event) => {
-    loadEverything(dispatch)
-    console.log("PostTipped Event Heard", event.returnValues)
+    if (!eventHeard) {
+      loadEverything(dispatch)
+    }
+    eventHeard = true
+    console.log("PostTipped Event Heard", event)
     if (error) { console.error(error) }
   })
-
   cryptogram.events.PostAdded({}, (error, event) => {
-    loadEverything(dispatch)
+    if (!eventHeard) {
+      loadEverything(dispatch)
+    }
+    eventHeard = true
     console.log("PostAdded Event Heard", event.returnValues)
     if (error) { console.error(error) }
   })
 
   cryptogram.events.PostDeleted({}, (error, event) => {
-    loadEverything(dispatch)
+    if (!eventHeard) {
+      loadEverything(dispatch)
+    }
+    eventHeard = true
     //loadEverything(dispatch)
     console.log("PostDeleted Event Heard", event.returnValues)
     if (error) { console.error(error) }
   })
 
   cryptogram.events.CommentAdded({}, (error, event) => {
-    loadEverything(dispatch)
+    if (!eventHeard) {
+      loadEverything(dispatch)
+    }
+    eventHeard = true
     console.log("CommentAdded Event Heard", event.returnValues)
     if (error) { console.error(error) }
   })
-  
+
   cryptogram.events.CommentTipped({}, (error, event) => {
-    loadEverything(dispatch)
+    if (!eventHeard) {
+      loadEverything(dispatch)
+    }
+    eventHeard = true
     console.log("CommentTipped Event Heard", event.returnValues)
     if (error) { console.error(error) }
   })
 
   cryptogram.events.CommentDeleted({}, (error, event) => {
-    loadEverything(dispatch)
+    if (!eventHeard) {
+      loadEverything(dispatch)
+    }
+    eventHeard = true
     console.log("CommentDeleted Event Heard", event.returnValues)
     if (error) { console.error(error) }
   })
-  
+
 
 }
