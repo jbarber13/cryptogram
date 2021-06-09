@@ -6,7 +6,7 @@ class Loading extends Component {
     componentDidMount() {
         setTimeout(function () { //Start the timer
             this.setState({ render: true }) //After 20 seconds, set render to true
-        }.bind(this), 20000)
+        }.bind(this), 30000)
     }
 
 

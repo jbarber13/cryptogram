@@ -4,21 +4,7 @@
  */
 
 /*****************Load Accounts, Contract, Contract Data*****************/
-export function cryptogramInitialized(){
-	return{
-		type: 'CRYPTOGRAM_INITIALIZED'
-	}
-}
-export function loading(){
-	return{
-		type: 'LOADING'
-	}
-}
-export function loaded(){
-	return{
-		type: 'LOADED'
-	}
-}
+
 export function web3Loaded(connection){
 	return {
 		type: 'WEB3_LOADED',
