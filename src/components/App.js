@@ -7,7 +7,8 @@ import { Switch, Route, Link } from 'react-router-dom';
 import {
   loadEverything
 } from '../store/interactions'
-import { cryptogramLoadedSelector, contractUpdatingSelector, allPostsLoadedSelector, eventHeardSelector } from '../store/selectors'
+import { cryptogramInitializedSelector, cryptogramLoadedSelector} from '../store/selectors'
+import {cryptogramInitialized} from '../store/actions'
 import Navbar from './Navbar'
 import Main from './Main';
 import Loading from './Loading'
@@ -20,32 +21,22 @@ class App extends Component {
 
   componentWillMount() {
 
-    if (!this.props.eventHeard) {
-      this.loadBlockchainData(this.props.dispatch)
-    }
+    this.loadBlockchainData(this.props)
   }
   //CHECK NETWORK AND ACCOUNT IN META MASK
-  async loadBlockchainData(dispatch) {
-    // if(this.props.eventHeard){console.log("EVENT HEARD IN STATE!!!!", this.props.eventHeard)}
-    //console.log("loadBlockchainData in APP called")
-
-    await loadEverything(dispatch)
-
-    /**
-     const web3 = await loadWeb3(dispatch)
-    const networkId = await web3.eth.net.getId()
-    await loadAccount(web3, dispatch)
-    const cryptogram = await loadCryptogram(web3, networkId, dispatch)
-    if(!cryptogram) {
-      window.alert('Exchange smart contract not detected on the current network. Please select another network with Metamask.')
-      return
+  async loadBlockchainData(props) {
+    
+    const {cryptoInit, dispatch} = props
+    let done = false
+    if(cryptoInit){
+      console.log("Cryptogram Already Initialized")
+    }else{
+      done = await loadEverything(dispatch)
+      if(done){
+        dispatch(cryptogramInitialized())
+      }
     }
 
-
-    {this.props.cryptogramLoaded || this.props.allPostsLoaded ? 
-        <Main /> : <Loading />
-        }
-     */
 
 
 
@@ -78,6 +69,7 @@ function mapStateToProps(state) {
 
   return {
     //account: accountSelector(state)//enable selector for testing via console log
+    cryptoInit: cryptogramInitializedSelector(state),
     cryptogramLoaded: cryptogramLoadedSelector(state)
   }
 }

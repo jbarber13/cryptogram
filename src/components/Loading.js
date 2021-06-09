@@ -5,8 +5,8 @@ class Loading extends Component {
 
     componentDidMount() {
         setTimeout(function () { //Start the timer
-            this.setState({ render: true }) //After 1 second, set render to true
-        }.bind(this), 5000)
+            this.setState({ render: true }) //After 20 seconds, set render to true
+        }.bind(this), 20000)
     }
 
 
@@ -24,7 +24,7 @@ class Loading extends Component {
             timoutContent = 
             <div>
                 <br/><br/><br/><br/>
-                If you are stuck here, you might not be on the correct network, switch your MetaMask network to Rinkeby and then refresh the page.
+                If you are stuck here, the network may be running slowly, or you might not be on the correct network. Please make sure your MetaMask network is set to Rinkeby. If you had to change it, please refresh the page.
             </div> //Add dom elements
         }
 

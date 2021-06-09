@@ -13,6 +13,12 @@ function web3(state = {}, action) {
 
 function cryptogram(state = {}, action) {
   switch (action.type) {
+    case 'CRYPTOGRAM_INITIALIZED':
+      return{...state, initialized: true}
+    case 'LOADING':
+      return {...state, loading: true}
+    case 'LOADED': 
+      return {...state, loading: false}
     case 'CRYPTOGRAM_LOADED':
       return { ...state, loaded: true, contract: action.contract, allPosts: [], allComments: [], allUsers: [], message: "loaded" }    
     case 'POST_LOADED'://append each new post to state array, initialized when CRYPTOGRAM_LOADED
@@ -47,11 +53,10 @@ function cryptogram(state = {}, action) {
    
     //things are still breaking when the user account is switched, restarting the server fixes it...
     //for some reason, this causes duplicates to appear after the second time it is called
-    /**
+    
      case 'CONTRACT_UPDATING':
-      console.log("CONTRACT_UPDATING")
       return { ...state, loaded: false, message: action.message } 
-     */
+     
        
     default:
       return state

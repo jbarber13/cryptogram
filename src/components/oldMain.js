@@ -5,7 +5,7 @@ import { Switch, Route, Router } from 'react-router-dom';
 import {
   subscribeToEvents
 } from '../store/interactions'
-import { cryptogramSelector, allUsersSelector, accountSelector, loadingSelector } from '../store/selectors';
+import { cryptogramSelector, allUsersSelector, accountSelector } from '../store/selectors';
 import SharePost from './SharePost'
 import ImageFeed from './ImageFeed'
 import MyAccount from './MyAccount'
@@ -13,20 +13,15 @@ import UserPage from './UserPage'
 import CreateUser from './CreateUser'
 import Loading from './Loading'
 
-class Main extends Component {
+class oldMain extends Component {
   componentWillMount() {
     this.loadBlockchainData(this.props)
   }
   async loadBlockchainData(props) {
 
-    const { dispatch, cryptogram, loading} = props
+    const { dispatch, cryptogram } = props
     //console.log("loadBlockchainData in MAIN called")
-    if(loading){
-      await subscribeToEvents(cryptogram, dispatch)
-    }else{
-      console.log("Main ELSE")
-    }
-    
+    await subscribeToEvents(cryptogram, dispatch)
     //subscribe to events
   }//loadBlockchainData
 
@@ -52,10 +47,9 @@ function mapStateToProps(state) {
     cryptogram,
     account: accountSelector(state),
     allUsers: allUsersSelector(state),
-    loading: loadingSelector(state)
 
   }
 }
-export default connect(mapStateToProps)(Main)
+export default connect(mapStateToProps)(oldMain)
 
 //export default Main;

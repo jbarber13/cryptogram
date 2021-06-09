@@ -2,6 +2,13 @@ import { createSelector } from 'reselect'
 import moment from 'moment'
 import {get, groupBy, reject, maxBy, minBy, create} from 'lodash'
 
+
+const cryptogramInitialized = state => get(state, 'cryptogram.initialized', false)
+export const cryptogramInitializedSelector = createSelector(cryptogramInitialized, ci => ci)
+
+const loading = state => get(state, 'cryptogram.loading', false)
+export const loadingSelector = createSelector(loading, l => l)
+
 //web3.account --> reducer.js function.value for that case
 const account = state => get(state, 'web3.account')//lodash - provides default value incase null
 export const accountSelector = createSelector(account, a => a) //(account) => {return  account})
