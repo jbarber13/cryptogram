@@ -179,11 +179,13 @@ const showFeed = (props) => {
 
                   <ul id="imageList" className="list-group list-group-flush text-center">
                   <li className="list-group-item bg-secondary">
-                    <p class="text-center"><img className="uploadedImage" src={getImageURL(post)} alt="" /></p>
+                    <p class="text-center">
+                      <img className="uploadedImage" src={getImageURL(post)} alt="" />
+                    </p>
                     <p className="text-light border-info card-body">{post.status}</p>
                     {showLink(post)}
                   </li>
-                  <li key={key} className="list-group-item py-2">
+                  <li key={key} className="list-group-item">
                     <small className="float-left mt-1 text-muted ">
                       TIPS: {web3.utils.fromWei(post.tipAmount.toString(), 'Ether')} ETH
                     </small>

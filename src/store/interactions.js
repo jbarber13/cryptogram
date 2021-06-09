@@ -19,9 +19,7 @@ import {
   contractUpdating,
   userAccountLoaded,
   deletedUsersLoaded,
-  userSelected,
-  loading,
-  loaded
+  userSelected
 } from './actions'
 import CryptoGram from '../abis/CryptoGram.json'
 import Identicon from 'identicon.js';
@@ -30,7 +28,6 @@ import Identicon from 'identicon.js';
 
 //TODO: need to clear state when loading contract to avoid old data being dumped into new posts when made back to back
 export const loadEverything = async (dispatch) => {
-  dispatch(loading())
   const web3 = await _loadWeb3(dispatch)
   const networkId = await web3.eth.net.getId()
   const account = await _loadAccount(web3, dispatch)
@@ -47,8 +44,6 @@ export const loadEverything = async (dispatch) => {
   await _loadDeletedPosts(cryptogram, dispatch)
   await _loadDeletedComments(cryptogram, dispatch)
 
-  dispatch(loaded())
-  return true
   //console.log("loadEverything called", allPosts)
 
 }
@@ -351,9 +346,8 @@ export const getPostHeader = (dispatch, props, post, allUsers, allUserIDs) => {
   }
   if (userFound) {
     return (
-      <div className="card-header text-center">
-        <h1 className="text-muted">{post.title.toString()}</h1>
-
+      <div className="post-header card-header text-center">
+        <h2 className="text-muted">{post.title.toString()}</h2>
         <img
           className='mr-2 rounded-circle'
           width='30'

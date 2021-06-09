@@ -13,12 +13,6 @@ function web3(state = {}, action) {
 
 function cryptogram(state = {}, action) {
   switch (action.type) {
-    case 'CRYPTOGRAM_INITIALIZED':
-      return{...state, initialized: true}
-    case 'LOADING':
-      return {...state, loading: true}
-    case 'LOADED': 
-      return {...state, loading: false}
     case 'CRYPTOGRAM_LOADED':
       return { ...state, loaded: true, contract: action.contract, allPosts: [], allComments: [], allUsers: [], message: "loaded" }    
     case 'POST_LOADED'://append each new post to state array, initialized when CRYPTOGRAM_LOADED

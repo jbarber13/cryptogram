@@ -7,7 +7,7 @@ import { Switch, Route, Link } from 'react-router-dom';
 import {
   loadEverything
 } from '../store/interactions'
-import { cryptogramInitializedSelector, cryptogramLoadedSelector} from '../store/selectors'
+import { cryptogramLoadedSelector} from '../store/selectors'
 import {cryptogramInitialized} from '../store/actions'
 import Navbar from './Navbar'
 import Main from './Main';
@@ -26,16 +26,7 @@ class App extends Component {
   //CHECK NETWORK AND ACCOUNT IN META MASK
   async loadBlockchainData(props) {
     
-    const {cryptoInit, dispatch} = props
-    let done = false
-    if(cryptoInit){
-      console.log("Cryptogram Already Initialized")
-    }else{
-      done = await loadEverything(dispatch)
-      if(done){
-        dispatch(cryptogramInitialized())
-      }
-    }
+    await loadEverything(props.dispatch)
 
 
 
@@ -64,12 +55,9 @@ class App extends Component {
 
 function mapStateToProps(state) {
 
-  //console.log("cryptogramLoaded", cryptogramLoadedSelector(state))
-  //console.log({images: imagesSelector(state)})
+  
 
   return {
-    //account: accountSelector(state)//enable selector for testing via console log
-    cryptoInit: cryptogramInitializedSelector(state),
     cryptogramLoaded: cryptogramLoadedSelector(state)
   }
 }

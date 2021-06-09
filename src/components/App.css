@@ -74,10 +74,7 @@ html, body {
   align-items: center;
   text-align: center;
 }
-.ImageFeedImage{
-  margin: auto;
-  width: 46%;
-}
+
 .text-link{
   font-size: 150%;
   color: lightgray;
@@ -104,6 +101,22 @@ html, body {
 }
 .description-input{
   resize:both;
+}
+
+
+
+
+/*********************POSTS*********************/
+
+.ImageFeedImage{
+  margin: auto;
+  width: 50%;
+}
+.uploadedImage{
+  max-height: 20rem;
+}
+.post-header{
+  max-height: 9.3rem;
 }
 
 
